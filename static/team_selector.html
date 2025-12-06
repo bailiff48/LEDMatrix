@@ -1,0 +1,1299 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Team Selector - LEDMatrix</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 15px 15px 0 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .main-content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* KC Favorites Section */
+        .kc-favorites {
+            background: linear-gradient(135deg, #E31837 0%, #FFB81C 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .kc-favorites h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .kc-favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .kc-favorite-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .kc-favorite-card:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .kc-favorite-card.selected {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: white;
+        }
+
+        .kc-favorite-card input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .kc-favorite-card label {
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        /* League Tabs */
+        .league-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .league-tab {
+            padding: 12px 24px;
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #4a5568;
+        }
+
+        .league-tab:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .league-tab.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Search Box */
+        .search-section {
+            margin-bottom: 25px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-box button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .search-box button:hover {
+            background: #5568d3;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Teams Grid */
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .team-card {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .team-card:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+            transform: translateY(-2px);
+        }
+
+        .team-card.selected {
+            background: #ebf4ff;
+            border-color: #667eea;
+        }
+
+        .team-card input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .team-info {
+            flex: 1;
+        }
+
+        .team-name {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+
+        .team-details {
+        }
+
+        .anti-spoiler-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: #c53030;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .anti-spoiler-toggle:hover {
+            background: #fed7d7;
+        }
+
+        .anti-spoiler-toggle.active {
+            background: #c53030;
+            color: white;
+            border-color: #c53030;
+        }
+
+        .anti-spoiler-toggle input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            margin: 0;
+        }
+
+        .team-details {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .team-color-indicator {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Anti-Spoiler Section */
+        .anti-spoiler {
+            background: #fff5f5;
+            border: 2px solid #feb2b2;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .anti-spoiler h3 {
+            color: #c53030;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .anti-spoiler-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .anti-spoiler-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .anti-spoiler-option label {
+            cursor: pointer;
+            color: #742a2a;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(72, 187, 120, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Stats Summary */
+        .stats-summary {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .league-tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+
+            .teams-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Success Message */
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #48bb78;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(72, 187, 120, 0.5);
+            font-weight: 600;
+            font-size: 16px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .success-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>🎯 Enhanced Team Selector</h1>
+                <p>Select your favorite teams and configure anti-spoiler settings</p>
+            </div>
+            <a href="/" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; text-decoration: none;">
+                <span style="font-size: 1.2rem;">←</span> Back to Main
+            </a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Success Message -->
+            <div class="success-message" id="successMessage">
+                ✓ Teams saved successfully!
+            </div>
+
+            <!-- KC Favorites -->
+            <div class="kc-favorites">
+                <h2>❤️ Kansas City Favorites</h2>
+                <div class="kc-favorites-grid" id="kcFavorites">
+                    <!-- KC favorites will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Stats Summary -->
+            <div class="stats-summary">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalTeams">0</div>
+                    <div class="stat-label">Total Teams</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="selectedCount">0</div>
+                    <div class="stat-label">Selected</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="leagueCount">0</div>
+                    <div class="stat-label">Leagues</div>
+                </div>
+            </div>
+
+            <!-- League Tabs -->
+            <div class="league-tabs" id="leagueTabs">
+                <!-- League tabs will be loaded here -->
+            </div>
+
+            <!-- Search Section -->
+            <div class="search-section">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search for any team...">
+                    <button onclick="searchTeams()">🔍 Search</button>
+                </div>
+            </div>
+
+	    <!-- Action Buttons (MOVED TO TOP) -->
+            <div class="actions" style="margin-top: 20px; margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="saveSelection()">💾 Save Configuration</button>
+                <button class="btn btn-secondary" onclick="resetSelection()">🗑️ Clear All</button>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters" id="filtersSection" style="display: none;">
+                <div class="filter-group">
+                    <label for="conferenceFilter">Conference</label>
+                    <select id="conferenceFilter" onchange="applyFilters()">
+                        <option value="">All Conferences</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="divisionFilter">Division</label>
+                    <select id="divisionFilter" onchange="applyFilters()">
+                        <option value="">All Divisions</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Teams Grid -->
+            <div id="teamsContainer">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading teams...</p>
+                </div>
+            </div>
+
+            <!-- Anti-Spoiler Section -->
+            <div class="anti-spoiler">
+                <h3>🙈 Per-Team Anti-Spoiler</h3>
+                <p style="color: #718096; font-size: 0.9rem; margin-bottom: 10px;">
+                    Toggle the 🙈 Hide button on individual teams to enable anti-spoiler mode. Games where these teams play will be completely hidden from the display.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let allTeams = {};
+        let selectedTeams = new Set();
+        let antiSpoilerTeams = new Set();
+        let currentLeague = 'nfl';
+        let currentTeams = [];
+	let displayedTeams = [];
+        let soccerTeams = {};
+        let soccerLoaded = false;
+        let selectedSoccerLeague = 'all';  // Track selected league filter
+        let expandedCategories = new Set(['us_professional']); // Track expanded categories
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Load saved selections FIRST (before team data)
+            await loadSavedSelections();
+            // Then load team data (which will use the loaded selections)
+            await loadTeamData();
+            // Load soccer in background (don't block) - tab shows immediately
+            loadSoccerTeams();
+        });
+
+        // Load saved selections FIRST
+        async function loadSavedSelections() {
+            try {
+                const response = await fetch('/api/teams/saved');
+                const data = await response.json();
+
+                console.log('Loaded saved selections:', data);
+
+                if (data.teams) {
+                    selectedTeams = new Set(data.teams);
+                }
+
+                if (data.anti_spoiler_teams) {
+                    antiSpoilerTeams = new Set(data.anti_spoiler_teams);
+                }
+
+                console.log('Selected teams:', Array.from(selectedTeams));
+                console.log('Anti-spoiler teams:', Array.from(antiSpoilerTeams));
+            } catch (error) {
+                console.error('Error loading saved selections:', error);
+            }
+        }
+
+        // Load team data from API
+        async function loadTeamData() {
+            try {
+                const response = await fetch('/api/teams/all');
+                const data = await response.json();
+                allTeams = data;
+
+                initializeLeagueTabs();
+                loadKCFavorites();
+                loadLeague('nfl');
+                updateStats();
+            } catch (error) {
+                console.error('Error loading team data:', error);
+                document.getElementById('teamsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error loading teams</h3>
+                        <p>Please check console for details</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load soccer teams from API
+        async function loadSoccerTeams() {
+            try {
+                console.log('Fetching soccer teams...');
+                const response = await fetch('/api/teams/soccer');
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    soccerTeams = result.data;
+                    soccerLoaded = true;
+                    console.log('Soccer teams loaded:', soccerTeams);
+                    // Tab already added in initializeLeagueTabs
+                    return true;
+                } else {
+                    console.error('Failed to load soccer teams:', result.message);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error loading soccer teams:', error);
+                return false;
+            }
+        }
+
+        // Add soccer tab to league tabs
+        function addSoccerToLeagueTabs() {
+            const tabsContainer = document.getElementById('leagueTabs');
+            if (document.querySelector('[onclick*="switchToSoccer"]')) {
+                return;
+            }
+            const soccerTab = document.createElement('div');
+            soccerTab.className = 'league-tab';
+            soccerTab.onclick = () => switchToSoccer();
+            soccerTab.textContent = 'SOCCER';
+            tabsContainer.appendChild(soccerTab);
+        }
+
+        // Switch to soccer view
+        async function switchToSoccer() {
+            currentLeague = 'soccer';
+            if (!soccerLoaded) {
+                const loaded = await loadSoccerTeams();
+                if (!loaded) {
+                    document.getElementById('teamsContainer').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">⚠️</div>
+                            <h3>Error loading soccer teams</h3>
+                            <p>Please try again later</p>
+                        </div>
+                    `;
+                    return;
+                }
+            }
+            
+            // Update active tab
+            document.querySelectorAll('.league-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Hide NFL-style filters, show soccer filters
+            showSoccerFilters();
+            
+            // Display soccer teams
+            displaySoccerTeams();
+        }
+
+        // Show soccer-specific filters
+        function showSoccerFilters() {
+            // Hide the NFL/NCAA conference filters
+            const filtersSection = document.getElementById('filtersSection');
+            filtersSection.style.display = 'none';
+            
+            // Create or show soccer filter section
+            let soccerFilters = document.getElementById('soccerFilters');
+            if (!soccerFilters) {
+                soccerFilters = document.createElement('div');
+                soccerFilters.id = 'soccerFilters';
+                soccerFilters.className = 'filters';
+                soccerFilters.style.marginBottom = '25px';
+                
+                // Get all available leagues
+                const categories = Object.keys(soccerTeams).filter(k => k !== '_metadata');
+                const allLeagues = [];
+                categories.forEach(catKey => {
+                    const cat = soccerTeams[catKey];
+                    if (cat.leagues) {
+                        Object.keys(cat.leagues).forEach(slug => {
+                            allLeagues.push({
+                                slug: slug,
+                                name: cat.leagues[slug].league_name
+                            });
+                        });
+                    }
+                });
+                
+                soccerFilters.innerHTML = `
+                    <div class="filter-group">
+                        <label for="soccerLeagueFilter">League Filter</label>
+                        <select id="soccerLeagueFilter" onchange="filterSoccerByLeague(this.value)">
+                            <option value="all">All Leagues (${allLeagues.length})</option>
+                            <option value="us">US Leagues Only (MLS, NWSL, NCAA)</option>
+                            <option value="european">European Leagues Only</option>
+                            <option value="professional" selected>Professional Only (No NCAA)</option>
+                            ${allLeagues.map(l => `<option value="${l.slug}">${l.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="soccerCategoryExpand">View Options</label>
+                        <select id="soccerCategoryExpand" onchange="toggleAllCategories(this.value)">
+                            <option value="collapse">Collapse All Categories</option>
+                            <option value="expand">Expand All Categories</option>
+                            <option value="professional" selected>Professional Only (Default)</option>
+                        </select>
+                    </div>
+                `;
+                
+                // Insert after search section
+                const searchSection = document.querySelector('.search-section');
+                searchSection.after(soccerFilters);
+            }
+            soccerFilters.style.display = 'flex';
+            
+            // Set default to professional only
+            selectedSoccerLeague = 'professional';
+            expandedCategories.clear();
+            expandedCategories.add('us_professional');
+            expandedCategories.add('europe___top_5');
+            expandedCategories.add('european_cups');
+        }
+
+        // Filter soccer by league
+        function filterSoccerByLeague(filterValue) {
+            selectedSoccerLeague = filterValue;
+            displaySoccerTeams();
+        }
+
+        // Toggle all categories
+        function toggleAllCategories(action) {
+            const categories = Object.keys(soccerTeams).filter(k => k !== '_metadata');
+            
+            if (action === 'expand') {
+                categories.forEach(cat => expandedCategories.add(cat));
+            } else if (action === 'collapse') {
+                expandedCategories.clear();
+            } else if (action === 'professional') {
+                expandedCategories.clear();
+                expandedCategories.add('us_professional');
+                expandedCategories.add('europe___top_5');
+                expandedCategories.add('european_cups');
+                selectedSoccerLeague = 'professional';
+                document.getElementById('soccerLeagueFilter').value = 'professional';
+            }
+            
+            displaySoccerTeams();
+        }
+
+        // Toggle category expansion
+        function toggleCategory(categoryKey) {
+            if (expandedCategories.has(categoryKey)) {
+                expandedCategories.delete(categoryKey);
+            } else {
+                expandedCategories.add(categoryKey);
+            }
+            displaySoccerTeams();
+        }
+
+        // Display soccer teams with filtering
+        function displaySoccerTeams() {
+            const container = document.getElementById('teamsContainer');
+            const categories = Object.keys(soccerTeams).filter(k => k !== '_metadata');
+            
+            if (categories.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚽</div>
+                        <h3>No soccer leagues configured</h3>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div style="display: flex; flex-direction: column; gap: 20px;">';
+            let totalTeams = 0;
+            let visibleTeams = 0;
+            
+            categories.forEach(categoryKey => {
+                const categoryData = soccerTeams[categoryKey];
+                const categoryName = categoryData.category;
+                const leagues = categoryData.leagues;
+                
+                // Apply league filter
+                let filteredLeagues = {};
+                Object.keys(leagues).forEach(slug => {
+                    const league = leagues[slug];
+                    let include = false;
+                    
+                    if (selectedSoccerLeague === 'all') {
+                        include = true;
+                    } else if (selectedSoccerLeague === 'us') {
+                        include = slug.startsWith('usa.');
+                    } else if (selectedSoccerLeague === 'european') {
+                        include = !slug.startsWith('usa.');
+                    } else if (selectedSoccerLeague === 'professional') {
+                        include = !slug.includes('ncaa');
+                    } else if (selectedSoccerLeague === slug) {
+                        include = true;
+                    }
+                    
+                    if (include) {
+                        filteredLeagues[slug] = league;
+                    }
+                });
+                
+                if (Object.keys(filteredLeagues).length === 0) {
+                    return; // Skip this category if no leagues match filter
+                }
+                
+                // Count teams in this category
+                const categoryTeamCount = Object.values(filteredLeagues).reduce((sum, l) => sum + l.teams.length, 0);
+                totalTeams += categoryTeamCount;
+                
+                const isExpanded = expandedCategories.has(categoryKey);
+                const expandIcon = isExpanded ? '▼' : '▶';
+                
+                html += `
+                    <div style="background: #f7fafc; padding: 15px; border-radius: 10px; border: 2px solid ${isExpanded ? '#667eea' : '#e2e8f0'};">
+                        <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin-bottom: ${isExpanded ? '15px' : '0'};"
+                             onclick="toggleCategory('${categoryKey}')">
+                            <h3 style="color: #2d3748; font-size: 18px; margin: 0;">
+                                <span style="display: inline-block; width: 20px;">${expandIcon}</span>
+                                ⚽ ${categoryName}
+                                <span style="color: #718096; font-size: 14px; font-weight: normal;">
+                                    (${categoryTeamCount} teams)
+                                </span>
+                            </h3>
+                            <span style="color: #667eea; font-size: 14px; font-weight: 600;">
+                                Click to ${isExpanded ? 'collapse' : 'expand'}
+                            </span>
+                        </div>
+                `;
+                
+                if (isExpanded) {
+                    Object.keys(filteredLeagues).forEach(leagueSlug => {
+                        const leagueData = filteredLeagues[leagueSlug];
+                        const leagueName = leagueData.league_name;
+                        const teams = leagueData.teams;
+                        visibleTeams += teams.length;
+                        
+                        html += `
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #4a5568; margin-bottom: 10px; font-size: 15px; padding-left: 25px;">
+                                    ${leagueName} (${teams.length} teams)
+                                </h4>
+                                <div class="teams-grid">
+                        `;
+                        
+                        teams.forEach(team => {
+                            const teamId = `SOCCER_${team.abbreviation}`;  // Simple format to match API
+                            const isSelected = selectedTeams.has(teamId);
+                            const isAntiSpoiler = antiSpoilerTeams.has(teamId);
+                            
+                            html += `
+                                <div class="team-card ${isSelected ? 'selected' : ''}"
+                                     onclick="toggleSoccerTeam('${leagueSlug}', '${team.abbreviation}')">
+                                    <input type="checkbox" id="team_${teamId}"
+                                           ${isSelected ? 'checked' : ''}
+                                           onclick="toggleSoccerTeam('${leagueSlug}', '${team.abbreviation}'); event.stopPropagation()">
+                                    <div class="team-info">
+                                        <div class="team-name">${team.short_name}</div>
+                                        <div class="team-details">${team.abbreviation}</div>
+                                    </div>
+                                    ${isSelected ? `
+                                        <div class="anti-spoiler-toggle ${isAntiSpoiler ? 'active' : ''}"
+                                             onclick="toggleSoccerAntiSpoiler('${leagueSlug}', '${team.abbreviation}', event)">
+                                            <input type="checkbox" ${isAntiSpoiler ? 'checked' : ''}
+                                                   onclick="toggleSoccerAntiSpoiler('${leagueSlug}', '${team.abbreviation}', event); event.stopPropagation()">
+                                            <span>🙈</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        });
+                        
+                        html += '</div></div>';
+                    });
+                }
+                
+                html += '</div>';
+            });
+            
+            html += `
+                <div style="text-align: center; color: #718096; padding: 15px; background: #f7fafc; border-radius: 8px;">
+                    <strong>Total:</strong> ${visibleTeams} teams shown (${totalTeams} total in filter)
+                    ${selectedSoccerLeague !== 'all' && selectedSoccerLeague !== 'professional' ? '<br><em>Use "All Leagues" filter to see all 600+ teams</em>' : ''}
+                </div>
+            `;
+            
+            html += '</div>';
+            container.innerHTML = html;
+            updateStats();
+        }
+
+        // Toggle soccer team selection
+        function toggleSoccerTeam(leagueSlug, teamAbbr) {
+            const teamId = `SOCCER_${teamAbbr}`;  // Simple format to match API
+            const checkbox = document.getElementById(`team_${teamId}`);
+            
+            if (selectedTeams.has(teamId)) {
+                selectedTeams.delete(teamId);
+                antiSpoilerTeams.delete(teamId);
+                if (checkbox) checkbox.checked = false;
+            } else {
+                selectedTeams.add(teamId);
+                if (checkbox) checkbox.checked = true;
+            }
+            
+            updateStats();
+            displaySoccerTeams();
+        }
+
+        // Toggle anti-spoiler for soccer
+        function toggleSoccerAntiSpoiler(leagueSlug, teamAbbr, event) {
+            event.stopPropagation();
+            const teamId = `SOCCER_${teamAbbr}`;  // Simple format to match API
+            
+            if (antiSpoilerTeams.has(teamId)) {
+                antiSpoilerTeams.delete(teamId);
+            } else {
+                antiSpoilerTeams.add(teamId);
+            }
+            
+            displaySoccerTeams();
+        }
+
+        // Initialize league tabs
+        function initializeLeagueTabs() {
+            const leagues = Object.keys(allTeams).filter(k => k !== 'kc_favorites' && k !== '_metadata');
+            const tabsHtml = leagues.map(league => `
+                <div class="league-tab ${league === 'nfl' ? 'active' : ''}"
+                     onclick="switchLeague('${league}')">
+                    ${league.toUpperCase()}
+                </div>
+            `).join('');
+
+            document.getElementById('leagueTabs').innerHTML = tabsHtml + '<div class="league-tab" onclick="switchToSoccer()">SOCCER</div>';
+        }
+
+        // Load KC Favorites
+        function loadKCFavorites() {
+            const favorites = allTeams.kc_favorites?.teams || [];
+
+            const html = favorites.map(fav => {
+                const teamId = `${fav.league.toUpperCase()}_${fav.team_id}`;
+                const isSelected = selectedTeams.has(teamId);
+                const isAntiSpoiler = antiSpoilerTeams.has(teamId);
+
+                return `
+                    <div class="kc-favorite-card ${isSelected ? 'selected' : ''}"
+                         onclick="toggleKCFavorite('${fav.league}', '${fav.team_id}')">
+                        <input type="checkbox"
+                               id="kc_${teamId}"
+                               ${isSelected ? 'checked' : ''}
+                               onclick="event.stopPropagation()">
+                        <label for="kc_${teamId}">${fav.display} (${fav.league})</label>
+                        ${isSelected ? `
+                            <div class="anti-spoiler-toggle ${isAntiSpoiler ? 'active' : ''}"
+                                 style="margin-left: auto;"
+                                 onclick="toggleAntiSpoiler('${fav.league}', '${fav.team_id}', event)">
+                                <input type="checkbox"
+                                       ${isAntiSpoiler ? 'checked' : ''}
+                                       onclick="toggleAntiSpoiler('${fav.league}', '${fav.team_id}', event); event.stopPropagation()">
+                                <span>🙈</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('kcFavorites').innerHTML = html;
+        }
+
+        // Toggle KC Favorite
+        function toggleKCFavorite(league, teamId) {
+            const fullId = `${league.toUpperCase()}_${teamId}`;
+            const checkbox = document.getElementById(`kc_${fullId}`);
+
+            if (selectedTeams.has(fullId)) {
+                selectedTeams.delete(fullId);
+                antiSpoilerTeams.delete(fullId); // Also remove from anti-spoiler
+                checkbox.checked = false;
+            } else {
+                selectedTeams.add(fullId);
+                checkbox.checked = true;
+            }
+
+            updateStats();
+            loadKCFavorites();
+
+            // Reload current league to update selection
+            if (currentLeague === league) {
+                loadLeague(league);
+            }
+        }
+
+        // Switch league
+        function switchLeague(league) {
+            currentLeague = league;
+
+            // Update active tab
+            document.querySelectorAll('.league-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            loadLeague(league);
+        }
+
+        // Load league teams
+        function loadLeague(league) {
+            currentLeague = league;
+            const leagueData = allTeams[league];
+
+            if (!leagueData || !leagueData.teams) {
+                document.getElementById('teamsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📦</div>
+                        <h3>No teams found</h3>
+                    </div>
+                `;
+                return;
+            }
+
+            currentTeams = leagueData.teams;
+
+            // Show/hide filters based on league
+            const hasConference = currentTeams.some(t => t.conference);
+            document.getElementById('filtersSection').style.display = hasConference ? 'flex' : 'none';
+
+            if (hasConference) {
+                populateFilters();
+            }
+
+            applyFilters();
+        }
+
+        // Populate conference/division filters
+        function populateFilters() {
+            const conferences = [...new Set(currentTeams.map(t => t.conference).filter(Boolean))];
+            const divisions = [...new Set(currentTeams.map(t => t.division).filter(Boolean))];
+
+            document.getElementById('conferenceFilter').innerHTML =
+                '<option value="">All Conferences</option>' +
+                conferences.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            document.getElementById('divisionFilter').innerHTML =
+                '<option value="">All Divisions</option>' +
+                divisions.map(d => `<option value="${d}">${d}</option>`).join('');
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const conference = document.getElementById('conferenceFilter').value;
+            const division = document.getElementById('divisionFilter').value;
+
+            let filtered = currentTeams;
+
+            if (conference) {
+                filtered = filtered.filter(t => t.conference === conference);
+            }
+
+            if (division) {
+                filtered = filtered.filter(t => t.division === division);
+            }
+
+            renderTeams(filtered);
+        }
+
+        // Render teams
+        function renderTeams(teams) {
+	    displayedTeams = teams;
+            const html = teams.map(team => {
+                const teamId = `${currentLeague.toUpperCase()}_${team.id}`;
+                const isSelected = selectedTeams.has(teamId);
+                const isAntiSpoiler = antiSpoilerTeams.has(teamId);
+
+                return `
+                    <div class="team-card ${isSelected ? 'selected' : ''}"
+                         onclick="toggleTeam('${currentLeague}', '${team.id}')">
+                        <input type="checkbox" id="team_${teamId}" ${isSelected ? "checked" : ""} onclick="toggleTeam('${currentLeague}', '${team.id}'); event.stopPropagation();">
+                        <div class="team-info">
+                            <div class="team-name">${team.display_name}</div>
+                            <div class="team-details">
+                                ${team.location} • ${team.conference || ''} ${team.division || ''}
+                            </div>
+                        </div>
+                        ${isSelected ? `
+                            <div class="anti-spoiler-toggle ${isAntiSpoiler ? 'active' : ''}"
+                                 onclick="toggleAntiSpoiler('${currentLeague}', '${team.id}', event)">
+                                <input type="checkbox"
+                                       ${isAntiSpoiler ? 'checked' : ''}
+                                       onclick="toggleAntiSpoiler('${currentLeague}', '${team.id}', event); event.stopPropagation()">
+                                <span>🙈 Hide</span>
+                            </div>
+                        ` : ''}
+                        <div class="team-color-indicator"
+                             style="background: ${team.primary_color}"></div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('teamsContainer').innerHTML =
+                html || '<div class="empty-state"><div class="empty-state-icon">📦</div><h3>No teams match your filters</h3></div>';
+        }
+
+
+        // Toggle team selection
+        function toggleTeam(league, teamId) {
+            const fullId = `${league.toUpperCase()}_${teamId}`;
+            const checkbox = document.getElementById(`team_${fullId}`);
+
+            if (selectedTeams.has(fullId)) {
+                selectedTeams.delete(fullId);
+                antiSpoilerTeams.delete(fullId); // Also remove from anti-spoiler
+                checkbox.checked = false;
+            } else {
+                selectedTeams.add(fullId);
+                checkbox.checked = true;
+            }
+
+            updateStats();
+            applyFilters();
+            loadKCFavorites();
+        }
+
+
+        // Toggle anti-spoiler for a team
+        function toggleAntiSpoiler(league, teamId, event) {
+            console.log('toggleAntiSpoiler called!', league, teamId)
+            event.stopPropagation();
+            const fullId = `${league.toUpperCase()}_${teamId}`;
+
+            if (antiSpoilerTeams.has(fullId)) {
+                antiSpoilerTeams.delete(fullId);
+            } else {
+                antiSpoilerTeams.add(fullId);
+            }
+
+            renderTeams(currentTeams);
+            loadKCFavorites();
+        }
+
+
+        // Search teams
+        function searchTeams() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+
+            if (!query) {
+                loadLeague(currentLeague);
+                return;
+            }
+
+            const filtered = currentTeams.filter(team =>
+                team.name.toLowerCase().includes(query) ||
+                team.display_name.toLowerCase().includes(query) ||
+                team.location.toLowerCase().includes(query) ||
+                team.abbreviation.toLowerCase().includes(query)
+            );
+
+            renderTeams(filtered);
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('totalTeams').textContent =
+                Object.values(allTeams).reduce((sum, league) =>
+                    sum + (league.teams ? league.teams.length : 0), 0);
+
+            document.getElementById('selectedCount').textContent = selectedTeams.size;
+
+            document.getElementById('leagueCount').textContent =
+                Object.keys(allTeams).filter(k => k !== 'kc_favorites' && k !== '_metadata').length;
+        }
+
+        // Save selection
+        async function saveSelection() {
+            const selection = {
+                teams: Array.from(selectedTeams),
+                anti_spoiler_teams: Array.from(antiSpoilerTeams)
+            };
+
+            console.log('Saving selection:', selection);
+
+            try {
+                const response = await fetch('/api/teams/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(selection)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Save response:', data);
+                    
+                    const successMsg = document.getElementById('successMessage');
+                    successMsg.textContent = `✓ Saved ${data.selected_count} teams (${data.anti_spoiler_count} with anti-spoiler)`;
+                    successMsg.classList.add('show');
+                    setTimeout(() => successMsg.classList.remove('show'), 5000);
+                } else {
+                    alert('Error saving. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error saving selection:', error);
+                alert('Error saving selection. Please try again.');
+            }
+        }
+
+        // Reset selection
+        function resetSelection() {
+            if (confirm('Are you sure you want to clear all selections?')) {
+                selectedTeams.clear();
+                antiSpoilerTeams.clear();
+                
+                // Save the empty selection
+                saveSelection();
+                
+                // Refresh UI
+                updateStats();
+                loadLeague(currentLeague);
+                loadKCFavorites();
+            }
+        }
+
+        // Search on Enter key
+        document.getElementById('searchInput').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                searchTeams();
+            }
+        });
+    </script>
+</body>
+</html>
