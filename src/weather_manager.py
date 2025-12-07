@@ -264,13 +264,10 @@ class WeatherManager:
         # Check if we need to update based on time or if we have no data
         if (not self.weather_data or 
             current_time - self.last_update > update_interval):
-            # Check if data has changed before fetching
-            current_state = self._get_weather_state()
-            if current_state and not self.cache_manager.has_data_changed('weather', current_state):
-                if current_time - self._last_weather_log_time > log_throttle_interval:
-                    print("Weather data hasn't changed, using existing data")
-                    self._last_weather_log_time = current_time
-                return self.weather_data
+            # Time to fetch fresh data from the API
+            if current_time - self._last_weather_log_time > log_throttle_interval:
+                print("Weather update interval reached, fetching fresh data")
+                self._last_weather_log_time = current_time
             self._fetch_weather()
         return self.weather_data
 
