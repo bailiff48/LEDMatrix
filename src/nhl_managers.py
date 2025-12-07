@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -29,8 +29,11 @@ class BaseNHLManager(Hockey):
     _last_warning_time = 0
     _warning_cooldown = 60  # Only log warnings once per minute
     _shared_data = None
+    _SHARED_DATA_MAX_AGE = 120  # Clear shared data after 2 minutes
     _last_shared_update = 0
-    _processed_games_cache = {}  # Cache for processed game data
+    _processed_games_cache = {}
+    _MAX_PROCESSED_CACHE = 20  # Limit to prevent memory leaks  # Cache for processed game data
+    _cache_clear_time = 0  # Track when cache was last cleared
     _processed_games_timestamp = 0
     
     def __init__(self, config: Dict[str, Any], display_manager: DisplayManager, cache_manager: CacheManager):
@@ -39,9 +42,9 @@ class BaseNHLManager(Hockey):
        
         # Check display modes to determine what data to fetch
         display_modes = self.mode_config.get("display_modes", {})
-        self.recent_enabled = display_modes.get("ncaam_hockey_recent", False)
-        self.upcoming_enabled = display_modes.get("ncaam_hockey_upcoming", False)
-        self.live_enabled = display_modes.get("ncaam_hockey_live", False)
+        self.recent_enabled = display_modes.get("nhl_recent", False)
+        self.upcoming_enabled = display_modes.get("nhl_upcoming", False)
+        self.live_enabled = display_modes.get("nhl_live", False)
         self.league = "nhl"
 
         self.logger.info(f"Initialized NHL manager with display dimensions: {self.display_width}x{self.display_height}")
@@ -57,7 +60,9 @@ class BaseNHLManager(Hockey):
         season_year = now.year
         if now.month < 8:
             season_year = now.year - 1
-        datestring = f"{season_year}0901-{season_year+1}0801"
+        start_date = (now - timedelta(days=15)).strftime("%Y%m%d")
+        end_date = (now + timedelta(days=15)).strftime("%Y%m%d")
+        datestring = f"{start_date}-{end_date}"
         cache_key = f"nhl_schedule_{season_year}"
 
         # Check cache first
@@ -103,7 +108,7 @@ class BaseNHLManager(Hockey):
             year=season_year,
             url=ESPN_NHL_SCOREBOARD_URL,
             cache_key=cache_key,
-            params={"dates": datestring, "limit": 1000},
+            params={"dates": datestring, "limit": 500},
             headers=self.headers,
             timeout=timeout,
             max_retries=max_retries,

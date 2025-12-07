@@ -92,7 +92,7 @@ class ESPNDataSource(DataSource):
             url = f"{self.base_url}/{sport}/{league}/scoreboard"
             
             params = {
-                'dates': f"{start_date.strftime('%Y%m%d')}-{end_date.strftime('%Y%m%d')}",
+                'dates': end_date.strftime('%Y%m%d'),
                 "limit": 1000
             }
             

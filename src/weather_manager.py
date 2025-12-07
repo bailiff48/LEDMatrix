@@ -202,21 +202,36 @@ class WeatherManager:
         if not forecast_data:
             return
 
-        # Process hourly forecast (next 5 hours)
-        hourly_list = forecast_data.get('hourly', [])[:5]  # Get next 5 hours
+        # Process hourly forecast - filter based on CURRENT time, not cache time
+        # This ensures we always show hours from NOW forward, not from when data was cached
+        hourly_list = forecast_data.get('hourly', [])
         self.hourly_forecast = []
         
+        current_timestamp = time.time()
+        hours_shown = 0
+        max_hours = 5  # Show next 5 hours
+        
         for hour_data in hourly_list:
-            dt = datetime.fromtimestamp(hour_data['dt'])
-            temp = round(hour_data['temp'])
-            condition = hour_data['weather'][0]['main']
-            icon_code = hour_data['weather'][0]['icon']
-            self.hourly_forecast.append({
-                'hour': dt.strftime('%I:00 %p').lstrip('0'),  # Format as "2:00 PM"
-                'temp': temp,
-                'condition': condition,
-                'icon': icon_code
-            })
+            # Only include hours that are in the future (or within current hour)
+            hour_timestamp = hour_data['dt']
+            
+            # Allow hours that are within the past 30 minutes (current hour)
+            # or any future hours
+            if hour_timestamp >= current_timestamp - 1800:  # 30 min grace
+                dt = datetime.fromtimestamp(hour_timestamp)
+                temp = round(hour_data['temp'])
+                condition = hour_data['weather'][0]['main']
+                icon_code = hour_data['weather'][0]['icon']
+                self.hourly_forecast.append({
+                    'hour': dt.strftime('%I:00 %p').lstrip('0'),  # Format as "2:00 PM"
+                    'temp': temp,
+                    'condition': condition,
+                    'icon': icon_code,
+                    'timestamp': hour_timestamp  # Store for debugging
+                })
+                hours_shown += 1
+                if hours_shown >= max_hours:
+                    break
 
         # Process daily forecast
         daily_list = forecast_data.get('daily', [])[1:4]  # Skip today (index 0) and get next 3 days

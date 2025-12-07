@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED Ticker WiFi Setup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .status-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            color: #1976d2;
+        }
+
+        .status-success {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            color: #2e7d32;
+        }
+
+        .status-error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+        }
+
+        .status-loading {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            color: #e65100;
+        }
+
+        .scan-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease;
+        }
+
+        .scan-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .scan-button:active {
+            transform: translateY(0);
+        }
+
+        .scan-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .networks-list {
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .network-item {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .network-item:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .network-item.selected {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+
+        .network-name {
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .network-security {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .signal-bars {
+            display: flex;
+            gap: 2px;
+            align-items: flex-end;
+        }
+
+        .signal-bar {
+            width: 4px;
+            background: #ddd;
+            border-radius: 2px;
+        }
+
+        .signal-bar.active {
+            background: #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .connect-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .connect-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .connect-button:active {
+            transform: translateY(0);
+        }
+
+        .connect-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .manual-entry {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .manual-entry-toggle {
+            text-align: center;
+            color: #667eea;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .manual-entry-form {
+            display: none;
+        }
+
+        .manual-entry-form.visible {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .icon {
+            font-size: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 LED Ticker Setup</h1>
+            <p>Connect to your WiFi network</p>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <button class="scan-button" onclick="scanNetworks()">
+            <span id="scan-text">🔍 Scan for Networks</span>
+        </button>
+
+        <div id="networks-list" class="networks-list"></div>
+
+        <div id="password-section" style="display: none;">
+            <form onsubmit="connectToNetwork(event)">
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="Enter WiFi password"
+                        autocomplete="off"
+                    >
+                </div>
+                <button type="submit" class="connect-button" id="connect-button">
+                    Connect to Network
+                </button>
+            </form>
+        </div>
+
+        <div class="manual-entry">
+            <div class="manual-entry-toggle" onclick="toggleManualEntry()">
+                ⚙️ Enter network manually
+            </div>
+            <div class="manual-entry-form" id="manual-entry-form">
+                <form onsubmit="connectManually(event)">
+                    <div class="form-group">
+                        <label for="manual-ssid">Network Name (SSID)</label>
+                        <input 
+                            type="text" 
+                            id="manual-ssid" 
+                            placeholder="Enter network name"
+                            autocomplete="off"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="manual-password">Password</label>
+                        <input 
+                            type="password" 
+                            id="manual-password" 
+                            placeholder="Enter password (leave blank for open networks)"
+                            autocomplete="off"
+                        >
+                    </div>
+                    <button type="submit" class="connect-button">
+                        Connect to Network
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedSSID = null;
+        let selectedNetwork = null;
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status status-${type}`;
+            statusEl.style.display = 'block';
+        }
+
+        function hideStatus() {
+            document.getElementById('status').style.display = 'none';
+        }
+
+        function createSignalBars(strength) {
+            const bars = 4;
+            const activeBars = Math.ceil((strength / 100) * bars);
+            let html = '<div class="signal-bars">';
+            for (let i = 0; i < bars; i++) {
+                const height = (i + 1) * 3 + 5;
+                const active = i < activeBars ? 'active' : '';
+                html += `<div class="signal-bar ${active}" style="height: ${height}px;"></div>`;
+            }
+            html += '</div>';
+            return html;
+        }
+
+        async function scanNetworks() {
+            const scanButton = document.querySelector('.scan-button');
+            const scanText = document.getElementById('scan-text');
+            
+            scanButton.disabled = true;
+            scanText.innerHTML = '<span class="spinner"></span>Scanning...';
+            showStatus('Scanning for WiFi networks...', 'loading');
+
+            try {
+                const response = await fetch('/api/wifi/scan');
+                const data = await response.json();
+
+                if (data.success && data.networks) {
+                    displayNetworks(data.networks);
+                    hideStatus();
+                    if (data.networks.length === 0) {
+                        showStatus('No networks found. Try scanning again.', 'info');
+                    }
+                } else {
+                    showStatus('Failed to scan networks. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Scan error:', error);
+                showStatus('Error scanning networks. Please try again.', 'error');
+            } finally {
+                scanButton.disabled = false;
+                scanText.textContent = '🔍 Scan for Networks';
+            }
+        }
+
+        function displayNetworks(networks) {
+            const listEl = document.getElementById('networks-list');
+            
+            if (networks.length === 0) {
+                listEl.innerHTML = '<p style="text-align: center; color: #666;">No networks found</p>';
+                return;
+            }
+
+            listEl.innerHTML = networks.map(network => `
+                <div class="network-item" onclick="selectNetwork('${network.ssid}', ${network.encrypted})">
+                    <div>
+                        <div class="network-name">
+                            ${network.encrypted ? '🔒' : '📡'} ${network.ssid}
+                        </div>
+                        <div class="network-security">
+                            ${network.security || 'Open Network'}
+                        </div>
+                    </div>
+                    ${createSignalBars(network.signal)}
+                </div>
+            `).join('');
+        }
+
+        function selectNetwork(ssid, encrypted) {
+            selectedSSID = ssid;
+            
+            // Update UI
+            document.querySelectorAll('.network-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+
+            // Show password section if needed
+            const passwordSection = document.getElementById('password-section');
+            if (encrypted) {
+                passwordSection.style.display = 'block';
+                document.getElementById('password').focus();
+            } else {
+                passwordSection.style.display = 'none';
+                // For open networks, connect immediately
+                connectToNetwork(null);
+            }
+        }
+
+        async function connectToNetwork(event) {
+            if (event) event.preventDefault();
+
+            if (!selectedSSID) {
+                showStatus('Please select a network first', 'error');
+                return;
+            }
+
+            const password = document.getElementById('password').value;
+            const connectButton = document.getElementById('connect-button');
+
+            connectButton.disabled = true;
+            connectButton.innerHTML = '<span class="spinner"></span>Connecting...';
+            showStatus(`Connecting to ${selectedSSID}...`, 'loading');
+
+            try {
+                const response = await fetch('/api/wifi/connect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ssid: selectedSSID,
+                        password: password || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus(`✅ ${data.message}`, 'success');
+                    setTimeout(() => {
+                        showStatus('Setup complete! The ticker will now restart.', 'success');
+                    }, 2000);
+                    
+                    // Reload after a delay to show the new connection
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 5000);
+                } else {
+                    showStatus(`❌ ${data.message}`, 'error');
+                    connectButton.disabled = false;
+                    connectButton.textContent = 'Connect to Network';
+                }
+            } catch (error) {
+                console.error('Connection error:', error);
+                showStatus('Connection failed. Please check the password and try again.', 'error');
+                connectButton.disabled = false;
+                connectButton.textContent = 'Connect to Network';
+            }
+        }
+
+        function toggleManualEntry() {
+            const form = document.getElementById('manual-entry-form');
+            form.classList.toggle('visible');
+        }
+
+        async function connectManually(event) {
+            event.preventDefault();
+
+            const ssid = document.getElementById('manual-ssid').value.trim();
+            const password = document.getElementById('manual-password').value;
+
+            if (!ssid) {
+                showStatus('Please enter a network name', 'error');
+                return;
+            }
+
+            showStatus(`Connecting to ${ssid}...`, 'loading');
+            event.target.querySelector('button').disabled = true;
+
+            try {
+                const response = await fetch('/api/wifi/connect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ssid: ssid,
+                        password: password || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus(`✅ ${data.message}`, 'success');
+                    setTimeout(() => {
+                        showStatus('Setup complete! The ticker will now restart.', 'success');
+                    }, 2000);
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 5000);
+                } else {
+                    showStatus(`❌ ${data.message}`, 'error');
+                    event.target.querySelector('button').disabled = false;
+                }
+            } catch (error) {
+                console.error('Connection error:', error);
+                showStatus('Connection failed. Please try again.', 'error');
+                event.target.querySelector('button').disabled = false;
+            }
+        }
+
+        // Auto-scan on page load
+        window.addEventListener('load', () => {
+            setTimeout(scanNetworks, 500);
+        });
+    </script>
+</body>
+</html>

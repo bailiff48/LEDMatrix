@@ -730,10 +730,127 @@
             background: rgba(231, 76, 60, 0.9);
             color: white;
         }
+
+        /* WiFi Tab Styles */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.connected {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .status-badge.disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .status-badge.connecting {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .network-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .network-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .network-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--secondary-color);
+        }
+
+        .network-item.current {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success-color);
+        }
+
+        .network-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .network-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .network-security {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(139, 149, 161, 0.2);
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .network-signal {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-color);
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        .signal-excellent { color: #10b981; }
+        .signal-good { color: #3b82f6; }
+        .signal-fair { color: #f59e0b; }
+        .signal-poor { color: #ef4444; }
+
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .loading-state i {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+/* Duration Toggle Styles */
+.duration-toggle-switch input:checked + .duration-slider { background-color: #667eea; }
+.duration-slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+.duration-toggle-switch input:checked + .duration-slider:before { transform: translateX(26px); }
+.duration-input:disabled { background-color: #e2e8f0 !important; cursor: not-allowed !important; opacity: 0.6; }
+.duration-input:disabled + label { opacity: 0.6; }
     </style>
 </head>
 <body>
     <div class="container">
+    <!-- Team Selection Button -->
+    <div style="margin: 20px 0;">
+        <a href="/team-selector" style="display: inline-flex; align-items: center; gap: 10px; padding: 15px 30px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4); transition: all 0.3s ease;">
+            <i class="fas fa-users"></i> Team Selection
+        </a>
+    </div>
         <!-- Header -->
         <div class="header">
             <h1><i class="fas fa-tv"></i> LED Matrix Control Panel - Enhanced</h1>
@@ -865,6 +982,18 @@
                     </button>
                     <button class="tab-btn" onclick="showTab('stocknews')">
                         <i class="fas fa-newspaper"></i> Stock News
+                    </button>
+                    <button class="tab-btn" onclick="showTab('flights')">
+                        <i class="fas fa-plane"></i> Flights
+                    </button>
+                    <button class="tab-btn" onclick="showTab('golf')">
+                        <i class="fas fa-golf-ball"></i> Golf
+                    </button>
+                    <button class="tab-btn" onclick="showTab('tennis')">
+                        <i class="fas fa-table-tennis"></i> Tennis
+                    </button>
+                    <button class="tab-btn" onclick="showTab('wifi')">
+                        <i class="fas fa-wifi"></i> WiFi
                     </button>
                     <button class="tab-btn" onclick="showTab('odds')">
                         <i class="fas fa-ticket-alt"></i> Odds Ticker
@@ -1175,18 +1304,81 @@
                 </div>
 
                 <!-- Durations Tab -->
-                <div id="durations" class="tab-content">
-                    <div class="config-section">
-                        <h3>Rotation Durations</h3>
-                        <p class="description">How long each screen is shown before switching. Values in seconds.</p>
-                        <form id="durations-form">
-                            <div class="form-row">
-                                {% for key, value in main_config.get('display', {}).get('display_durations', {}).items() %}
-                                <div class="form-group">
-                                    <label for="duration_{{ key }}">{{ key | replace('_', ' ') | title }}</label>
-                                    <input type="number" class="form-control duration-input" id="duration_{{ key }}" data-name="{{ key }}" value="{{ value }}" min="5" max="600">
-                                </div>
-                                {% endfor %}
+        <!-- Durations Tab -->
+        <div id="durations" class="tab-content">
+            <div class="config-section">
+                <h3>Rotation Durations</h3>
+                
+                <!-- Smart/Fixed Mode Toggle -->
+                <div class="duration-mode-selector" style="background: #f8f9fa; border-radius: 10px; padding: 20px; margin-bottom: 30px; border: 2px solid #e2e8f0;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0 0 8px 0; color: #2d3748; font-size: 18px;">
+                                <i class="fas fa-magic"></i> Duration Mode
+                            </h4>
+                            <p id="duration-mode-description" style="margin: 0; color: #718096; font-size: 14px;">
+                                Loading...
+                            </p>
+                        </div>
+                        <label class="duration-toggle-switch" style="position: relative; display: inline-block; width: 60px; height: 34px; margin-left: 20px;">
+                            <input type="checkbox" id="smart-duration-toggle" style="opacity: 0; width: 0; height: 0;">
+                            <span class="duration-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e0; transition: .4s; border-radius: 34px;"></span>
+                        </label>
+                    </div>
+                    
+                <!-- Info Box -->
+                    <div id="smart-mode-info" style="display: none; margin-top: 20px; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #667eea;">
+                        <h5 style="margin: 0 0 10px 0; color: #2d3748; font-size: 14px; font-weight: 600;">
+                            <i class="fas fa-info-circle"></i> How Smart Durations Work
+                        </h5>
+                        <p style="margin: 0 0 8px 0; color: #4a5568; font-size: 13px;">
+                            Display time automatically adapts to content volume:
+                        </p>
+                        <ul style="margin: 0; padding-left: 20px; color: #4a5568; font-size: 13px; line-height: 1.8;">
+                            <li><strong>1 game:</strong> 8 seconds (fast!)</li>
+                            <li><strong>3 games:</strong> 23 seconds (balanced)</li>
+                            <li><strong>10+ games:</strong> Scales up to max below</li>
+                        </ul>
+                        <p style="margin: 10px 0 0 0; color: #4a5568; font-size: 13px;">
+                            Clock & Weather maintain consistent timing.
+                        </p>
+                        
+                        <!-- Max Sport Duration Setting -->
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+                            <label for="max-sport-duration" style="display: block; margin-bottom: 8px; color: #2d3748; font-size: 14px; font-weight: 600;">
+                                <i class="fas fa-stopwatch"></i> Max Sport Display Time (seconds)
+                            </label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="number" id="max-sport-duration" min="30" max="600" step="10" value="90" 
+                                    style="width: 100px; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 14px;">
+                                <span style="color: #718096; font-size: 13px;">
+                                    (30-600 sec, e.g. 180 = 3 min)
+                                </span>
+                                <button type="button" id="save-max-duration-btn" class="btn btn-success" style="padding: 8px 16px; font-size: 13px;">
+                                    Save
+                                </button>
+                            </div>
+                            <p style="margin: 8px 0 0 0; color: #718096; font-size: 12px;">
+                                Maximum time any single sport displays before rotating.
+                            </p>
+                        </div>
+                    </div>
+                
+                <!-- Existing Durations Form -->
+                <p class="description">How long each screen is shown before switching. Values in seconds.</p>
+                <form id="durations-form">
+                    <div class="form-row" id="duration-inputs-container">
+                        {% for key, value in main_config.get('display', {}).get('display_durations', {}).items() %}
+                        <div class="form-group">
+                            <label for="duration_{{ key }}">{{ key | replace('_', ' ') | title }}</label>
+                            <input type="number" class="form-control duration-input" id="duration_{{ key }}" data-name="{{ key }}" >
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-success">Save Durations</button>
+                </form>
+            </div>
+        </div>
                             </div>
                             <button type="submit" class="btn btn-success">Save Durations</button>
                         </form>
@@ -1412,6 +1604,447 @@
                         </form>
                     </div>
                 </div>
+
+                <!-- Flights Tab -->
+                <div id="flights" class="tab-content">
+                    <div class="config-section">
+                        <div style="display:flex; justify-content: space-between; align-items:center;">
+                            <h3>Flight Tracker Configuration</h3>
+                            <div style="display:flex; gap:8px;">
+                                <button type="button" class="btn btn-info" onclick="testFlightConnection()"><i class="fas fa-wifi"></i> Test Connection</button>
+                                <button type="button" class="btn btn-info" onclick="loadFlightStatus()"><i class="fas fa-sync"></i> Refresh Status</button>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>OpenSky Network Setup:</strong><br>
+                            1. Visit <a href="https://opensky-network.org/" target="_blank" style="color: inherit; text-decoration: underline;">OpenSky Network</a><br>
+                            2. Create an account or log in<br>
+                            3. Go to OAuth Settings in your account<br>
+                            4. Create new OAuth credentials<br>
+                            5. Copy the Client ID and Client Secret below
+                        </div>
+
+                        <form id="flights-form">
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="flights_enabled" name="flights_enabled" {% if safe_config_get(main_config, 'flights', 'enabled', default=False) %}checked{% endif %}>
+                                    Enable Flight Tracking
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="flights_client_id">OpenSky Client ID:</label>
+                                <input type="text" class="form-control" id="flights_client_id" name="flights_client_id" value="{{ safe_config_get(main_config, 'flights', 'opensky_client_id', default='') }}" placeholder="Your OAuth Client ID">
+                                <div class="description">OAuth Client ID from OpenSky Network</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="flights_client_secret">OpenSky Client Secret:</label>
+                                <input type="password" class="form-control" id="flights_client_secret" name="flights_client_secret" value="{{ safe_config_get(main_config, 'flights', 'opensky_client_secret', default='') }}" placeholder="Your OAuth Client Secret">
+                                <div class="description">OAuth Client Secret from OpenSky Network</div>
+                            </div>
+
+                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--secondary-color);">Location Settings</h4>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="flights_home_lat">Home Latitude:</label>
+                                    <input type="number" step="0.000001" class="form-control" id="flights_home_lat" name="flights_home_lat" value="{{ safe_config_get(main_config, 'flights', 'home_lat', default=41.6) }}">
+                                    <div class="description">Example: 41.6 (Waukee, IA)</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="flights_home_lon">Home Longitude:</label>
+                                    <input type="number" step="0.000001" class="form-control" id="flights_home_lon" name="flights_home_lon" value="{{ safe_config_get(main_config, 'flights', 'home_lon', default=-93.6) }}">
+                                    <div class="description">Example: -93.6 (Waukee, IA)</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="flights_radius">Search Radius (km):</label>
+                                <input type="number" class="form-control" id="flights_radius" name="flights_radius" value="{{ safe_config_get(main_config, 'flights', 'radius_km', default=50) }}" min="5" max="250">
+                                <div class="description">How far to look for flights (5-250 km)</div>
+                            </div>
+
+                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--secondary-color);">Display Settings</h4>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="flights_max_flights">Max Flights to Show:</label>
+                                    <input type="number" class="form-control" id="flights_max_flights" name="flights_max_flights" value="{{ safe_config_get(main_config, 'flights', 'max_flights', default=10) }}" min="1" max="20">
+                                    <div class="description">Maximum number of flights to display</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="flights_min_altitude">Min Altitude (meters):</label>
+                                    <input type="number" class="form-control" id="flights_min_altitude" name="flights_min_altitude" value="{{ safe_config_get(main_config, 'flights', 'min_altitude_m', default=500) }}" min="0">
+                                    <div class="description">Filter out ground traffic</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="flights_update_interval">Update Interval (seconds):</label>
+                                <input type="number" class="form-control" id="flights_update_interval" name="flights_update_interval" value="{{ safe_config_get(main_config, 'flights', 'update_interval', default=30) }}" min="10" max="300">
+                                <div class="description">How often to check for new flights (10-300 seconds)</div>
+                            </div>
+
+                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--secondary-color);">Active Hours</h4>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-clock"></i> Flight tracking will only be active during these hours to conserve API calls.
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="flights_start_hour">Start Hour (0-23):</label>
+                                    <input type="number" class="form-control" id="flights_start_hour" name="flights_start_hour" value="{{ safe_config_get(main_config, 'flights', 'start_hour', default=6) }}" min="0" max="23">
+                                    <div class="description">Hour to start tracking (24-hour format)</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="flights_end_hour">End Hour (0-23):</label>
+                                    <input type="number" class="form-control" id="flights_end_hour" name="flights_end_hour" value="{{ safe_config_get(main_config, 'flights', 'end_hour', default=23) }}" min="0" max="23">
+                                    <div class="description">Hour to stop tracking (24-hour format)</div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success">Save Flight Settings</button>
+                        </form>
+
+                        <div id="flight-test-result" style="margin-top: 20px; padding: 15px; border-radius: 6px; display: none;"></div>
+                    </div>
+
+                    <!-- Flight Status Section -->
+                    <div class="config-section" style="margin-top: 20px;">
+                        <h3>Flight Tracker Status</h3>
+                        <div id="flight-status-display">
+                            <p style="color: var(--warning-color);"><i class="fas fa-spinner fa-spin"></i> Loading status...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Golf Tab -->
+                <div id="golf" class="tab-content">
+                    <div class="config-section">
+                        <div style="display:flex; justify-content: space-between; align-items:center;">
+                            <h3>Golf Configuration</h3>
+                            <button type="button" class="btn btn-info" onclick="loadGolfStatus()">
+                                <i class="fas fa-sync"></i> Refresh Status
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Golf Tournaments:</strong> Displays top players from active PGA and LPGA tournaments.
+                            Updates every 15 minutes during tournaments.
+                        </div>
+
+                        <form id="golf-form">
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="golf_enabled" name="golf_enabled">
+                                    Enable Golf Display
+                                </label>
+                            </div>
+
+                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--secondary-color);">Tours to Display</h4>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="golf_tour_pga" name="golf_tour_pga" value="pga">
+                                    PGA Tour
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="golf_tour_lpga" name="golf_tour_lpga" value="lpga">
+                                    LPGA Tour
+                                </label>
+                            </div>
+
+                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--secondary-color);">Display Settings</h4>
+                            
+                            <div class="form-group">
+                                <label for="golf_show_top_n">Number of Players to Show:</label>
+                                <input type="number" class="form-control" id="golf_show_top_n" name="golf_show_top_n" value="5" min="3" max="10">
+                                <div class="description">Show top N players on leaderboard (3-10)</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="golf_update_interval">Update Interval (seconds):</label>
+                                <input type="number" class="form-control" id="golf_update_interval" name="golf_update_interval" value="900" min="300" max="3600">
+                                <div class="description">How often to check for tournament updates (300-3600 seconds)</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success">Save Golf Settings</button>
+                        </form>
+                    </div>
+
+                    <div class="config-section" style="margin-top: 20px;">
+                        <h3>Golf Status</h3>
+                        <div id="golf-status-display">
+                            <p style="color: var(--warning-color);"><i class="fas fa-spinner fa-spin"></i> Loading status...</p>
+                        </div>
+                    </div>
+                </div>
+
+               <!-- Tennis Tab -->
+                <div id="tennis" class="tab-content">
+                    <div class="config-section">
+                        <div style="display:flex; justify-content: space-between; align-items:center;">
+                            <h3>Tennis Configuration</h3>
+                            <button type="button" class="btn btn-info" onclick="loadTennisStatus()">
+                                <i class="fas fa-sync"></i> Refresh Status
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Tennis Matches:</strong> Displays live and upcoming matches from ATP and WTA tours.
+                            Grand Slam tournaments are automatically detected and abbreviated.
+                        </div>
+
+                        <form id="tennis-form">
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="tennis_enabled" name="tennis_enabled">
+                                    Enable Tennis Display
+                                </label>
+                            </div>
+
+                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--secondary-color);">Tournament Filter</h4>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="tennis_majors_only" name="tennis_majors_only">
+                                    Grand Slams Only
+                                </label>
+                                <div class="description">Show only Australian Open, French Open, Wimbledon, and US Open</div>
+                            </div>
+
+                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--secondary-color);">Display Settings</h4>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="tennis_show_completed" name="tennis_show_completed">
+                                    Show Completed Matches
+                                </label>
+                                <div class="description">Include recently completed matches in display</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tennis_max_matches">Max Matches to Display:</label>
+                                <input type="number" class="form-control" id="tennis_max_matches" name="tennis_max_matches" value="5" min="3" max="10">
+                                <div class="description">Maximum number of matches to show (3-10)</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tennis_update_interval">Update Interval (seconds):</label>
+                                <input type="number" class="form-control" id="tennis_update_interval" name="tennis_update_interval" value="600" min="300" max="1800">
+                                <div class="description">How often to check for match updates (300-1800 seconds)</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success">Save Tennis Settings</button>
+                        </form>
+                    </div>
+
+                    <div class="config-section" style="margin-top: 20px;">
+                        <h3>Tennis Status</h3>
+                        <div id="tennis-status-display">
+                            <p style="color: var(--warning-color);"><i class="fas fa-spinner fa-spin"></i> Loading status...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WiFi Tab -->
+                <div id="wifi" class="tab-content">
+                    <div class="config-section">
+                        <h3>WiFi Configuration</h3>
+                        
+                        <!-- Current WiFi Status Card -->
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h4>Current Connection</h4>
+                            <div id="wifiStatusLoading" class="loading-state">
+                                <i class="fas fa-spinner fa-spin"></i> Checking connection...
+                            </div>
+                            
+                            <div id="wifiStatusContent" style="display: none;">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                                    <div>
+                                        <div style="font-size: 12px; opacity: 0.7; margin-bottom: 5px;">Status</div>
+                                        <div><span id="wifiStatus" class="status-badge">-</span></div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 12px; opacity: 0.7; margin-bottom: 5px;">Network</div>
+                                        <div id="wifiSSID" style="font-weight: 600;">-</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 12px; opacity: 0.7; margin-bottom: 5px;">Signal</div>
+                                        <div>
+                                            <span id="wifiSignal">-</span>
+                                            <i id="wifiSignalIcon" class="fas fa-wifi"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 12px; opacity: 0.7; margin-bottom: 5px;">IP Address</div>
+                                        <div id="wifiIP" style="font-family: monospace;">-</div>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <button type="button" class="btn btn-secondary" onclick="refreshWiFiStatus()">
+                                        <i class="fas fa-sync"></i> Refresh
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="showNetworkList()" id="btnChangeNetwork">
+                                        <i class="fas fa-exchange-alt"></i> Change Network
+                                    </button>
+                                    <button type="button" class="btn btn-danger" onclick="forgetNetwork()" id="btnForget">
+                                        <i class="fas fa-trash"></i> Forget Network
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Available Networks (hidden by default) -->
+                        <div id="networkListCard" class="card" style="display: none; margin-bottom: 20px;">
+                            <h4>Available Networks</h4>
+                            
+                            <div id="networkScanLoading" class="loading-state" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i> Scanning for networks...
+                            </div>
+                            
+                            <div id="networkListContent">
+                                <p style="opacity: 0.7; margin-bottom: 15px;">
+                                    Select a network to connect to. You'll need to enter the password if it's secured.
+                                </p>
+                                
+                                <div id="networkList" class="network-list">
+                                    <!-- Networks will be populated here -->
+                                </div>
+                                
+                                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                                    <button type="button" class="btn btn-secondary" onclick="scanNetworks()">
+                                        <i class="fas fa-search"></i> Scan Again
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="hideNetworkList()">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Connection Form (hidden by default) -->
+                        <div id="connectFormCard" class="card" style="display: none; margin-bottom: 20px;">
+                            <h4>Connect to <span id="connectSSID" style="color: var(--secondary-color);"></span></h4>
+                            
+                            <form onsubmit="connectToNetwork(event)" id="connectForm">
+                                <div class="form-group">
+                                    <label for="networkPassword">
+                                        <i class="fas fa-lock"></i> Password
+                                    </label>
+                                    <input type="password" class="form-control" id="networkPassword" placeholder="Enter network password" required>
+                                    
+                                    <div style="margin-top: 8px;">
+                                        <label style="font-weight: normal; font-size: 14px;">
+                                            <input type="checkbox" onclick="togglePasswordVisibility()">
+                                            Show password
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div id="connectStatus" style="margin-top: 15px; display: none;"></div>
+                                
+                                <div style="display: flex; gap: 10px;">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-check"></i> Connect
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="hideConnectForm()">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Setup Mode Info Card -->
+                        <div id="setupModeCard" class="card" style="display: none; margin-bottom: 20px;">
+                            <h4>
+                                <i class="fas fa-info-circle" style="color: var(--secondary-color);"></i>
+                                Setup Mode Active
+                            </h4>
+                            <div style="margin-top: 15px; padding: 15px; background: rgba(59, 130, 246, 0.1); border: 2px solid rgba(59, 130, 246, 0.3); border-radius: 8px;">
+                                <p style="margin-bottom: 15px;">
+                                    The ticker is currently in setup mode. To configure WiFi from your phone:
+                                </p>
+                                <div style="font-family: monospace; background: var(--card-background); padding: 15px; border-radius: 6px; margin: 15px 0;">
+                                    <div style="margin-bottom: 8px;">
+                                        <strong style="color: var(--secondary-color);">Network:</strong> TickerSetup
+                                    </div>
+                                    <div>
+                                        <strong style="color: var(--secondary-color);">Password:</strong> ledticker
+                                    </div>
+                                </div>
+                                <p style="opacity: 0.7; font-size: 14px;">
+                                    Once connected, a setup page will open automatically on your phone.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Manual Connection Card -->
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h4>Manual Network Entry</h4>
+                            <p style="opacity: 0.7; margin-bottom: 15px;">
+                                Connect to a hidden network or enter network details manually.
+                            </p>
+                            
+                            <form onsubmit="connectManual(event)" id="manualForm">
+                                <div class="form-group">
+                                    <label for="manualSSID">Network Name (SSID)</label>
+                                    <input type="text" class="form-control" id="manualSSID" placeholder="Enter network name" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="manualPassword">Password</label>
+                                    <input type="password" class="form-control" id="manualPassword" placeholder="Enter password (leave blank for open networks)">
+                                    <div style="margin-top: 8px;">
+                                        <label style="font-weight: normal; font-size: 14px;">
+                                            <input type="checkbox" onclick="toggleManualPasswordVisibility()">
+                                            Show password
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-link"></i> Connect
+                                </button>
+                                
+                                <div id="manualConnectStatus" style="margin-top: 15px; display: none;"></div>
+                            </form>
+                        </div>
+                        
+                        <!-- Help Card -->
+                        <div class="card">
+                            <h4>
+                                <i class="fas fa-question-circle"></i>
+                                WiFi Help
+                            </h4>
+                            <div style="opacity: 0.8; font-size: 14px; line-height: 1.6;">
+                                <p style="margin-bottom: 10px;">
+                                    <strong>Change Network:</strong> Click "Change Network" to see available WiFi networks and switch to a different one.
+                                </p>
+                                <p style="margin-bottom: 10px;">
+                                    <strong>Forget Network:</strong> This will remove the current WiFi credentials. The ticker will enter setup mode and create the "TickerSetup" network for reconfiguration.
+                                </p>
+                                <p style="margin-bottom: 10px;">
+                                    <strong>Manual Entry:</strong> Use this for hidden networks or if the network doesn't appear in the scan.
+                                </p>
+                                <p style="margin-top: 15px; padding: 10px; background: rgba(245, 158, 11, 0.1); border: 2px solid rgba(245, 158, 11, 0.3); border-radius: 6px;">
+                                    <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
+                                    <strong> Note:</strong> Changing WiFi networks will briefly disconnect the ticker from the network. The ticker will restart to apply the new connection.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
 
                 <!-- Odds Ticker Tab -->
                 <div id="odds" class="tab-content">
@@ -2219,6 +2852,131 @@
             }
         }
 
+        // WiFi Management Functions
+        async function refreshWiFiStatus() {
+            const loadingEl = document.getElementById('wifiStatusLoading');
+            const contentEl = document.getElementById('wifiStatusContent');
+            
+            try {
+                const response = await fetch('/api/wifi/status');
+                const data = await response.json();
+
+                const statusEl = document.getElementById('wifiStatus');
+                const networkEl = document.getElementById('wifiSSID');
+                const ipEl = document.getElementById('wifiIP');
+                const signalEl = document.getElementById('wifiSignal');
+                const signalIconEl = document.getElementById('wifiSignalIcon');
+
+                if (data.connected) {
+                    if (statusEl) {
+                        statusEl.textContent = 'Connected';
+                        statusEl.className = 'status-badge status-active';
+                    }
+                    if (networkEl) networkEl.textContent = data.ssid || 'Unknown';
+                    if (ipEl) ipEl.textContent = data.ip_address || 'Unknown';
+                    if (signalEl) {
+                        const signalPercent = data.signal || 0;
+                        signalEl.textContent = `${signalPercent}%`;
+                        
+                        // Update signal icon based on strength
+                        if (signalIconEl) {
+                            if (signalPercent >= 75) signalIconEl.className = 'fas fa-wifi';
+                            else if (signalPercent >= 50) signalIconEl.className = 'fas fa-wifi';
+                            else if (signalPercent >= 25) signalIconEl.className = 'fas fa-wifi';
+                            else signalIconEl.className = 'fas fa-wifi';
+                        }
+                    }
+                } else {
+                    if (statusEl) {
+                        statusEl.textContent = 'Disconnected';
+                        statusEl.className = 'status-badge status-inactive';
+                    }
+                    if (networkEl) networkEl.textContent = 'Not connected';
+                    if (ipEl) ipEl.textContent = '-';
+                    if (signalEl) signalEl.textContent = '-';
+                }
+
+                // CRITICAL: Hide spinner and show content
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (contentEl) contentEl.style.display = 'block';
+
+            } catch (error) {
+                console.error('Failed to refresh WiFi status:', error);
+                const statusEl = document.getElementById('wifiStatus');
+                if (statusEl) {
+                    statusEl.textContent = 'Error';
+                    statusEl.className = 'status-badge status-inactive';
+                }
+                // Show content even on error so user sees error state
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (contentEl) contentEl.style.display = 'block';
+            }
+        }
+
+        async function scanWiFiNetworks() {
+            const networkList = document.getElementById('networkList');
+            if (!networkList) return;
+            
+            networkList.innerHTML = '<div class="loading">Scanning for networks...</div>';
+            
+            try {
+                const response = await fetch('/api/wifi/scan');
+                const networks = await response.json();
+                
+                if (networks.length === 0) {
+                    networkList.innerHTML = '<div class="info-box">No networks found</div>';
+                    return;
+                }
+                
+                let html = '<div class="network-list">';
+                networks.forEach(network => {
+                    const signalBars = Math.ceil(network.signal / 25);
+                    const signalIcon = '📶'.repeat(signalBars);
+                    const lockIcon = network.encrypted ? '🔒' : '';
+                    
+                    html += `
+                        <div class="network-item" onclick="connectToWiFi('${network.ssid}', ${network.encrypted})">
+                            <div class="network-name">${network.ssid} ${lockIcon}</div>
+                            <div class="network-signal">${signalIcon} ${network.signal}%</div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                
+                networkList.innerHTML = html;
+            } catch (error) {
+                console.error('Failed to scan WiFi networks:', error);
+                networkList.innerHTML = '<div class="error-message">Failed to scan networks</div>';
+            }
+        }
+
+        function connectToWiFi(ssid, encrypted) {
+            const password = encrypted ? prompt(`Enter password for ${ssid}:`) : '';
+            
+            if (encrypted && !password) {
+                return; // User cancelled
+            }
+            
+            fetch('/api/wifi/connect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ssid, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`Connected to ${ssid}`, 'success');
+                    setTimeout(() => refreshWiFiStatus(), 3000);
+                } else {
+                    showNotification(`Failed to connect: ${data.error || 'Unknown error'}`, 'error');
+                }
+            })
+            .catch(error => {
+                showNotification(`Connection error: ${error.message}`, 'error');
+            });
+        }
+
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             initializeSocket();
@@ -2227,6 +2985,7 @@
             loadNewsManagerData();
             updateApiMetrics();
             refreshOnDemandStatus();
+            refreshWiFiStatus();
 
             // UI controls for grid & scale
             const scaleRange = document.getElementById('scaleRange');
@@ -3039,6 +3798,30 @@
             });
         })();
 
+        // Flights form submit augmentation
+        (function augmentFlightsForm(){
+            const form = document.getElementById('flights-form');
+            form.addEventListener('submit', async function(e){
+                e.preventDefault();
+                const payload = {
+                    flights: {
+                        enabled: document.getElementById('flights_enabled').checked,
+                        opensky_client_id: document.getElementById('flights_client_id').value,
+                        opensky_client_secret: document.getElementById('flights_client_secret').value,
+                        home_lat: parseFloat(document.getElementById('flights_home_lat').value),
+                        home_lon: parseFloat(document.getElementById('flights_home_lon').value),
+                        radius_km: parseInt(document.getElementById('flights_radius').value),
+                        max_flights: parseInt(document.getElementById('flights_max_flights').value),
+                        min_altitude_m: parseInt(document.getElementById('flights_min_altitude').value),
+                        update_interval: parseInt(document.getElementById('flights_update_interval').value),
+                        start_hour: parseInt(document.getElementById('flights_start_hour').value),
+                        end_hour: parseInt(document.getElementById('flights_end_hour').value)
+                    }
+                };
+                await saveConfigJson(payload);
+            });
+        })();
+
         // Odds form submit
         (function augmentOddsForm(){
             const form = document.getElementById('odds-form');
@@ -3665,10 +4448,13 @@
                     'milb_scoreboard': 'milb',
                     'nhl_scoreboard': 'nhl',
                     'nba_scoreboard': 'nba',
+                    'wnba_scoreboard': 'wnba',
                     'ncaa_fb_scoreboard': 'ncaa_fb',
                     'ncaa_baseball_scoreboard': 'ncaa_baseball',
                     'ncaam_basketball_scoreboard': 'ncaam_basketball',
+                    'ncaaw_basketball_scoreboard': 'ncaaw_basketball',
                     'ncaam_hockey_scoreboard': 'ncaam_hockey',
+                    'ncaaw_hockey_scoreboard': 'ncaaw_hockey',
                     'soccer_scoreboard': 'soccer'
                 };
                 const leagues = [
@@ -3677,10 +4463,13 @@
                     { key: 'milb_scoreboard', label: 'MiLB' },
                     { key: 'nhl_scoreboard', label: 'NHL' },
                     { key: 'nba_scoreboard', label: 'NBA' },
+                    { key: 'wnba_scoreboard', label: 'WNBA' },
                     { key: 'ncaa_fb_scoreboard', label: 'NCAA FB' },
                     { key: 'ncaa_baseball_scoreboard', label: 'NCAA Baseball' },
                     { key: 'ncaam_basketball_scoreboard', label: 'NCAAM Basketball' },
+                    { key: 'ncaaw_basketball_scoreboard', label: 'NCAAW Basketball' },
                     { key: 'ncaam_hockey_scoreboard', label: 'NCAAM Hockey' },
+                    { key: 'ncaaw_hockey_scoreboard', label: 'NCAAW Hockey' },
                     { key: 'soccer_scoreboard', label: 'Soccer' }
                 ];
                 const container = document.getElementById('sports-config');
@@ -3879,6 +4668,360 @@
             }
             showNotification('Sports configuration saved', 'success');
         }
+
+        // Flight Tracker Helper Functions
+        async function testFlightConnection() {
+            const resultDiv = document.getElementById('flight-test-result');
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = 'rgba(33, 150, 243, 0.1)';
+            resultDiv.style.border = '1px solid var(--secondary-color)';
+            resultDiv.style.color = 'var(--text-color)';
+            resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing connection...';
+            
+            try {
+                const response = await fetch('/api/flight-test');
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.style.background = 'rgba(39, 174, 96, 0.1)';
+                    resultDiv.style.border = '1px solid var(--success-color)';
+                    resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${result.message}<br>Found ${result.flight_count} flights in your area!`;
+                } else {
+                    resultDiv.style.background = 'rgba(231, 76, 60, 0.1)';
+                    resultDiv.style.border = '1px solid var(--accent-color)';
+                    resultDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> Connection failed: ${result.error}`;
+                }
+            } catch (error) {
+                resultDiv.style.background = 'rgba(231, 76, 60, 0.1)';
+                resultDiv.style.border = '1px solid var(--accent-color)';
+                resultDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> Test failed: ${error.message}`;
+            }
+        }
+
+        async function loadFlightStatus() {
+            const statusDiv = document.getElementById('flight-status-display');
+            statusDiv.innerHTML = '<p style="color: var(--warning-color);"><i class="fas fa-spinner fa-spin"></i> Loading status...</p>';
+            
+            try {
+                const response = await fetch('/api/flight-status');
+                if (!response.ok) throw new Error('Failed to load status');
+                
+                const status = await response.json();
+                
+                const enabledClass = status.enabled ? 'status-active' : 'status-inactive';
+                const enabledText = status.enabled ? 'Enabled' : 'Disabled';
+                const enabledIcon = status.enabled ? 'fa-check-circle' : 'fa-times-circle';
+                
+                const activeClass = status.polling_window?.currently_active ? 'status-active' : 'status-inactive';
+                const activeText = status.polling_window?.currently_active ? 'Active' : 'Inactive';
+                const activeIcon = status.polling_window?.currently_active ? 'fa-check-circle' : 'fa-times-circle';
+                
+                statusDiv.innerHTML = `
+                    <div style="display: grid; gap: 15px;">
+                        <div class="status-item ${enabledClass}">
+                            <i class="fas ${enabledIcon}"></i>
+                            <span><strong>Status:</strong> ${enabledText}</span>
+                        </div>
+                        <div class="status-item ${activeClass}">
+                            <i class="fas ${activeIcon}"></i>
+                            <span><strong>Polling:</strong> ${activeText}</span>
+                        </div>
+                        <div style="padding: 10px; background: var(--background-color); border-radius: 6px;">
+                            <p style="margin: 5px 0;"><strong>Home Location:</strong> ${status.home_location?.latitude?.toFixed(4) || 'N/A'}, ${status.home_location?.longitude?.toFixed(4) || 'N/A'}</p>
+                            <p style="margin: 5px 0;"><strong>Search Radius:</strong> ${status.radius_km || 'N/A'} km</p>
+                            <p style="margin: 5px 0;"><strong>Active Hours:</strong> ${status.polling_window?.start_hour || 'N/A'}:00 - ${status.polling_window?.end_hour || 'N/A'}:00</p>
+                            <p style="margin: 5px 0;"><strong>Flights Visible:</strong> ${status.flights_visible || 0}</p>
+                            <p style="margin: 5px 0;"><strong>Auth Status:</strong> ${status.auth_status || 'unknown'}</p>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading flight status:', error);
+                statusDiv.innerHTML = '<p style="color: var(--accent-color);"><i class="fas fa-exclamation-triangle"></i> Error loading status</p>';
+            }
+        }
+
+        // Load flight status when the flights tab is opened
+        document.addEventListener('DOMContentLoaded', function() {
+            const originalShowTab = window.showTab;
+            window.showTab = function(tabName) {
+                originalShowTab(tabName);
+                if (tabName === 'flights') {
+                    loadFlightStatus();
+                } else if (tabName === 'golf') {
+                    loadGolfStatus();
+                } else if (tabName === 'tennis') {
+                    loadTennisStatus();
+                }
+            };
+
+            loadGolfStatus();
+            loadTennisStatus();
+        });
+    // Golf Configuration Functions
+        async function loadGolfConfig() {
+            try {
+                const response = await fetch('/api/golf-config');
+                const data = await response.json();
+                
+                document.getElementById('golf_enabled').checked = data.enabled || false;
+                document.getElementById('golf_tour_pga').checked = data.tours ? data.tours.includes('pga') : true;
+                document.getElementById('golf_tour_lpga').checked = data.tours ? data.tours.includes('lpga') : true;
+                document.getElementById('golf_show_top_n').value = data.show_top_n || 5;
+                document.getElementById('golf_update_interval').value = data.update_interval || 900;
+                
+                console.log('Golf config loaded:', data);
+            } catch (error) {
+                console.error('Error loading golf config:', error);
+            }
+        }
+
+        async function loadGolfStatus() {
+            try {
+                const response = await fetch('/api/golf-status');
+                const data = await response.json();
+                
+                const statusDiv = document.getElementById('golf-status-display');
+                
+                let html = '<div class="status-card">';
+                html += `<p><strong>Status:</strong> ${data.enabled ? '<span style="color: var(--success-color);">Enabled</span>' : '<span style="color: var(--warning-color);">Disabled</span>'}</p>`;
+                html += `<p><strong>Active Tournaments:</strong> ${data.active_tournaments || 0}</p>`;
+                html += `<p><strong>Last Update:</strong> ${data.last_update || 'Never'}</p>`;
+                
+                if (data.tournaments && data.tournaments.length > 0) {
+                    html += '<h4 style="margin-top: 15px;">Current Tournaments:</h4><ul>';
+                    data.tournaments.forEach(t => {
+                        html += `<li><strong>${t.name}</strong> (${t.tour})</li>`;
+                    });
+                    html += '</ul>';
+                } else if (data.enabled) {
+                    html += '<p style="color: var(--warning-color); margin-top: 15px;"><i class="fas fa-info-circle"></i> No active tournaments</p>';
+                }
+                
+                html += '</div>';
+                statusDiv.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading golf status:', error);
+                document.getElementById('golf-status-display').innerHTML = 
+                    '<p style="color: var(--accent-color);"><i class="fas fa-exclamation-triangle"></i> Error loading status</p>';
+            }
+        }
+
+        // Golf form submission
+        document.getElementById('golf-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const tours = [];
+            if (document.getElementById('golf_tour_pga').checked) tours.push('pga');
+            if (document.getElementById('golf_tour_lpga').checked) tours.push('lpga');
+            
+            const golfConfig = {
+                enabled: document.getElementById('golf_enabled').checked,
+                tours: tours,
+                show_top_n: parseInt(document.getElementById('golf_show_top_n').value),
+                update_interval: parseInt(document.getElementById('golf_update_interval').value)
+            };
+            
+            try {
+                const response = await fetch('/api/golf-config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(golfConfig)
+                });
+                
+                if (response.ok) {
+                    showNotification('Golf settings saved successfully!', 'success');
+                    loadGolfStatus();
+                } else {
+                    showNotification('Error saving golf settings', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving golf config:', error);
+                showNotification('Error saving golf settings', 'error');
+            }
+        });
+    async function loadTennisConfig() {
+            try {
+                const response = await fetch('/api/tennis-config');
+                const data = await response.json();
+                
+                document.getElementById('tennis_enabled').checked = data.enabled || false;
+                document.getElementById('tennis_majors_only').checked = data.majors_only !== undefined ? data.majors_only : true;
+                document.getElementById('tennis_show_completed').checked = data.show_completed_matches || false;
+                document.getElementById('tennis_max_matches').value = data.max_matches_display || 5;
+                document.getElementById('tennis_update_interval').value = data.update_interval || 600;
+                
+                console.log('Tennis config loaded:', data);
+            } catch (error) {
+                console.error('Error loading tennis config:', error);
+            }
+        }
+
+        async function loadTennisStatus() {
+            try {
+                const response = await fetch('/api/tennis-status');
+                const data = await response.json();
+                
+                const statusDiv = document.getElementById('tennis-status-display');
+                
+                let html = '<div class="status-card">';
+                html += `<p><strong>Status:</strong> ${data.enabled ? '<span style="color: var(--success-color);">Enabled</span>' : '<span style="color: var(--warning-color);">Disabled</span>'}</p>`;
+                html += `<p><strong>Total Matches:</strong> ${data.total_matches || 0}</p>`;
+                html += `<p><strong>Live Matches:</strong> ${data.live_matches || 0}</p>`;
+                html += `<p><strong>Last Update:</strong> ${data.last_update || 'Never'}</p>`;
+                
+                if (data.matches && data.matches.length > 0) {
+                    html += '<h4 style="margin-top: 15px;">Current Matches:</h4><ul>';
+                    data.matches.slice(0, 5).forEach(m => {
+                        html += `<li><strong>${m.tournament}:</strong> ${m.matchup} ${m.status ? '(' + m.status + ')' : ''}</li>`;
+                    });
+                    html += '</ul>';
+                } else if (data.enabled) {
+                    html += '<p style="color: var(--warning-color); margin-top: 15px;"><i class="fas fa-info-circle"></i> No active matches</p>';
+                }
+                
+                html += '</div>';
+                statusDiv.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading tennis status:', error);
+                document.getElementById('tennis-status-display').innerHTML = 
+                    '<p style="color: var(--accent-color);"><i class="fas fa-exclamation-triangle"></i> Error loading status</p>';
+            }
+        }
+
+        // Tennis form submission
+        document.getElementById('tennis-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const tennisConfig = {
+                enabled: document.getElementById('tennis_enabled').checked,
+                majors_only: document.getElementById('tennis_majors_only').checked,
+                show_completed_matches: document.getElementById('tennis_show_completed').checked,
+                max_matches_display: parseInt(document.getElementById('tennis_max_matches').value),
+                update_interval: parseInt(document.getElementById('tennis_update_interval').value)
+            };
+            
+            try {
+                const response = await fetch('/api/tennis-config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(tennisConfig)
+                });
+                
+                if (response.ok) {
+                    showNotification('Tennis settings saved successfully!', 'success');
+                    loadTennisStatus();
+                } else {
+                    showNotification('Error saving tennis settings', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving tennis config:', error);
+                showNotification('Error saving tennis settings', 'error');
+            }
+        });
     </script>
 </body>
+<script>
+// Smart Duration Toggle Logic
+(function() {
+    const toggle = document.getElementById('smart-duration-toggle');
+    const modeDescription = document.getElementById('duration-mode-description');
+    const smartModeInfo = document.getElementById('smart-mode-info');
+    const durationInputs = document.querySelectorAll('.duration-input');
+    const maxSportDurationInput = document.getElementById('max-sport-duration');
+    const saveMaxDurationBtn = document.getElementById('save-max-duration-btn');
+    
+    if (!toggle) return;
+    
+    async function loadSmartDurationSetting() {
+        try {
+            const response = await fetch('/api/duration-config');
+            const data = await response.json();
+            if (data.success) {
+                toggle.checked = data.use_dynamic_durations;
+                if (maxSportDurationInput && data.max_sport_duration) {
+                    maxSportDurationInput.value = data.max_sport_duration;
+                }
+                updateUI(data.use_dynamic_durations);
+            }
+        } catch (error) {
+            console.error('Error loading smart duration setting:', error);
+            toggle.checked = false;
+            updateUI(false);
+        }
+    }
+    
+    function updateUI(isSmartMode) {
+        if (isSmartMode) {
+            modeDescription.innerHTML = '<strong style="color: #667eea;">Smart Durations</strong> - Display time adapts to content volume';
+            smartModeInfo.style.display = 'block';
+            durationInputs.forEach(input => {
+                input.disabled = true;
+                input.style.backgroundColor = '#e2e8f0';
+                input.style.cursor = 'not-allowed';
+            });
+        } else {
+            modeDescription.innerHTML = '<strong style="color: #4a5568;">Fixed Durations</strong> - All displays use preset times (editable below)';
+            smartModeInfo.style.display = 'none';
+            durationInputs.forEach(input => {
+                input.disabled = false;
+                input.style.backgroundColor = '';
+                input.style.cursor = '';
+            });
+        }
+    }
+    
+    toggle.addEventListener('change', async function() {
+        const isSmartMode = this.checked;
+        try {
+            const response = await fetch('/api/duration-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ use_dynamic_durations: isSmartMode })
+            });
+            if (response.ok) {
+                updateUI(isSmartMode);
+                alert(isSmartMode ? 'Smart Durations enabled! Restart service to apply.' : 'Fixed Durations enabled!');
+            } else {
+                throw new Error('Failed to save');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to save setting.');
+            this.checked = !isSmartMode;
+            updateUI(!isSmartMode);
+        }
+    });
+    
+    if (saveMaxDurationBtn && maxSportDurationInput) {
+        saveMaxDurationBtn.addEventListener('click', async function() {
+            const maxDuration = parseInt(maxSportDurationInput.value);
+            
+            if (isNaN(maxDuration) || maxDuration < 30 || maxDuration > 600) {
+                alert('Please enter a value between 30 and 600 seconds.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/duration-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ max_sport_duration: maxDuration })
+                });
+                
+                if (response.ok) {
+                    alert('Max sport duration saved: ' + maxDuration + ' seconds. Restart service to apply.');
+                } else {
+                    throw new Error('Failed to save');
+                }
+            } catch (error) {
+                console.error('Error saving max duration:', error);
+                alert('Failed to save max sport duration.');
+            }
+        });
+    }
+    
+    loadSmartDurationSetting();
+})();
+</script>
 </html>

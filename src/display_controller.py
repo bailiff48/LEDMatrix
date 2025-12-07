@@ -1,4 +1,5 @@
 import time
+import gc
 import logging
 import sys
 from typing import Dict, Any, List
@@ -41,9 +42,157 @@ from src.static_image_manager import StaticImageManager
 from src.music_manager import MusicManager, SkipModuleException
 from src.of_the_day_manager import OfTheDayManager
 from src.news_manager import NewsManager
+from src.flight_manager import FlightLiveManager
+from src.golf_manager import GolfManager
+from src.tennis_manager import TennisManager
+from src.dynamic_duration_manager import DynamicDurationManager
 
 # Get logger without configuring
 logger = logging.getLogger(__name__)
+
+# Sport label mapping - maps content modes to sport labels
+SPORT_LABELS = {
+    'nfl_live': 'NFL',
+    'nfl_recent': 'NFL',
+    'nfl_upcoming': 'NFL',
+    'ncaa_fb_live': 'NCAAFB',
+    'ncaa_fb_recent': 'NCAAFB',
+    'ncaa_fb_upcoming': 'NCAAFB',
+    
+    'nba_live': 'NBA',
+    'nba_recent': 'NBA',
+    'nba_upcoming': 'NBA',
+    'ncaam_basketball_live': 'NCAAM',
+    'ncaam_basketball_recent': 'NCAAM',
+    'ncaam_basketball_upcoming': 'NCAAM',
+    
+    'wnba_live': 'WNBA',
+    'wnba_recent': 'WNBA',
+    'wnba_upcoming': 'WNBA',
+    'ncaaw_basketball_live': 'NCAAW',
+    'ncaaw_basketball_recent': 'NCAAW',
+    'ncaaw_basketball_upcoming': 'NCAAW',
+    
+    'mlb_live': 'MLB',
+    'mlb_recent': 'MLB',
+    'mlb_upcoming': 'MLB',
+    'ncaa_baseball_live': 'NCAABB',
+    'ncaa_baseball_recent': 'NCAABB',
+    'ncaa_baseball_upcoming': 'NCAABB',
+    
+    'nhl_live': 'NHL',
+    'nhl_recent': 'NHL',
+    'nhl_upcoming': 'NHL',
+    
+    'soccer_live': 'SOCCER',
+    'soccer_recent': 'SOCCER',
+    'soccer_upcoming': 'SOCCER',
+}
+
+
+# AGGRESSIVE_MEMORY_CLEANUP - Added to fix memory leak
+
+def aggressive_memory_cleanup(cache_manager, managers):
+    """Clear all caches to prevent memory buildup."""
+    import gc
+    import time
+    
+    logger = logging.getLogger(__name__)
+    cleaned_count = 0
+    
+    try:
+        # 1. Clear cache manager memory cache (entries older than 5 min)
+        if hasattr(cache_manager, "_memory_cache") and hasattr(cache_manager, "_cache_lock"):
+            with cache_manager._cache_lock:
+                current = time.time()
+                keys_to_del = [k for k, v in cache_manager._memory_cache.items()
+                               if isinstance(v, (dict, tuple)) and 
+                               (v.get("timestamp", 0) if isinstance(v, dict) else (v[1] if len(v) > 1 else 0)) < current - 300]
+                for k in keys_to_del:
+                    del cache_manager._memory_cache[k]
+                    cleaned_count += 1
+        
+        # 2. Clear instance-level caches on all managers
+        for name, manager in managers.items():
+            if manager is None:
+                continue
+            try:
+                if hasattr(manager, "_processed_games_cache"):
+                    manager._processed_games_cache.clear()
+                if hasattr(manager, "_logo_cache") and len(getattr(manager, "_logo_cache", {})) > 30:
+                    cache = manager._logo_cache
+                    keys = list(cache.keys())[:-30]  # Keep last 30
+                    for k in keys:
+                        del cache[k]
+                    cleaned_count += len(keys)
+            except Exception:
+                pass
+        
+        # 3. CRITICAL: Clear CLASS-LEVEL caches (the main leak source)
+        # These are shared across all instances and grow unbounded
+        class_caches_to_clear = [
+            ('src.nhl_managers', 'BaseNHLManager'),
+            ('src.nba_managers', 'BaseNBAManager'),
+            ('src.nfl_managers', 'BaseNFLManager'),
+            ('src.wnba_managers', 'BaseWNBAManager'),
+            ('src.soccer_managers', 'BaseSoccerManager'),
+            ('src.milb_manager', 'BaseMiLBManager'),
+            ('src.ncaa_fb_managers', 'BaseNCAAFBManager'),
+            ('src.ncaam_basketball_managers', 'BaseNCAAMBasketballManager'),
+            ('src.ncaaw_basketball_managers', 'BaseNCAAWBasketballManager'),
+        ]
+        
+        for module_name, class_name in class_caches_to_clear:
+            try:
+                module = sys.modules.get(module_name)
+                if module:
+                    cls = getattr(module, class_name, None)
+                    if cls:
+                        # Clear logo cache
+                        if hasattr(cls, '_logo_cache'):
+                            cache = cls._logo_cache
+                            if len(cache) > 30:
+                                keys = list(cache.keys())[:-30]
+                                for k in keys:
+                                    del cache[k]
+                                cleaned_count += len(keys)
+                        
+                        # Clear processed games cache
+                        if hasattr(cls, '_processed_games_cache'):
+                            cls._processed_games_cache.clear()
+                            cleaned_count += 1
+                        
+                        # Clear shared data (but keep recent)
+                        if hasattr(cls, '_shared_data') and isinstance(cls._shared_data, dict):
+                            current = time.time()
+                            keys_to_del = [k for k, v in cls._shared_data.items()
+                                          if isinstance(v, dict) and v.get('timestamp', 0) < current - 600]
+                            for k in keys_to_del:
+                                del cls._shared_data[k]
+                                cleaned_count += 1
+            except Exception:
+                pass
+        
+        # 4. Clear background service completed requests
+        try:
+            from src.background_data_service import get_background_service
+            bg_service = get_background_service()
+            if bg_service and hasattr(bg_service, 'clear_completed_requests'):
+                bg_service.clear_completed_requests(older_than_hours=0)
+        except Exception:
+            pass
+        
+        # 5. Force garbage collection  
+        gc.collect()
+        gc.collect()
+        
+        if cleaned_count > 0:
+            logger.info(f"Memory cleanup: cleared {cleaned_count} items")
+        
+    except Exception as e:
+        logger.error(f"Cleanup error: {e}")
+
+
 
 class DisplayController:
     def __init__(self):
@@ -109,7 +258,38 @@ class DisplayController:
             logger.error("Config not loaded before MusicManager initialization attempt.")
             self.music_live_game_duration = 30  # Default fallback
         logger.info("MusicManager initialized in %.3f seconds", time.time() - music_init_time)
+
+    # Initialize Flight Manager if enabled
+        flight_time = time.time()
+        flight_enabled = self.config.get('flights', {}).get('enabled', False)
         
+        if flight_enabled:
+            self.flight_live = FlightLiveManager(self.config, self.display_manager, self.cache_manager)
+            self.flight_live.start_background_polling()  # Start background thread
+            logger.info("Flight manager initialized with background polling")
+        else:
+            self.flight_live = None
+        logger.info("Flight manager initialized in %.3f seconds", time.time() - flight_time)
+        
+        golf_start = time.time()
+        golf_enabled = self.config.get('golf', {}).get('enabled', False)
+        if golf_enabled:
+            self.golf_manager = GolfManager(self.config, self.display_manager)
+            logger.info("Golf manager initialized in %.3f seconds", time.time() - golf_start)
+        else:
+            self.golf_manager = None
+            logger.info("Golf manager disabled")
+
+        # Initialize tennis manager
+        tennis_start = time.time()
+        tennis_enabled = self.config.get('tennis', {}).get('enabled', False)
+        if tennis_enabled:
+            self.tennis_manager = TennisManager(self.config, self.display_manager)
+            logger.info("Tennis manager initialized in %.3f seconds", time.time() - tennis_start)
+        else:
+            self.tennis_manager = None
+            logger.info("Tennis manager disabled")
+    
         # Initialize NHL managers if enabled
         nhl_time = time.time()
         nhl_enabled = self.config.get('nhl_scoreboard', {}).get('enabled', False)
@@ -306,7 +486,31 @@ class DisplayController:
             self.ncaaw_hockey_recent = None
             self.ncaaw_hockey_upcoming = None
         logger.info("NCAA Men's Hockey managers initialized in %.3f seconds", time.time() - ncaaw_hockey_time)
+        # Build managers dict for memory cleanup
+        self.managers = {
+            "nhl_live": self.nhl_live, "nhl_recent": self.nhl_recent, "nhl_upcoming": self.nhl_upcoming,
+            "nba_live": self.nba_live, "nba_recent": self.nba_recent, "nba_upcoming": self.nba_upcoming,
+            "wnba_live": self.wnba_live, "wnba_recent": self.wnba_recent, "wnba_upcoming": self.wnba_upcoming,
+            "mlb_live": self.mlb_live, "mlb_recent": self.mlb_recent, "mlb_upcoming": self.mlb_upcoming,
+            "milb_live": self.milb_live, "milb_recent": self.milb_recent, "milb_upcoming": self.milb_upcoming,
+            "soccer_live": self.soccer_live, "soccer_recent": self.soccer_recent, "soccer_upcoming": self.soccer_upcoming,
+            "nfl_live": self.nfl_live, "nfl_recent": self.nfl_recent, "nfl_upcoming": self.nfl_upcoming,
+            "ncaa_fb_live": self.ncaa_fb_live, "ncaa_fb_recent": self.ncaa_fb_recent, "ncaa_fb_upcoming": self.ncaa_fb_upcoming,
+            "ncaa_baseball_live": self.ncaa_baseball_live, "ncaa_baseball_recent": self.ncaa_baseball_recent, "ncaa_baseball_upcoming": self.ncaa_baseball_upcoming,
+            "ncaam_basketball_live": self.ncaam_basketball_live, "ncaam_basketball_recent": self.ncaam_basketball_recent, "ncaam_basketball_upcoming": self.ncaam_basketball_upcoming,
+            "ncaaw_basketball_live": self.ncaaw_basketball_live, "ncaaw_basketball_recent": self.ncaaw_basketball_recent, "ncaaw_basketball_upcoming": self.ncaaw_basketball_upcoming,
+            "ncaam_hockey_live": self.ncaam_hockey_live, "ncaam_hockey_recent": self.ncaam_hockey_recent, "ncaam_hockey_upcoming": self.ncaam_hockey_upcoming,
+            "ncaaw_hockey_live": self.ncaaw_hockey_live, "ncaaw_hockey_recent": self.ncaaw_hockey_recent, "ncaaw_hockey_upcoming": self.ncaaw_hockey_upcoming,
+        }
+        # Filter out None values
+        self.managers = {k: v for k, v in self.managers.items() if v is not None}
+        logger.info(f"Managers dict created with {len(self.managers)} active managers")
         
+        # Sport label tracking
+        self.last_sport_label = None  # Track last sport label shown
+        self.sport_labels_enabled = self.config.get('display', {}).get('sport_labels', {}).get('enabled', True)
+        self.sport_label_duration = self.config.get('display', {}).get('sport_labels', {}).get('duration', 2)  # seconds
+
         # Track MLB rotation state
         self.mlb_current_team_index = 0
         self.mlb_showing_recent = True
@@ -328,6 +532,7 @@ class DisplayController:
         self.ncaam_hockey_live_priority = self.config.get('ncaam_hockey_scoreboard', {}).get('live_priority', True)
         self.ncaaw_hockey_live_priority = self.config.get('ncaaw_hockey_scoreboard', {}).get('live_priority', True)
         self.music_live_priority = self.config.get('music', {}).get('live_priority', True)
+        self.flight_live_priority = self.config.get('flights', {}).get('live_priority', True)
 
         # Live priority logging throttling
         self._last_music_live_priority_log = 0
@@ -391,6 +596,9 @@ class DisplayController:
         if ncaaw_hockey_enabled:
             if self.ncaaw_hockey_recent: self.available_modes.append('ncaaw_hockey_recent')
             if self.ncaaw_hockey_upcoming: self.available_modes.append('ncaaw_hockey_upcoming')
+        # Add golf and tennis to rotation if enabled
+        if self.golf_manager: self.available_modes.append('golf')
+        if self.tennis_manager: self.available_modes.append('tennis')
         # Add live modes to rotation if live_priority is False and there are live games
         self._update_live_modes_in_rotation()
         
@@ -494,7 +702,7 @@ class DisplayController:
             'milb_upcoming': 20,
             'soccer_live': 30, # Soccer durations
             'soccer_recent': 20,
-            'soccer_upcoming': 20,
+            'soccer_upcoming': 5,
             'nfl_live': 30, # Added NFL durations
             'nfl_recent': 30,
             'nfl_upcoming': 30,
@@ -523,6 +731,12 @@ class DisplayController:
         for key, value in default_durations.items():
             if key not in self.display_durations:
                  self.display_durations[key] = value
+        
+        # Initialize Dynamic Duration Manager
+        ddm_start = time.time()
+        self.dynamic_duration_manager = DynamicDurationManager(self.config)
+        logger.info(f"DynamicDurationManager initialized in {time.time() - ddm_start:.3f} seconds")
+        logger.info(f"Dynamic durations enabled: {self.dynamic_duration_manager.enabled}")
         
         # Log favorite teams only if the respective sport is enabled
         if nhl_enabled:
@@ -555,6 +769,33 @@ class DisplayController:
         # --- SCHEDULING ---
         self.is_display_active = True
         self._load_schedule_config() # Load schedule config once at startup
+
+    def _show_sport_label(self, sport_label):
+        """Display sport label for configured duration."""
+        if not self.sport_labels_enabled:
+            return
+
+        logger.info(f"Showing sport label: {sport_label}")
+
+        # Clear screen BEFORE showing label to prevent overlap
+        self.display_manager.clear()
+
+        # Draw sport label centered
+        self.display_manager.draw_text(
+            sport_label,
+            y=12,
+            color=(255, 200, 0),
+            small_font=False
+        )
+
+        # Update display to show the label
+        self.display_manager.update_display()
+
+        # Show for configured duration
+        time.sleep(self.sport_label_duration)
+
+        # Don't clear - let next content draw over it
+        # The next manager will handle clearing if needed
 
     def _handle_music_update(self, track_info: Dict[str, Any], significant_change: bool = False):
         """Callback for when music track info changes."""
@@ -664,6 +905,29 @@ class DisplayController:
                 self._last_logged_music_live_duration = music_live_duration
             return music_live_duration
 
+        if self.dynamic_duration_manager.enabled:
+            try:
+                # Get the appropriate manager for this mode
+                manager = self._get_manager_for_mode(mode_key)
+
+                
+                # Calculate duration using DynamicDurationManager
+                dynamic_duration = self.dynamic_duration_manager.get_duration(
+                    mode_key=mode_key,
+                    manager=manager
+                )
+                
+                # Log only on change
+                if not hasattr(self, '_last_logged_duration') or self._last_logged_duration != dynamic_duration:
+                    logger.info(f"Using dynamic duration for {mode_key}: {dynamic_duration} seconds")
+                    self._last_logged_duration = dynamic_duration
+                
+                return dynamic_duration
+                
+            except Exception as e:
+                logger.error(f"Error getting dynamic duration for {mode_key}: {e}")
+                # Fall through to fixed duration
+
         # Simplify weather key handling
         elif mode_key.startswith('weather_'):
             return self.display_durations.get(mode_key, 15)
@@ -674,7 +938,114 @@ class DisplayController:
             # else: duration_key = 'weather_current' # Default to current
             # return self.display_durations.get(duration_key, 15)
 
+        # Handle dynamic duration for sports modes (recent/upcoming)
+        # Calculate duration based on number of games to cycle through
+        elif '_recent' in mode_key or '_upcoming' in mode_key:
+            try:
+                # Extract sport name from mode (e.g., 'nfl_recent' -> 'nfl')
+                sport_name = mode_key.replace('_recent', '').replace('_upcoming', '')
+
+                # Get the appropriate manager
+                manager = getattr(self, mode_key, None)
+                
+                if manager and hasattr(manager, 'game_display_duration'):
+                    # Determine which attribute holds the games list
+                    # Check games_list first (most common), then upcoming_games, then recent_games
+                    games = None
+                    if hasattr(manager, 'games_list') and manager.games_list:
+                        games = manager.games_list
+                    elif hasattr(manager, 'upcoming_games') and manager.upcoming_games:
+                        games = manager.upcoming_games
+                    elif hasattr(manager, 'recent_games') and manager.recent_games:
+                        games = manager.recent_games
+                    
+                    if games is not None:
+                        num_games = len(games)
+                        game_duration = manager.game_display_duration
+
+                        # Calculate total duration needed to cycle through all games
+                        calculated_duration = num_games * game_duration
+
+                        # Set minimum (at least 1 game) and maximum (cap at 5 minutes)
+                        calculated_duration = max(game_duration, min(calculated_duration, 300))
+
+                        # Only log if duration changed
+                        if not hasattr(self, '_last_logged_duration') or self._last_logged_duration != calculated_duration:
+                            logger.info(f"Using dynamic duration for {mode_key}: {calculated_duration}s ({num_games} games x {game_duration}s per game)")
+                            self._last_logged_duration = calculated_duration
+
+                        return calculated_duration
+            except Exception as e:
+                logger.error(f"Error calculating dynamic duration for {mode_key}: {e}")
+                # Fall back to configured duration
+                pass
+
         return self.display_durations.get(mode_key, 15)
+
+    def _get_manager_for_mode(self, mode_key: str):
+            """
+            Helper method to get the manager object for a given mode key.
+            
+            Args:
+                mode_key: Display mode key (e.g., 'nfl_live', 'weather', 'clock')
+                
+            Returns:
+                Manager object or None
+            """
+            # Direct attribute mapping
+            manager_map = {
+                'clock': self.clock,
+                'weather': self.weather,
+                'weather_current': self.weather,
+                'weather_hourly': self.weather,
+                'weather_daily': self.weather,
+                'stocks': self.stocks,
+                'stock_news': self.news,
+                'nhl_live': self.nhl_live,
+                'nhl_recent': self.nhl_recent,
+                'nhl_upcoming': self.nhl_upcoming,
+                'nba_live': self.nba_live,
+                'nba_recent': self.nba_recent,
+                'nba_upcoming': self.nba_upcoming,
+                'wnba_live': self.wnba_live,
+                'wnba_recent': self.wnba_recent,
+                'wnba_upcoming': self.wnba_upcoming,
+                'mlb_live': self.mlb_live,
+                'mlb_recent': self.mlb_recent,
+                'mlb_upcoming': self.mlb_upcoming,
+                'milb_live': self.milb_live,
+                'milb_recent': self.milb_recent,
+                'milb_upcoming': self.milb_upcoming,
+                'soccer_live': self.soccer_live,
+                'soccer_recent': self.soccer_recent,
+                'soccer_upcoming': self.soccer_upcoming,
+                'nfl_live': self.nfl_live,
+                'nfl_recent': self.nfl_recent,
+                'nfl_upcoming': self.nfl_upcoming,
+                'ncaa_fb_live': self.ncaa_fb_live,
+                'ncaa_fb_recent': self.ncaa_fb_recent,
+                'ncaa_fb_upcoming': self.ncaa_fb_upcoming,
+                'ncaa_baseball_live': self.ncaa_baseball_live,
+                'ncaa_baseball_recent': self.ncaa_baseball_recent,
+                'ncaa_baseball_upcoming': self.ncaa_baseball_upcoming,
+                'ncaam_basketball_live': self.ncaam_basketball_live,
+                'ncaam_basketball_recent': self.ncaam_basketball_recent,
+                'ncaam_basketball_upcoming': self.ncaam_basketball_upcoming,
+                'ncaaw_basketball_live': self.ncaaw_basketball_live,
+                'ncaaw_basketball_recent': self.ncaaw_basketball_recent,
+                'ncaaw_basketball_upcoming': self.ncaaw_basketball_upcoming,
+                'ncaam_hockey_live': self.ncaam_hockey_live,
+                'ncaam_hockey_recent': self.ncaam_hockey_recent,
+                'ncaam_hockey_upcoming': self.ncaam_hockey_upcoming,
+                'ncaaw_hockey_live': self.ncaaw_hockey_live,
+                'ncaaw_hockey_recent': self.ncaaw_hockey_recent,
+                'ncaaw_hockey_upcoming': self.ncaaw_hockey_upcoming,
+                'flight_live': self.flight_live,
+                'golf': self.golf_manager,
+                'tennis': self.tennis_manager,
+            }
+            
+            return manager_map.get(mode_key, None)
 
     def _update_modules(self):
         """Call update methods on active managers."""
@@ -732,6 +1103,9 @@ class DisplayController:
             if self.ncaa_fb_live: self.ncaa_fb_live.update()
             if self.ncaa_fb_recent: self.ncaa_fb_recent.update()
             if self.ncaa_fb_upcoming: self.ncaa_fb_upcoming.update()
+            
+            # Update flight manager to detect overhead planes (live interrupt capability)
+            if self.flight_live: self.flight_live.update()
         
         # News manager fetches data when displayed, not during updates
         # if self.news_manager: self.news_manager.fetch_news_data()
@@ -889,6 +1263,14 @@ class DisplayController:
             live_checks['ncaam_hockey'] = self.ncaam_hockey_live and self.ncaam_hockey_live.live_games
         if 'ncaaw_hockey_scoreboard' in self.config and self.config['ncaaw_hockey_scoreboard'].get('enabled', False):
             live_checks['ncaaw_hockey'] = self.ncaaw_hockey_live and self.ncaaw_hockey_live.live_games
+        if 'flights' in self.config and self.config['flights'].get('enabled', False):
+            live_checks['flight'] = self.flight_live and self.flight_live.has_live_content()
+        if 'golf' in self.config and self.config['golf'].get('enabled', False):
+            if self.golf_manager and self.golf_manager.has_active_tournaments():
+                live_checks['golf'] = True
+        if 'tennis' in self.config and self.config['tennis'].get('enabled', False):
+            if self.tennis_manager and self.tennis_manager.has_active_matches():
+                live_checks['tennis'] = True
 
         for sport, has_live_games in live_checks.items():
             if has_live_games:
@@ -1003,6 +1385,43 @@ class DisplayController:
             
         return bool(favorite_teams and (manager_recent or manager_upcoming))
 
+    def _mode_has_content(self, mode: str) -> bool:
+        """Check if a display mode has actual content to show.
+        
+        For sports modes, checks if the manager has games in its games_list.
+        For other modes, returns True (assumes they have content).
+        """
+        manager = self._get_manager_for_mode(mode)
+        if not manager:
+            return False
+        
+        # Check for games_list attribute (most sports managers)
+        if hasattr(manager, 'games_list'):
+            return len(manager.games_list) > 0
+        
+        # Check for live_games (live managers)
+        if hasattr(manager, 'live_games'):
+            return len(manager.live_games) > 0
+        
+        # Check for upcoming_games
+        if hasattr(manager, 'upcoming_games'):
+            return len(manager.upcoming_games) > 0
+        
+        # Check for recent_games (MLB/MiLB style)
+        if hasattr(manager, 'recent_games'):
+            return len(manager.recent_games) > 0
+        
+        # Check for golf tournaments
+        if hasattr(manager, 'has_active_tournaments'):
+            return manager.has_active_tournaments()
+
+        # Check for tennis matches
+        if hasattr(manager, 'has_active_matches'):
+            return manager.has_active_matches()
+
+        # Non-sports modes (clock, weather, etc.) - assume they have content
+        return True
+
     # --- SCHEDULING METHODS ---
     def _load_schedule_config(self):
         """Load schedule configuration once at startup."""
@@ -1037,10 +1456,35 @@ class DisplayController:
             logger.info("Within scheduled time. Activating display.")
             self.is_display_active = True
             self.force_clear = True # Force a redraw
+            
+            # Force refresh of time-sensitive data after schedule wake-up
+            self._refresh_time_sensitive_data()
         elif not should_be_active and self.is_display_active:
             logger.info("Outside of scheduled time. Deactivating display.")
             self.display_manager.clear()
             self.is_display_active = False
+
+    def _refresh_time_sensitive_data(self):
+        """Force refresh of time-sensitive data when display wakes from scheduled off period."""
+        logger.info("Refreshing time-sensitive data after schedule wake-up")
+        
+        # Weather - clear cached data to force fresh API fetch
+        if self.weather:
+            self.weather.last_update = 0
+            self.weather.weather_data = None
+            self.weather.hourly_forecast = None
+            self.weather.daily_forecast = None
+            logger.info("Weather cache cleared - will fetch fresh data")
+        
+        # Golf - clear last update times to force refresh
+        if self.golf_manager:
+            self.golf_manager.last_update = {}
+            logger.info("Golf cache cleared - will fetch fresh data")
+        
+        # Tennis - clear last update times to force refresh  
+        if self.tennis_manager:
+            self.tennis_manager.last_update = {}
+            logger.info("Tennis cache cleared - will fetch fresh data")
 
     def _update_live_modes_in_rotation(self):
         """Add or remove live modes from available_modes based on live_priority and live games."""
@@ -1157,8 +1601,8 @@ class DisplayController:
             logger.info("Clearing cache and refetching data to prevent stale data issues...")
             self.cache_manager.clear_cache()
             self._update_modules()
-            logger.info("Cache cleared, waiting 5 seconds for fresh data fetch...")
-            time.sleep(5)
+            logger.info("Cache cleared, waiting 30 seconds for fresh data fetch...")
+            time.sleep(30)
             self.current_display_mode = self.available_modes[self.current_mode_index] if self.available_modes else 'none'
             while True:
                 current_time = time.time()
@@ -1169,8 +1613,6 @@ class DisplayController:
                     time.sleep(60)
                     continue
                 
-                # Update data for all modules first
-                self._update_modules()
                 
                 # Process any deferred updates that may have accumulated
                 self.display_manager.process_deferred_updates()
@@ -1178,6 +1620,8 @@ class DisplayController:
                 # Update live modes in rotation if needed
                 self._update_live_modes_in_rotation()
 
+                # Update flight manager to detect overhead planes (must be in main loop)
+                if self.flight_live: self.flight_live.update()
                 # Check for live games and live_priority
                 has_live_games, live_sport_type = self._check_live_games()
                 is_currently_live = self.current_display_mode.endswith('_live')
@@ -1206,7 +1650,10 @@ class DisplayController:
                     ('ncaam_basketball', 'ncaam_basketball_live', self.ncaam_basketball_live_priority),
                     ('ncaaw_basketball', 'ncaaw_basketball_live', self.ncaaw_basketball_live_priority),
                     ('ncaam_hockey', 'ncaam_hockey_live', self.ncaam_hockey_live_priority),
-                    ('ncaaw_hockey', 'ncaaw_hockey_live', self.ncaaw_hockey_live_priority)
+                    ('ncaaw_hockey', 'ncaaw_hockey_live', self.ncaaw_hockey_live_priority),
+                    ('flight', 'flight_live', self.flight_live_priority),
+                    ('golf', 'golf', False),
+                    ('tennis', 'tennis', False)
                 ]:
                     manager = getattr(self, attr, None)
 
@@ -1318,7 +1765,8 @@ class DisplayController:
                         needs_switch = False
                         if self.current_display_mode.endswith('_live'):
                             # For live modes without live_priority, check if duration has elapsed
-                            if current_time - self.last_switch >= self.get_current_duration():
+                            duration = getattr(self, '_cached_mode_duration', self.get_current_duration())
+                            if current_time - self.last_switch >= duration:
                                 needs_switch = True
                                 self.current_mode_index = (self.current_mode_index + 1) % len(self.available_modes)
                                 new_mode_after_timer = self.available_modes[self.current_mode_index]
@@ -1330,7 +1778,7 @@ class DisplayController:
                                 # Reset logged duration when mode changes
                                 if hasattr(self, '_last_logged_duration'):
                                     delattr(self, '_last_logged_duration')
-                        elif current_time - self.last_switch >= self.get_current_duration() or self.force_change:
+                        elif current_time - self.last_switch >= getattr(self, '_cached_mode_duration', self.get_current_duration()) or self.force_change:
                             self.force_change = False
                             if self.current_display_mode == 'calendar' and self.calendar:
                                 self.calendar.advance_event()
@@ -1342,16 +1790,53 @@ class DisplayController:
                             if previous_mode_before_switch == 'music' and self.music_manager and new_mode_after_timer != 'music':
                                 self.music_manager.deactivate_music_display()
                             if self.current_display_mode != new_mode_after_timer:
+                                # Check if new mode has content - if not, skip to next mode
+                                skip_count = 0
+                                max_skips = len(self.available_modes)  # Prevent infinite loop
+                                while not self._mode_has_content(new_mode_after_timer) and skip_count < max_skips:
+                                    logger.debug(f"Skipping {new_mode_after_timer} - no content to display")
+                                    self.current_mode_index = (self.current_mode_index + 1) % len(self.available_modes)
+                                    new_mode_after_timer = self.available_modes[self.current_mode_index]
+                                    skip_count += 1
+                                
+                                if skip_count >= max_skips:
+                                    logger.warning("All modes appear empty - showing clock as fallback")
+                                    new_mode_after_timer = 'clock'
+                                
                                 logger.info(f"Switching to {new_mode_after_timer} from {self.current_display_mode}")
+                                # Check if we need to show a sport label
+                                current_sport_label = SPORT_LABELS.get(new_mode_after_timer)
+
+                                # Show label if sport type changed and labels are enabled
+                                if current_sport_label and current_sport_label != self.last_sport_label:
+                                    self._show_sport_label(current_sport_label)
+                                    self.last_sport_label = current_sport_label
+                                elif not current_sport_label:
+                                    # Reset tracking when showing non-sport content
+                                    self.last_sport_label = None
                             self.current_display_mode = new_mode_after_timer
                             # Reset logged duration when mode changes
                             if hasattr(self, '_last_logged_duration'):
                                 delattr(self, '_last_logged_duration')
+                            # **NEW: Update manager and cache duration on mode switch**
+                            manager = self._get_manager_for_mode(new_mode_after_timer)
+                            # Force sports managers to check cache for fresh data
+                            if manager and hasattr(manager, 'last_update'):
+                                # Handle both int and dict last_update (golf/tennis use dict)
+                                if isinstance(manager.last_update, dict):
+                                    manager.last_update.clear()
+                                else:
+                                    manager.last_update = 0
+                                # Call update() to process cached data immediately
+                                # This is safe because last_update=0 bypasses the interval check
+                                if hasattr(manager, 'update'):
+                                    manager.update()
+                                self._cached_mode_duration = self.get_current_duration()  # Cache it to avoid spam
                         else:
                             needs_switch = False
                         if needs_switch:
                             self.force_clear = True
-                            self.last_switch = current_time
+                            self.last_switch = time.time()  # Use actual time after API calls
                         else:
                             self.force_clear = False
                         # Only set manager_to_display if it hasn't been set by live priority logic
@@ -1464,8 +1949,14 @@ class DisplayController:
                                 manager_to_display = self.mlb_live
                             elif self.current_display_mode == 'milb_live' and self.milb_live:
                                 manager_to_display = self.milb_live
+                            elif self.current_display_mode == 'flight_live' and self.flight_live:
+                                manager_to_display = self.flight_live
                             elif self.current_display_mode == 'soccer_live' and self.soccer_live:
                                 manager_to_display = self.soccer_live
+                            elif self.current_display_mode == 'golf' and self.golf_manager:
+                                manager_to_display = self.golf_manager
+                            elif self.current_display_mode == 'tennis' and self.tennis_manager:
+                                manager_to_display = self.tennis_manager
 
                 # --- Perform Display Update ---
                 try:
@@ -1599,6 +2090,25 @@ class DisplayController:
 
                 # Add a short sleep to prevent high CPU usage but ruin scrolling text
                 # time.sleep(0.1)
+                # Memory cleanup every cycle
+                # gc.collect()  # Disabled - was causing stuttering
+                # Aggressive cleanup every 60 seconds
+                if not hasattr(self, '_last_aggressive_cleanup'):
+                    self._last_aggressive_cleanup = time.time()
+                if time.time() - self._last_aggressive_cleanup > 60:
+                    try:
+                        import psutil
+                        proc = psutil.Process()
+                        mem_before = proc.memory_info().rss / 1024 / 1024
+                        logging.warning(f"CLEANUP START: Memory {mem_before:.0f}MB, managers: {list(self.managers.keys())}")
+                        aggressive_memory_cleanup(self.cache_manager, self.managers)
+                        mem_after = proc.memory_info().rss / 1024 / 1024
+                        logging.warning(f"CLEANUP END: Memory {mem_after:.0f}MB (freed {mem_before - mem_after:.0f}MB)")
+                        self._last_aggressive_cleanup = time.time()
+                    except Exception as e:
+                        logging.error(f"Cleanup error: {e}")
+        except KeyboardInterrupt:
+                        logging.error(f"Cleanup error: {e}")
 
         except KeyboardInterrupt:
             logger.info("Display controller stopped by user")
@@ -1610,6 +2120,9 @@ class DisplayController:
             if self.music_manager: # Check if music_manager object exists
                 logger.info("Stopping music polling...")
                 self.music_manager.stop_polling()
+            if self.flight_live:  # Stop flight background polling
+                logger.info("Stopping flight polling...")
+                self.flight_live.stop_background_polling()
             logger.info("Cleanup complete.")
 
 def main():

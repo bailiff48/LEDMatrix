@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from pathlib import Path
+from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 
 import pytz
@@ -33,6 +34,7 @@ class BaseNCAAWBasketballManager(Basketball):
     _warning_cooldown = 60  # Only log warnings once per minute
     _last_log_times = {}
     _shared_data = None
+    _SHARED_DATA_MAX_AGE = 120  # Clear shared data after 2 minutes
     _last_shared_update = 0
 
     def __init__(
@@ -74,6 +76,11 @@ class BaseNCAAWBasketballManager(Basketball):
         """
         now = datetime.now(pytz.utc)
         season_year = now.year
+        if now.month < 8:
+            season_year = now.year - 1
+        start_date = (now - timedelta(days=5)).strftime("%Y%m%d")
+        end_date = (now + timedelta(days=7)).strftime("%Y%m%d")
+        datestring = f"{start_date}-{end_date}"
         cache_key = f"{self.sport_key}_schedule_{season_year}"
 
         # Check cache first
@@ -123,13 +130,18 @@ class BaseNCAAWBasketballManager(Basketball):
         max_retries = background_config.get("max_retries", 3)
         priority = background_config.get("priority", 2)
 
+        # Calculate date range (14 days back/forward)
+        from_date = (now - timedelta(days=5)).strftime("%Y%m%d")
+        to_date = (now + timedelta(days=7)).strftime("%Y%m%d")
+        date_range = f"{from_date}-{to_date}"
+        
         # Submit background fetch request
         request_id = self.background_service.submit_fetch_request(
-            sport="ncaa_womens_basketball",
+            sport="ncaa_womens_basketball",  # or "ncaa_mens_basketball"
             year=season_year,
-            url=ESPN_NCAAWB_SCOREBOARD_URL,
+            url=ESPN_NCAAWB_SCOREBOARD_URL,  # or ESPN_NCAAMB_SCOREBOARD_URL
             cache_key=cache_key,
-            params={"dates": season_year, "limit": 1000},
+            params={"dates": date_range, "limit": 500, "groups": 50},
             headers=self.headers,
             timeout=timeout,
             max_retries=max_retries,

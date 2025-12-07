@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
+from datetime import datetime
 
 import pytz
 import requests
@@ -77,7 +78,7 @@ class BaseWNBAManager(Basketball):
         season_year = now.year
         if now.month < 2:
             season_year = now.year - 1
-        datestring = f"{season_year}0401-{season_year+1}1101"
+        datestring = now.strftime('%Y%m%d')
         cache_key = f"{self.sport_key}_schedule_{season_year}"
 
         # Check cache first

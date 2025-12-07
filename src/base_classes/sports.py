@@ -25,6 +25,9 @@ from src.odds_manager import OddsManager
 
 
 class SportsCore(ABC):
+    # Class-level shared state for anti-spoiler window tracking
+    _teams_in_spoiler_window = {}
+
     def __init__(self, config: Dict[str, Any], display_manager: DisplayManager, cache_manager: CacheManager, logger: logging.Logger, sport_key: str):
         self.logger = logger
         self.config = config
@@ -74,6 +77,8 @@ class SportsCore(ABC):
         self.session.mount("http://", adapter)
 
         self._logo_cache = {}
+        self._logo_cache_max_size = 50  # Limit cache to prevent memory leaks
+        self._logo_cache_max_size = 50  # Limit cache to prevent memory leaks
 
         # Set up headers
         self.headers = {
@@ -91,6 +96,12 @@ class SportsCore(ABC):
         self.dynamic_resolver = DynamicTeamResolver()
         raw_favorite_teams = self.mode_config.get("favorite_teams", [])
         self.favorite_teams = self.dynamic_resolver.resolve_teams(raw_favorite_teams, sport_key)
+        
+        # Load anti-spoiler teams from top-level config
+        self.anti_spoiler_teams = config.get("anti_spoiler_teams", [])
+        self.anti_spoiler_delay_hours = config.get("anti_spoiler_delay_hours", 48)  # Default 2 days
+        if self.anti_spoiler_teams:
+            self.logger.info(f"Anti-spoiler enabled for teams: {self.anti_spoiler_teams} (delay: {self.anti_spoiler_delay_hours}h)")
         
         # Log dynamic team resolution
         if raw_favorite_teams != self.favorite_teams:
@@ -171,6 +182,278 @@ class SportsCore(ABC):
             fonts['detail'] = ImageFont.load_default()
             fonts['rank'] = ImageFont.load_default()
         return fonts
+
+
+    def _is_anti_spoiler_game(self, game: Dict, check_time_delay: bool = False) -> bool:
+        """
+        Check if this game involves an anti-spoiler team.
+        
+        Args:
+            game: Game dictionary with team info and timing
+            check_time_delay: If True, also check if enough time has passed since game ended
+                             (for recent games - hide until delay period passes)
+        
+        Returns:
+            True if scores should be hidden, False if scores can be shown
+        """
+        if not hasattr(self, 'anti_spoiler_teams') or not self.anti_spoiler_teams:
+            return False
+        
+        home_abbr = game.get('home_abbr', '')
+        away_abbr = game.get('away_abbr', '')
+        
+        # Check if any anti-spoiler team matches (format: LEAGUE_ABBR like NFL_KC)
+        # League mapping for sports where config name differs from sport_key
+        league_to_sport_key = {
+            'nfl': 'nfl',
+            'nba': 'nba',
+            'nhl': 'nhl',
+            'mlb': 'mlb',
+            'wnba': 'wnba',
+            'milb': 'milb',
+            'ncaa_fb': 'ncaa_fb',
+            'ncaam_basketball': 'ncaam_basketball',
+            'ncaaw_basketball': 'ncaaw_basketball',
+            'ncaa_baseball': 'ncaa_baseball',
+            # Soccer leagues all map to 'soccer'
+            'mls': 'soccer',
+            'epl': 'soccer',
+            'laliga': 'soccer',
+            'bundesliga': 'soccer',
+            'seriea': 'soccer',
+            'ligue1': 'soccer',
+            'ucl': 'soccer',
+            'europa': 'soccer',
+            'ligamx': 'soccer',
+            'soccer': 'soccer',
+        }
+        
+        is_anti_spoiler_team = False
+        for team in self.anti_spoiler_teams:
+            # Handle formats: "NFL_KC", "NCAA_FB_IOWA", "MLS_SKC", or just "KC"
+            if '_' in team:
+                # Split on LAST underscore (e.g., NCAA_FB_IOWA -> league=NCAA_FB, abbr=IOWA)
+                last_underscore = team.rfind('_')
+                league = team[:last_underscore].lower()
+                abbr = team[last_underscore + 1:]
+                
+                # Check if this sport matches the league
+                if hasattr(self, 'sport_key'):
+                    expected_sport_key = league_to_sport_key.get(league, league)
+                    if expected_sport_key == self.sport_key.lower():
+                        if abbr == home_abbr or abbr == away_abbr:
+                            is_anti_spoiler_team = True
+                            break
+            else:
+                # Just abbreviation, match any league
+                if team == home_abbr or team == away_abbr:
+                    is_anti_spoiler_team = True
+                    break
+        
+        if not is_anti_spoiler_team:
+            return False
+        
+        # If not checking time delay (live games), just return True
+        if not check_time_delay:
+            return True
+        
+        # For recent games, check if enough time has passed
+        delay_hours = getattr(self, 'anti_spoiler_delay_hours', 48)
+        game_time = game.get('start_time_utc')
+        
+        if game_time:
+            try:
+                now = datetime.now(timezone.utc)
+                # Calculate hours since game started (games are typically 2-4 hours)
+                # Add ~3 hours to game start to estimate end time
+                estimated_end = game_time + timedelta(hours=3)
+                hours_since_end = (now - estimated_end).total_seconds() / 3600
+                
+                if hours_since_end < delay_hours:
+                    # Still within spoiler protection window
+                    return True
+                else:
+                    # Enough time has passed, show the score
+                    return False
+            except Exception as e:
+                self.logger.warning(f"Error checking anti-spoiler time: {e}")
+                return True  # Default to hiding if we can't determine
+        
+        # If no game time available, default to hiding
+        return True
+
+    def _is_team_anti_spoiler(self, team_abbr: str) -> bool:
+        """Check if a team abbreviation is in the anti-spoiler list for this sport."""
+        if not hasattr(self, 'anti_spoiler_teams') or not self.anti_spoiler_teams:
+            return False
+        
+        league_to_sport_key = {
+            'nfl': 'nfl', 'nba': 'nba', 'nhl': 'nhl', 'mlb': 'mlb',
+            'wnba': 'wnba', 'milb': 'milb', 'ncaa_fb': 'ncaa_fb',
+            'ncaam_basketball': 'ncaam_basketball', 'ncaaw_basketball': 'ncaaw_basketball',
+            'ncaa_baseball': 'ncaa_baseball',
+            'mls': 'soccer', 'epl': 'soccer', 'laliga': 'soccer',
+            'bundesliga': 'soccer', 'seriea': 'soccer', 'ligue1': 'soccer',
+            'ucl': 'soccer', 'europa': 'soccer', 'ligamx': 'soccer', 'soccer': 'soccer',
+        }
+        
+        for team in self.anti_spoiler_teams:
+            if '_' in team:
+                last_underscore = team.rfind('_')
+                league = team[:last_underscore].lower()
+                abbr = team[last_underscore + 1:]
+                
+                if hasattr(self, 'sport_key'):
+                    expected_sport_key = league_to_sport_key.get(league, league)
+                    if expected_sport_key == self.sport_key.lower() and abbr == team_abbr:
+                        return True
+            else:
+                if team == team_abbr:
+                    return True
+        return False
+
+    def _mark_team_in_spoiler_window(self, team_abbr: str) -> None:
+        """Mark a team as having a game in the spoiler window (class-level shared state)."""
+        import time
+        sport_key = getattr(self, 'sport_key', 'unknown').lower()
+        
+        if sport_key not in SportsCore._teams_in_spoiler_window:
+            SportsCore._teams_in_spoiler_window[sport_key] = {'teams': set(), 'updated': 0}
+        
+        SportsCore._teams_in_spoiler_window[sport_key]['teams'].add(team_abbr)
+        SportsCore._teams_in_spoiler_window[sport_key]['updated'] = time.time()
+
+    def _update_teams_in_window(self) -> None:
+        """
+        Scan this manager's games and mark any anti-spoiler teams that have games in window.
+        Should be called from update() after fetching game data.
+        """
+        if not hasattr(self, 'anti_spoiler_teams') or not self.anti_spoiler_teams:
+            return
+        
+        delay_hours = getattr(self, 'anti_spoiler_delay_hours', 48)
+        now = datetime.now(timezone.utc)
+        
+        # Gather all games from this manager instance
+        all_games = []
+        if hasattr(self, 'live_games') and self.live_games:
+            all_games.extend(self.live_games)
+        if hasattr(self, 'games_list') and self.games_list:
+            all_games.extend(self.games_list)
+        if hasattr(self, 'recent_games') and self.recent_games:
+            all_games.extend(self.recent_games)
+        
+        for game in all_games:
+            home = game.get('home_abbr', '')
+            away = game.get('away_abbr', '')
+            
+            # Check if game is in window
+            game_time = game.get('start_time_utc')
+            is_live = game.get('is_live', False)
+            
+            in_window = False
+            if is_live:
+                in_window = True
+            elif game_time:
+                try:
+                    hours_since_start = (now - game_time).total_seconds() / 3600
+                    if -1 <= hours_since_start < delay_hours:
+                        in_window = True
+                except Exception:
+                    pass
+            
+            if in_window:
+                # Mark anti-spoiler teams if they're in this game
+                for abbr in [home, away]:
+                    if self._is_team_anti_spoiler(abbr):
+                        self._mark_team_in_spoiler_window(abbr)
+                        self.logger.info(f"[ANTI-SPOILER] Marked {abbr} as in window")
+
+    def _is_anti_spoiler_team_in_window(self, team_abbr: str) -> bool:
+        """
+        Check if an anti-spoiler team currently has any game within the spoiler window.
+        Uses class-level shared state that all manager instances update.
+        """
+        if not self._is_team_anti_spoiler(team_abbr):
+            return False
+        
+        # Check class-level shared state first
+        sport_key = getattr(self, 'sport_key', 'unknown').lower()
+        if sport_key in SportsCore._teams_in_spoiler_window:
+            teams_in_window = SportsCore._teams_in_spoiler_window[sport_key].get('teams', set())
+            if team_abbr in teams_in_window:
+                self.logger.info(f"[ANTI-SPOILER] Team {team_abbr} found in shared window state")
+                return True
+        
+        # Fallback: check this instance's games directly (including live_games!)
+        delay_hours = getattr(self, 'anti_spoiler_delay_hours', 48)
+        now = datetime.now(timezone.utc)
+        
+        all_games = []
+        if hasattr(self, 'live_games') and self.live_games:
+            all_games.extend(self.live_games)
+        if hasattr(self, 'games_list') and self.games_list:
+            all_games.extend(self.games_list)
+        if hasattr(self, 'recent_games') and self.recent_games:
+            all_games.extend(self.recent_games)
+
+        for game in all_games:
+            home = game.get('home_abbr', '')
+            away = game.get('away_abbr', '')
+
+            if team_abbr not in (home, away):
+                continue
+
+            game_time = game.get('start_time_utc')
+            is_live = game.get('is_live', False)
+            
+            if is_live:
+                self.logger.debug(f"[ANTI-SPOILER] Team {team_abbr} has LIVE game")
+                return True
+                
+            if game_time:
+                try:
+                    hours_since_start = (now - game_time).total_seconds() / 3600
+                    if -1 <= hours_since_start < delay_hours:
+                        self.logger.debug(f"[ANTI-SPOILER] Team {team_abbr} has game in window ({hours_since_start:.1f}h ago)")
+                        return True
+                except Exception as e:
+                    self.logger.warning(f"Error checking spoiler window for {team_abbr}: {e}")
+
+        return False
+
+    def _should_mask_record(self, team_abbr: str = None, current_game: dict = None) -> bool:
+        """
+        Determine if records should be masked for this game.
+        
+        NEW LOGIC: If EITHER team in the game is an anti-spoiler team that 
+        currently has ANY game within the spoiler window, mask records for 
+        BOTH teams in this game.
+        
+        Args:
+            team_abbr: Unused, kept for backwards compatibility
+            current_game: The game being displayed (required for new logic)
+        
+        Returns:
+            True if records should be masked, False otherwise
+        """
+        if current_game is None:
+            return False
+        
+        if not hasattr(self, 'anti_spoiler_teams') or not self.anti_spoiler_teams:
+            return False
+        
+        home_abbr = current_game.get('home_abbr', '')
+        away_abbr = current_game.get('away_abbr', '')
+        
+        # Check if either team is an anti-spoiler team currently in window
+        for abbr in [home_abbr, away_abbr]:
+            if self._is_anti_spoiler_team_in_window(abbr):
+                self.logger.debug(f"[ANTI-SPOILER] Masking records for game {away_abbr}@{home_abbr} (team {abbr} in window)")
+                return True
+        
+        return False
+
 
     def _draw_dynamic_odds(self, draw: ImageDraw.Draw, odds: Dict[str, Any], width: int, height: int) -> None:
         """Draw odds with dynamic positioning - only show negative spread and position O/U based on favored team."""
@@ -302,6 +585,15 @@ class SportsCore(ABC):
             max_width = int(self.display_width * 1.5)
             max_height = int(self.display_height * 1.5)
             logo.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
+            # Limit logo cache size to prevent memory leaks
+            if len(self._logo_cache) >= self._logo_cache_max_size:
+                oldest_key = next(iter(self._logo_cache))
+                old_logo = self._logo_cache.pop(oldest_key)
+                if hasattr(old_logo, 'close'):
+                    try:
+                        old_logo.close()
+                    except:
+                        pass
             self._logo_cache[team_abbrev] = logo
             return logo
 
@@ -504,7 +796,7 @@ class SportsCore(ABC):
             formatted_date_yesterday = yesterday.strftime("%Y%m%d")
             # Fetch todays games only
             url = f"https://site.api.espn.com/apis/site/v2/sports/{self.sport}/{self.league}/scoreboard"
-            response = self.session.get(url, params={"dates": f"{formatted_date_yesterday}-{formatted_date}", "limit": 1000}, headers=self.headers, timeout=10)
+            response = self.session.get(url, params={"dates": formatted_date, "limit": 500}, headers=self.headers, timeout=10)
             response.raise_for_status()
             data = response.json()
             events = data.get('events', [])
@@ -529,7 +821,11 @@ class SportsCore(ABC):
             end_date = now + timedelta(weeks=1)
             date_str = f"{start_date.strftime('%Y%m%d')}-{end_date.strftime('%Y%m%d')}"
             url = f"https://site.api.espn.com/apis/site/v2/sports/{self.sport}/{self.league}/scoreboard"
-            response = self.session.get(url, params={"dates": date_str, "limit": 1000},headers=self.headers, timeout=10)
+            # Add groups=50 for college sports to get all Division I games
+            params = {"dates": date_str, "limit": 500}
+            if "college" in self.league:
+                params["groups"] = 50
+            response = self.session.get(url, params=params, headers=self.headers, timeout=10)
             response.raise_for_status()
             data = response.json()
             immediate_events = data.get('events', [])
@@ -558,7 +854,7 @@ class SportsUpcoming(SportsCore):
         self.last_warning_time = 0
         self.warning_cooldown = 300
         self.last_game_switch = 0
-        self.game_display_duration = 15 # Display each upcoming game for 15 seconds
+        self.game_display_duration = 4 # Display each upcoming game for 15 seconds
 
     def update(self):
         """Update upcoming games data."""
@@ -656,6 +952,7 @@ class SportsUpcoming(SportsCore):
             if new_game_ids != current_game_ids:
                  self.logger.info(f"Found {len(team_games)} upcoming games within window for display.") # Changed log prefix
                  self.games_list = team_games
+                 self._update_teams_in_window()  # Update anti-spoiler shared state
                  if not self.current_game or not self.games_list or self.current_game['id'] not in new_game_ids:
                       self.current_game_index = 0
                       self.current_game = self.games_list[0] if self.games_list else None
@@ -700,8 +997,12 @@ class SportsUpcoming(SportsCore):
 
             if not home_logo or not away_logo:
                 self.logger.error(f"Failed to load logos for game: {game.get('id')}") # Changed log prefix
-                draw_final = ImageDraw.Draw(main_img.convert('RGB'))
-                self._draw_text_with_outline(draw_final, "Logo Error", (5,5), self.fonts['status'])
+                # Display team abbreviations as text instead of blocking
+                draw_text = ImageDraw.Draw(main_img.convert('RGB'))
+                away_abbr = game.get("away_abbr", "???")
+                home_abbr = game.get("home_abbr", "???")
+                score_text = f"{away_abbr} {game.get('away_score', 0)} @ {home_abbr} {game.get('home_score', 0)}"
+                self._draw_text_with_outline(draw_text, score_text, (5, 12), self.fonts['status'])
                 self.display_manager.image.paste(main_img.convert('RGB'), (0, 0))
                 self.display_manager.update_display()
                 return
@@ -787,7 +1088,12 @@ class SportsUpcoming(SportsCore):
                             away_text = ''
                     elif self.show_records:
                         # Show record only when rankings are disabled
-                        away_text = game.get('away_record', '')
+                        # Check if this team's record should be masked (anti-spoiler)
+                        away_abbr = game.get('away_abbr', '')
+                        if self._should_mask_record(away_abbr, game):
+                            away_text = ''  # Mask record for anti-spoiler team
+                        else:
+                            away_text = game.get('away_record', '')
                     else:
                         away_text = ''
                     
@@ -815,7 +1121,12 @@ class SportsUpcoming(SportsCore):
                             home_text = ''
                     elif self.show_records:
                         # Show record only when rankings are disabled
-                        home_text = game.get('home_record', '')
+                        # Check if this team's record should be masked (anti-spoiler)
+                        home_abbr = game.get('home_abbr', '')
+                        if self._should_mask_record(home_abbr, game):
+                            home_text = ''  # Mask record for anti-spoiler team
+                        else:
+                            home_text = game.get('home_record', '')
                     else:
                         home_text = ''
                     
@@ -885,7 +1196,7 @@ class SportsRecent(SportsCore):
         self.last_update = 0
         self.update_interval = self.mode_config.get("recent_update_interval", 3600) # Check for recent games every hour
         self.last_game_switch = 0
-        self.game_display_duration = 15 # Display each recent game for 15 seconds
+        self.game_display_duration = 4 # Display each recent game for 15 seconds
 
     def update(self):
         """Update recent games data."""
@@ -933,23 +1244,35 @@ class SportsRecent(SportsCore):
                                          game['away_abbr'] in self.favorite_teams]
                 self.logger.info(f"Found {len(favorite_team_games)} favorite team games out of {len(processed_games)} total final games within last 21 days")
                 
-                # Select one game per favorite team (most recent game for each team)
+                # Show ALL recent games for favorite teams, limited by config
+                # Deduplicate by game ID (in case both teams are favorites)
+                seen_ids = set()
                 team_games = []
-                for team in self.favorite_teams:
-                    # Find games where this team is playing
-                    team_specific_games = [game for game in favorite_team_games
-                                          if game['home_abbr'] == team or game['away_abbr'] == team]
-                    
-                    if team_specific_games:
-                        # Sort by game time and take the most recent
-                        team_specific_games.sort(key=lambda g: g.get('start_time_utc') or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
-                        team_games.append(team_specific_games[0])
-                
-                # Sort the final list by game time (most recent first)
+                for game in favorite_team_games:
+                    if game["id"] not in seen_ids:
+                        seen_ids.add(game["id"])
+                        team_games.append(game)
+
+                # Sort by game time (most recent first)
                 team_games.sort(key=lambda g: g.get('start_time_utc') or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
-                
-                # Debug: Show which games are selected for display
+
+                # Limit to configured number of recent games
+                team_games = team_games[:self.recent_games_to_show]
+
+                # Format game_date for display and debug output
                 for i, game in enumerate(team_games):
+                    # Format the date for display (short format like "11/30")
+                    start_time = game.get('start_time_utc')
+                    if start_time:
+                        try:
+                            import pytz
+                            local_tz = pytz.timezone(self.config.get('timezone', 'America/Chicago'))
+                            local_time = start_time.astimezone(local_tz)
+                            game['game_date'] = local_time.strftime("%-m/%-d")
+                        except Exception:
+                            game['game_date'] = ''
+                    else:
+                        game['game_date'] = ''
                     self.logger.info(f"Game {i+1} for display: {game['away_abbr']} @ {game['home_abbr']} - {game.get('start_time_utc')} - Score: {game['away_score']}-{game['home_score']}")
             else:
                  team_games = processed_games # Show all recent games if no favorites defined
@@ -958,6 +1281,20 @@ class SportsRecent(SportsCore):
                  team_games.sort(key=lambda g: g.get('start_time_utc') or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
                  # Limit to the specified number of recent games
                  team_games = team_games[:self.recent_games_to_show]
+                 # Format game_date for display
+                 for game in team_games:
+                     start_time = game.get('start_time_utc')
+                     if start_time:
+                         try:
+                             import pytz
+                             local_tz = pytz.timezone(self.config.get('timezone', 'America/Chicago'))
+                             local_time = start_time.astimezone(local_tz)
+                             game['game_date'] = local_time.strftime("%-m/%-d")
+                         except Exception:
+                             game['game_date'] = ''
+                     else:
+                         game['game_date'] = ''
+
 
             # Check if the list of games to display has changed
             new_game_ids = {g['id'] for g in team_games}
@@ -966,6 +1303,7 @@ class SportsRecent(SportsCore):
             if new_game_ids != current_game_ids:
                 self.logger.info(f"Found {len(team_games)} final games within window for display.") # Changed log prefix
                 self.games_list = team_games
+                self._update_teams_in_window()  # Update anti-spoiler shared state
                 # Reset index if list changed or current game removed
                 if not self.current_game or not self.games_list or self.current_game['id'] not in new_game_ids:
                      self.current_game_index = 0
@@ -1003,12 +1341,14 @@ class SportsRecent(SportsCore):
 
             home_logo = self._load_and_resize_logo(game["home_id"], game["home_abbr"], game["home_logo_path"], game.get("home_logo_url"))
             away_logo = self._load_and_resize_logo(game["away_id"], game["away_abbr"], game["away_logo_path"], game.get("away_logo_url"))
-
             if not home_logo or not away_logo:
                 self.logger.error(f"Failed to load logos for game: {game.get('id')}") # Changed log prefix
-                # Draw placeholder text if logos fail (similar to live)
-                draw_final = ImageDraw.Draw(main_img.convert('RGB'))
-                self._draw_text_with_outline(draw_final, "Logo Error", (5,5), self.fonts['status'])
+                # Display team abbreviations as text instead of blocking
+                draw_text = ImageDraw.Draw(main_img.convert('RGB'))
+                away_abbr = game.get("away_abbr", "???")
+                home_abbr = game.get("home_abbr", "???")
+                game_text = f"{away_abbr} @ {home_abbr}"
+                self._draw_text_with_outline(draw_text, game_text, (5, 12), self.fonts['status'])
                 self.display_manager.image.paste(main_img.convert('RGB'), (0, 0))
                 self.display_manager.update_display()
                 return
@@ -1028,9 +1368,13 @@ class SportsRecent(SportsCore):
             # Note: Rankings are now handled in the records/rankings section below
 
             # Final Scores (Centered, same position as live)
-            home_score = str(game.get("home_score", "0"))
-            away_score = str(game.get("away_score", "0"))
-            score_text = f"{away_score}-{home_score}"
+            # Check anti-spoiler before showing scores (with time delay for recent games)
+            if self._is_anti_spoiler_game(game, check_time_delay=True):
+                score_text = "?-?"  # Hide score until delay period passes
+            else:
+                home_score = str(game.get("home_score", "0"))
+                away_score = str(game.get("away_score", "0"))
+                score_text = f"{away_score}-{home_score}"
             score_width = draw_overlay.textlength(score_text, font=self.fonts['score'])
             score_x = (self.display_width - score_width) // 2
             score_y = self.display_height - 14
@@ -1042,6 +1386,14 @@ class SportsRecent(SportsCore):
             status_x = (self.display_width - status_width) // 2
             status_y = 1
             self._draw_text_with_outline(draw_overlay, status_text, (status_x, status_y), self.fonts['time'])
+
+            # Date text (centered, below "Final") - matches upcoming games format
+            game_date = game.get("game_date", "")
+            if game_date:
+                date_width = draw_overlay.textlength(game_date, font=self.fonts['time'])
+                date_x = (self.display_width - date_width) // 2
+                date_y = 9  # Below "Final" text
+                self._draw_text_with_outline(draw_overlay, game_date, (date_x, date_y), self.fonts['time'])
 
             # Draw odds if available
             if 'odds' in game and game['odds']:
@@ -1084,7 +1436,10 @@ class SportsRecent(SportsCore):
                             away_text = ''
                     elif self.show_records:
                         # Show record only when rankings are disabled
-                        away_text = game.get('away_record', '')
+                        if self._should_mask_record(away_abbr, game):
+                            away_text = ''
+                        else:
+                            away_text = game.get('away_record', '')
                     else:
                         away_text = ''
                     
@@ -1112,7 +1467,10 @@ class SportsRecent(SportsCore):
                             home_text = ''
                     elif self.show_records:
                         # Show record only when rankings are disabled
-                        home_text = game.get('home_record', '')
+                        if self._should_mask_record(home_abbr, game):
+                            home_text = ''
+                        else:
+                            home_text = game.get('home_record', '')
                     else:
                         home_text = ''
                     
@@ -1178,7 +1536,7 @@ class SportsLive(SportsCore):
         self.live_games = []
         self.current_game_index = 0
         self.last_game_switch = 0
-        self.game_display_duration = self.mode_config.get("live_game_duration", 20)
+        self.game_display_duration = self.mode_config.get("live_game_duration", 5)
         self.last_display_update = 0
         self.last_log_time = 0
         self.log_interval = 300
@@ -1262,6 +1620,7 @@ class SportsLive(SportsCore):
 
                         if new_game_ids != current_game_ids:
                             self.live_games = sorted(new_live_games, key=lambda g: g.get('start_time_utc') or datetime.now(timezone.utc)) # Sort by start time
+                            self._update_teams_in_window()  # Update anti-spoiler shared state
                             # Reset index if current game is gone or list is new
                             if not self.current_game or self.current_game['id'] not in new_game_ids:
                                 self.current_game_index = 0

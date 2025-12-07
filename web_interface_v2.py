@@ -8,6 +8,9 @@ import threading
 import time
 import base64
 import psutil
+from src.team_selector_api import register_team_selector_routes
+from src.wifi_manager import WiFiManager
+from src.wifi_api import register_wifi_routes
 from pathlib import Path
 from src.config_manager import ConfigManager
 from src.display_manager import DisplayManager
@@ -33,6 +36,9 @@ from src.ncaa_fb_managers import NCAAFBLiveManager, NCAAFBRecentManager, NCAAFBU
 from src.ncaa_baseball_managers import NCAABaseballLiveManager, NCAABaseballRecentManager, NCAABaseballUpcomingManager
 from src.ncaam_basketball_managers import NCAAMBasketballLiveManager, NCAAMBasketballRecentManager, NCAAMBasketballUpcomingManager
 from src.ncaam_hockey_managers import NCAAMHockeyLiveManager, NCAAMHockeyRecentManager, NCAAMHockeyUpcomingManager
+from src.flight_config_api import register_flight_config_routes
+from src.golf_config_api import register_golf_config_routes
+from src.tennis_config_api import register_tennis_config_routes
 from PIL import Image
 import io
 import signal
@@ -41,6 +47,13 @@ import logging
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+register_team_selector_routes(app)
+wifi_manager = WiFiManager()
+register_wifi_routes(app, wifi_manager)
+register_flight_config_routes(app)
+register_golf_config_routes(app)
+register_tennis_config_routes(app)
+
 
 # Custom Jinja2 filter for safe nested dictionary access
 @app.template_filter('safe_get')
@@ -62,6 +75,86 @@ def safe_get(obj, key_path, default=''):
         return current if current is not None else default
     except (AttributeError, KeyError, TypeError):
         return default
+
+@app.route('/api/duration-config', methods=['GET'])
+def get_duration_config():
+    """Get current duration configuration."""
+    try:
+        config_path = Path('/home/ledpi/LEDMatrix/config/config.json')
+        
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        
+        use_dynamic = config.get('display', {}).get('use_dynamic_durations', False)
+        
+        # Get max_sport_duration from dynamic_duration_config.sports.max_total
+        max_sport_duration = config.get('display', {}).get('dynamic_duration_config', {}).get('sports', {}).get('max_total', 90)
+
+        return jsonify({
+            'success': True,
+            'use_dynamic_durations': use_dynamic,
+            'max_sport_duration': max_sport_duration
+        })
+    
+    except Exception as e:
+        logger.error(f"Error reading duration config: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/duration-config', methods=['POST'])
+def set_duration_config():
+    """Update duration configuration."""
+    try:
+        data = request.get_json()
+        use_dynamic = data.get('use_dynamic_durations', False)
+        max_sport_duration = data.get('max_sport_duration')
+        
+        config_path = Path('/home/ledpi/LEDMatrix/config/config.json')
+        
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        
+        if 'display' not in config:
+            config['display'] = {}
+        
+        # Update use_dynamic_durations if provided
+        if use_dynamic is not None:
+            config['display']['use_dynamic_durations'] = use_dynamic
+            logger.info(f"Duration config updated: use_dynamic_durations = {use_dynamic}")
+        
+        # Update max_sport_duration if provided
+        if max_sport_duration is not None:
+            # Ensure the nested structure exists
+            if 'dynamic_duration_config' not in config['display']:
+                config['display']['dynamic_duration_config'] = {}
+            if 'sports' not in config['display']['dynamic_duration_config']:
+                config['display']['dynamic_duration_config']['sports'] = {
+                    'base_per_item': 8,
+                    'min_per_item': 4,
+                    'scale_factor': 0.4
+                }
+            
+            config['display']['dynamic_duration_config']['sports']['max_total'] = int(max_sport_duration)
+            logger.info(f"Duration config updated: max_sport_duration = {max_sport_duration}")
+        
+        with open(config_path, 'w') as f:
+            json.dump(config, f, indent=4)
+        
+        return jsonify({
+            'success': True,
+            'use_dynamic_durations': config['display'].get('use_dynamic_durations', False),
+            'max_sport_duration': config['display'].get('dynamic_duration_config', {}).get('sports', {}).get('max_total', 90)
+        })
+
+    except Exception as e:
+        logger.error(f"Error saving duration config: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 # Template context processor to provide safe access methods
 @app.context_processor

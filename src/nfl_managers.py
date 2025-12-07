@@ -22,6 +22,7 @@ class BaseNFLManager(Football): # Renamed class
     _last_warning_time = 0
     _warning_cooldown = 60  # Only log warnings once per minute
     _shared_data = None
+    _SHARED_DATA_MAX_AGE = 120  # Clear shared data after 2 minutes
     _last_shared_update = 0
 
     def __init__(self, config: Dict[str, Any], display_manager: DisplayManager, cache_manager: CacheManager):
@@ -94,7 +95,7 @@ class BaseNFLManager(Football): # Renamed class
             year=season_year,
             url=ESPN_NFL_SCOREBOARD_URL,
             cache_key=cache_key,
-            params={"dates": datestring, "limit": 1000},
+            params={"dates": datestring, "limit": 500},
             headers=self.headers,
             timeout=timeout,
             max_retries=max_retries,

@@ -241,9 +241,13 @@ class HockeyLive(Hockey, SportsLive):
             )
 
             # Scores (centered, slightly above bottom)
-            home_score = str(game.get("home_score", "0"))
-            away_score = str(game.get("away_score", "0"))
-            score_text = f"{away_score}-{home_score}"
+            # Check anti-spoiler for live games (no time delay - hide while game is live)
+            if self._is_anti_spoiler_game(game, check_time_delay=False):
+                score_text = "?-?"  # Hide live score for anti-spoiler teams
+            else:
+                home_score = str(game.get("home_score", "0"))
+                away_score = str(game.get("away_score", "0"))
+                score_text = f"{away_score}-{home_score}"
             score_width = draw_overlay.textlength(score_text, font=self.fonts["score"])
             score_x = (self.display_width - score_width) // 2
             score_y = (

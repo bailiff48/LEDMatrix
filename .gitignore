@@ -26,3 +26,24 @@ emulator_config.json
 
 # Cache directory
 cache/
+# Backup files
+*.backup*
+*.old
+*.broken*
+*.before*
+*.save
+*.bak
+
+# Test/debug files
+*_test.txt
+
+# Runtime downloaded assets
+assets/
+cache/
+logos/
+*.png
+*.jpg
+
+# Config files with personal data
+config/config.json
+config/config_secrets.json

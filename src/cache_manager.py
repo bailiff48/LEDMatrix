@@ -55,6 +55,24 @@ class CacheManager:
             'total_fetch_time': 0.0,
             'fetch_count': 0
         }
+    def clear_old_entries(self, max_age_seconds: int = 300):
+        """Clear cache entries older than max_age_seconds."""
+        import time
+        current_time = time.time()
+        with self._cache_lock:
+            keys_to_remove = []
+            for key, entry in list(self._memory_cache.items()):
+                if isinstance(entry, dict) and 'timestamp' in entry:
+                    if current_time - entry['timestamp'] > max_age_seconds:
+                        keys_to_remove.append(key)
+                elif isinstance(entry, tuple) and len(entry) >= 2:
+                    if current_time - entry[1] > max_age_seconds:
+                        keys_to_remove.append(key)
+            for key in keys_to_remove:
+                del self._memory_cache[key]
+            if keys_to_remove:
+                self.logger.debug(f"Cleared {len(keys_to_remove)} old cache entries")
+
 
     def _get_writable_cache_dir(self) -> Optional[str]:
         """Tries to find or create a writable cache directory, preferring a system path when available."""
@@ -454,7 +472,16 @@ class CacheManager:
             return cached_data['data']
         return cached_data
 
+    MAX_CACHE_ENTRIES = 5  # Limit cache to prevent memory leaks
+    
     def set(self, key: str, data: Dict) -> None:
+        # Enforce cache size limit
+        with self._cache_lock:
+            if len(self._memory_cache) >= self.MAX_CACHE_ENTRIES:
+                # Remove oldest entries (first 5)
+                keys_to_remove = list(self._memory_cache.keys())[:5]
+                for k in keys_to_remove:
+                    del self._memory_cache[k]
         """Store data in cache with current timestamp."""
         cache_data = {
             'data': data,

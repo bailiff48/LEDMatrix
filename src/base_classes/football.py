@@ -195,9 +195,13 @@ class FootballLive(Football, SportsLive):
             # Note: Rankings are now handled in the records/rankings section below
 
             # Scores (centered, slightly above bottom)
-            home_score = str(game.get("home_score", "0"))
-            away_score = str(game.get("away_score", "0"))
-            score_text = f"{away_score}-{home_score}"
+            # Check anti-spoiler for live games (no time delay - hide while game is live)
+            if self._is_anti_spoiler_game(game, check_time_delay=False):
+                score_text = "?-?"  # Hide live score for anti-spoiler teams
+            else:
+                home_score = str(game.get("home_score", "0"))
+                away_score = str(game.get("away_score", "0"))
+                score_text = f"{away_score}-{home_score}"
             score_width = draw_overlay.textlength(score_text, font=self.fonts['score'])
             score_x = (self.display_width - score_width) // 2
             score_y = (self.display_height // 2) - 3 #centered #from 14 # Position score higher
@@ -343,7 +347,11 @@ class FootballLive(Football, SportsLive):
                             away_text = ''
                     elif self.show_records:
                         # Show record only when rankings are disabled
-                        away_text = game.get('away_record', '')
+                        # Check anti-spoiler before showing record
+                        if self._should_mask_record(away_abbr, game):
+                            away_text = ''
+                        else:
+                            away_text = game.get('away_record', '')
                     else:
                         away_text = ''
                     
@@ -371,7 +379,11 @@ class FootballLive(Football, SportsLive):
                             home_text = ''
                     elif self.show_records:
                         # Show record only when rankings are disabled
-                        home_text = game.get('home_record', '')
+                        # Check anti-spoiler before showing record
+                        if self._should_mask_record(home_abbr, game):
+                            home_text = ''
+                        else:
+                            home_text = game.get('home_record', '')
                     else:
                         home_text = ''
                     

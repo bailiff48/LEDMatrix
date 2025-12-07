@@ -451,57 +451,27 @@ class BackgroundDataService:
     def clear_completed_requests(self, older_than_hours: int = 24):
         """
         Clear completed requests older than specified time.
-        
+
         Args:
-            older_than_hours: Clear requests older than this many hours
+            older_than_hours: Clear requests older than this many hours (0 = clear ALL)
         """
-        cutoff_time = time.time() - (older_than_hours * 3600)
-        
         with self._lock:
-            to_remove = []
-            for request_id, result in self.completed_requests.items():
-                # We don't store creation time in results, so we'll use a simple count-based approach
-                # In a real implementation, you'd want to store timestamps
-                if len(self.completed_requests) > 1000:  # Keep last 1000 results
-                    to_remove.append(request_id)
-            
-            for request_id in to_remove:
-                del self.completed_requests[request_id]
-            
-            if to_remove:
-                logger.info(f"Cleared {len(to_remove)} old completed requests")
-    
-    def shutdown(self, wait: bool = True, timeout: int = 30):
-        """
-        Shutdown the background data service.
-        
-        Args:
-            wait: Whether to wait for active requests to complete
-            timeout: Maximum time to wait for shutdown
-        """
-        logger.info("Shutting down BackgroundDataService...")
-        
-        self._shutdown = True
-        
-        # Cancel all active requests
-        with self._lock:
-            for request_id in list(self.active_requests.keys()):
-                self.cancel_request(request_id)
-        
-        # Shutdown executor with compatibility for older Python versions
-        try:
-            # Try with timeout parameter (Python 3.9+)
-            self.executor.shutdown(wait=wait, timeout=timeout)
-        except TypeError:
-            # Fallback for older Python versions that don't support timeout
-            if wait and timeout:
-                # For older versions, we can't specify timeout, so just wait
-                self.executor.shutdown(wait=True)
-            else:
-                self.executor.shutdown(wait=wait)
-        
-        logger.info("BackgroundDataService shutdown complete")
-    
+            # If older_than_hours is 0, clear ALL completed requests immediately
+            if older_than_hours == 0:
+                count = len(self.completed_requests)
+                self.completed_requests.clear()
+                if count > 0:
+                    logger.info(f"Cleared all {count} completed requests")
+                return
+
+            # Otherwise keep max 100 entries (not 1000!)
+            if len(self.completed_requests) > 100:
+                to_remove = list(self.completed_requests.keys())[:-100]
+                for request_id in to_remove:
+                    del self.completed_requests[request_id]
+                if to_remove:
+                    logger.info(f"Cleared {len(to_remove)} old completed requests")
+
     def __del__(self):
         """Cleanup when service is destroyed."""
         if not self._shutdown:

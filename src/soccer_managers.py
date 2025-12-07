@@ -28,17 +28,29 @@ except ImportError:
 # ESPN_SOCCER_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/scoreboards" # Old URL
 ESPN_SOCCER_LEAGUE_SCOREBOARD_URL_FORMAT = "http://site.api.espn.com/apis/site/v2/sports/soccer/{}/scoreboard" # New format string
 # Common league slugs (add more as needed)
+# UPDATED: Added NWSL and NCAA Soccer leagues
 LEAGUE_SLUGS = {
+    # US Professional
+    "usa.1": "MLS",
+    "usa.nwsl": "NWSL",  # NEW: National Women's Soccer League
+    
+    # US College
+    "usa.ncaa.m.1": "Men's NCAA Soccer",  # NEW: Men's NCAA Division 1
+    "usa.ncaa.w.1": "Women's NCAA Soccer",  # NEW: Women's NCAA Division 1
+    
+    # European Top 5
     "eng.1": "Premier League",
     "esp.1": "La Liga",
     "ger.1": "Bundesliga",
     "ita.1": "Serie A",
     "fra.1": "Ligue 1",
-    "por.1": "Liga Portugal",
+    
+    # European Cups
     "uefa.champions": "Champions League",
     "uefa.europa": "Europa League",
-    "usa.1": "MLS",
-    # Add other leagues here if needed
+    
+    # Other European
+    "por.1": "Liga Portugal",
 }
 
 # Configure logging to match main configuration
@@ -253,56 +265,50 @@ class BaseSoccerManager:
             cls.logger.info(f"[Soccer] Team-league map is up-to-date (last updated: {datetime.fromtimestamp(cls._map_last_updated).strftime('%Y-%m-%d %H:%M:%S')}).")
 
     def _fetch_soccer_api_data(self, use_cache: bool = True) -> Optional[Dict]:
-        """Fetch and cache data for all managers to share, iterating through target leagues."""
+        """Fetch and cache data for all managers to share, using date ranges for efficiency."""
         current_time = time.time()
         all_data = {"events": []}
         favorite_teams = self.soccer_config.get("favorite_teams", [])
         target_leagues_config = self.soccer_config.get("leagues", list(LEAGUE_SLUGS.keys()))
         upcoming_fetch_days = self.soccer_config.get("upcoming_fetch_days", 1)
-
         leagues_to_fetch = set(target_leagues_config)
-        
         today = datetime.now(pytz.utc).date()
-        dates_to_fetch = [(today + timedelta(days=i)).strftime('%Y%m%d') for i in range(-1, upcoming_fetch_days + 1)]
-
+        # Use date range instead of individual dates (reduces API calls from leagues×days to just leagues)
+        start_date = (today - timedelta(days=1)).strftime('%Y%m%d')
+        end_date = (today + timedelta(days=upcoming_fetch_days)).strftime('%Y%m%d')
+        date_range = f"{start_date}-{end_date}"
+        cache_key_suffix = f"{start_date}_{end_date}"
+        self.logger.info(f"[Soccer] Fetching {len(leagues_to_fetch)} leagues for date range {date_range}")
         for league_slug in leagues_to_fetch:
-            for fetch_date in dates_to_fetch:
-                cache_key = f"soccer_{league_slug}_{fetch_date}"
-                
+            cache_key = f"soccer_{league_slug}_{cache_key_suffix}"
+            if use_cache:
+                cached_data = self.cache_manager.get(cache_key, max_age=300)
+                if cached_data:
+                    self.logger.debug(f"[Soccer] Using cached data for {league_slug} ({date_range})")
+                    if "events" in cached_data:
+                        all_data["events"].extend(cached_data["events"])
+                    continue
+            try:
+                url = ESPN_SOCCER_LEAGUE_SCOREBOARD_URL_FORMAT.format(league_slug)
+                params = {'dates': date_range, 'limit': 100}
+                response = requests.get(url, params=params)
+                response.raise_for_status()
+                data = response.json()
+                # Increment API counter for sports data
+                increment_api_counter('sports', 1)
+                self.logger.info(f"[Soccer] Fetched data from ESPN API for {league_slug} ({date_range})")
                 if use_cache:
-                    cached_data = self.cache_manager.get(cache_key, max_age=300)
-                    if cached_data:
-                        self.logger.debug(f"[Soccer] Using cached data for {league_slug} on {fetch_date}")
-                        if "events" in cached_data:
-                            all_data["events"].extend(cached_data["events"])
-                        continue
-                
-                try:
-                    url = ESPN_SOCCER_LEAGUE_SCOREBOARD_URL_FORMAT.format(league_slug)
-                    params = {'dates': fetch_date, 'limit': 100}
-                    response = requests.get(url, params=params)
-                    response.raise_for_status()
-                    data = response.json()
-                    
-                    # Increment API counter for sports data
-                    increment_api_counter('sports', 1)
-                    
-                    self.logger.info(f"[Soccer] Fetched data from ESPN API for {league_slug} on {fetch_date}")
-                    
+                    self.cache_manager.set(cache_key, data)
+                if "events" in data:
+                    all_data["events"].extend(data["events"])
+            except requests.exceptions.RequestException as e:
+                if response is not None and response.status_code == 404:
+                    self.logger.debug(f"[Soccer] No data found (404) for {league_slug} ({date_range})")
                     if use_cache:
-                        self.cache_manager.set(cache_key, data)
-                        
-                    if "events" in data:
-                        all_data["events"].extend(data["events"])
-
-                except requests.exceptions.RequestException as e:
-                    if response is not None and response.status_code == 404:
-                         self.logger.debug(f"[Soccer] No data found (404) for {league_slug} on {fetch_date}. URL: {url}")
-                         if use_cache:
-                             self.cache_manager.set(cache_key, {"events": []})
-                    else:
-                         self.logger.error(f"[Soccer] Error fetching data for {league_slug} on {fetch_date}: {e}")
-
+                        self.cache_manager.set(cache_key, {"events": []})
+                else:
+                    self.logger.error(f"[Soccer] Error fetching data for {league_slug} ({date_range}): {e}")
+        self.logger.info(f"[Soccer] Fetch complete: {len(all_data['events'])} total events from {len(leagues_to_fetch)} leagues")
         return all_data
 
     def _get_live_leagues_to_fetch(self) -> set:
@@ -992,7 +998,7 @@ class SoccerRecentManager(BaseSoccerManager):
         # Use configurable update interval, default to 300s (5 min)
         self.update_interval = self.soccer_config.get("recent_update_interval", 300) 
         self.last_game_switch = 0
-        self.game_display_duration = 15 # Short display time for recent/upcoming
+        self.game_display_duration = 5 # Short display time for recent/upcoming
         self.logger.info(f"Initialized SoccerRecentManager (Update Interval: {self.update_interval}s)")
 
     def update(self):
@@ -1120,7 +1126,7 @@ class SoccerUpcomingManager(BaseSoccerManager):
         self.last_warning_time = 0
         self.warning_cooldown = 300
         self.last_game_switch = 0
-        self.game_display_duration = 15 # Short display time
+        self.game_display_duration = 5 # Short display time
         self.logger.info(f"Initialized SoccerUpcomingManager (Update Interval: {self.update_interval}s)")
 
     def update(self):

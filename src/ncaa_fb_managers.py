@@ -21,8 +21,10 @@ class BaseNCAAFBManager(Football): # Renamed class
     _last_warning_time = 0
     _warning_cooldown = 60  # Only log warnings once per minute
     _shared_data = None
+    _SHARED_DATA_MAX_AGE = 120  # Clear shared data after 2 minutes
     _last_shared_update = 0
-    _processed_games_cache = {}  # Cache for processed game data
+    _processed_games_cache = {}
+    _MAX_PROCESSED_CACHE = 20  # Limit to prevent memory leaks  # Cache for processed game data
     _processed_games_timestamp = 0
 
     def __init__(self, config: Dict[str, Any], display_manager: DisplayManager, cache_manager: CacheManager):
@@ -54,7 +56,9 @@ class BaseNCAAFBManager(Football): # Renamed class
         season_year = now.year
         if now.month < 8:
             season_year = now.year - 1
-        datestring = f"{season_year}0801-{season_year+1}0201"
+        start_date = (now - timedelta(days=15)).strftime("%Y%m%d")
+        end_date = (now + timedelta(days=15)).strftime("%Y%m%d")
+        datestring = f"{start_date}-{end_date}"
         cache_key = f"ncaafb_schedule_{season_year}"
 
         if use_cache:
@@ -101,7 +105,7 @@ class BaseNCAAFBManager(Football): # Renamed class
             year=season_year,
             url=ESPN_NCAAFB_SCOREBOARD_URL,
             cache_key=cache_key,
-            params={"dates": datestring, "limit": 1000},
+            params={"dates": datestring, "limit": 500},
             headers=self.headers,
             timeout=timeout,
             max_retries=max_retries,
