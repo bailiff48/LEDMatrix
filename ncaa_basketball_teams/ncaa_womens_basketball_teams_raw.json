@@ -1,0 +1,2552 @@
+{
+  "ACC": [
+    {
+      "id": "103",
+      "abbreviation": "BC",
+      "display_name": "Boston College Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/103.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "228",
+      "abbreviation": "CLEM",
+      "display_name": "Clemson Tigers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/228.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "150",
+      "abbreviation": "DUKE",
+      "display_name": "Duke Blue Devils",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/150.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "52",
+      "abbreviation": "FSU",
+      "display_name": "Florida State Seminoles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/52.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "59",
+      "abbreviation": "GT",
+      "display_name": "Georgia Tech Yellow Jackets",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/59.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "97",
+      "abbreviation": "LOU",
+      "display_name": "Louisville Cardinals",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/97.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "2390",
+      "abbreviation": "MIA",
+      "display_name": "Miami Hurricanes",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2390.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "153",
+      "abbreviation": "UNC",
+      "display_name": "North Carolina Tar Heels",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/153.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "221",
+      "abbreviation": "PITT",
+      "display_name": "Pittsburgh Panthers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/221.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "183",
+      "abbreviation": "SYR",
+      "display_name": "Syracuse Orange",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/183.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "258",
+      "abbreviation": "UVA",
+      "display_name": "Virginia Cavaliers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/258.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "259",
+      "abbreviation": "VT",
+      "display_name": "Virginia Tech Hokies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/259.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "154",
+      "abbreviation": "WAKE",
+      "display_name": "Wake Forest Demon Deacons",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/154.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "25",
+      "abbreviation": "CAL",
+      "display_name": "California Golden Bears",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/25.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "2567",
+      "abbreviation": "SMU",
+      "display_name": "SMU Mustangs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2567.png",
+      "conference": "ACC"
+    },
+    {
+      "id": "24",
+      "abbreviation": "STAN",
+      "display_name": "Stanford Cardinal",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/24.png",
+      "conference": "ACC"
+    }
+  ],
+  "Big Ten Conference": [
+    {
+      "id": "356",
+      "abbreviation": "ILL",
+      "display_name": "Illinois Fighting Illini",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/356.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "2294",
+      "abbreviation": "IOWA",
+      "display_name": "Iowa Hawkeyes",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2294.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "120",
+      "abbreviation": "MD",
+      "display_name": "Maryland Terrapins",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/120.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "130",
+      "abbreviation": "MICH",
+      "display_name": "Michigan Wolverines",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/130.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "127",
+      "abbreviation": "MSU",
+      "display_name": "Michigan State Spartans",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/127.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "135",
+      "abbreviation": "MINN",
+      "display_name": "Minnesota Golden Gophers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/135.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "158",
+      "abbreviation": "NEB",
+      "display_name": "Nebraska Cornhuskers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/158.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "77",
+      "abbreviation": "NU",
+      "display_name": "Northwestern Wildcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/77.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "194",
+      "abbreviation": "OSU",
+      "display_name": "Ohio State Buckeyes",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/194.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "213",
+      "abbreviation": "PSU",
+      "display_name": "Penn State Lady Lions",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/213.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "2509",
+      "abbreviation": "PUR",
+      "display_name": "Purdue Boilermakers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2509.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "275",
+      "abbreviation": "WIS",
+      "display_name": "Wisconsin Badgers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/275.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "2483",
+      "abbreviation": "ORE",
+      "display_name": "Oregon Ducks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2483.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "26",
+      "abbreviation": "UCLA",
+      "display_name": "UCLA Bruins",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/26.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "30",
+      "abbreviation": "USC",
+      "display_name": "USC Trojans",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/30.png",
+      "conference": "Big Ten Conference"
+    },
+    {
+      "id": "264",
+      "abbreviation": "WASH",
+      "display_name": "Washington Huskies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/264.png",
+      "conference": "Big Ten Conference"
+    }
+  ],
+  "Big 12 Conference": [
+    {
+      "id": "252",
+      "abbreviation": "BYU",
+      "display_name": "BYU Cougars",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/252.png",
+      "conference": "Big 12 Conference"
+    },
+    {
+      "id": "2132",
+      "abbreviation": "CIN",
+      "display_name": "Cincinnati Bearcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2132.png",
+      "conference": "Big 12 Conference"
+    },
+    {
+      "id": "248",
+      "abbreviation": "HOU",
+      "display_name": "Houston Cougars",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/248.png",
+      "conference": "Big 12 Conference"
+    },
+    {
+      "id": "66",
+      "abbreviation": "ISU",
+      "display_name": "Iowa State Cyclones",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/66.png",
+      "conference": "Big 12 Conference"
+    },
+    {
+      "id": "2305",
+      "abbreviation": "KU",
+      "display_name": "Kansas Jayhawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2305.png",
+      "conference": "Big 12 Conference"
+    },
+    {
+      "id": "2306",
+      "abbreviation": "KSU",
+      "display_name": "Kansas State Wildcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2306.png",
+      "conference": "Big 12 Conference"
+    },
+    {
+      "id": "2116",
+      "abbreviation": "UCF",
+      "display_name": "UCF Knights",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2116.png",
+      "conference": "Big 12 Conference"
+    },
+    {
+      "id": "2641",
+      "abbreviation": "TTU",
+      "display_name": "Texas Tech Lady Raiders",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2641.png",
+      "conference": "Big 12 Conference"
+    },
+    {
+      "id": "9",
+      "abbreviation": "ASU",
+      "display_name": "Arizona State Sun Devils",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/9.png",
+      "conference": "Big 12 Conference"
+    },
+    {
+      "id": "239",
+      "abbreviation": "BAY",
+      "display_name": "Baylor Bears",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/239.png",
+      "conference": "Big 12 Conference"
+    },
+    {
+      "id": "197",
+      "abbreviation": "OKST",
+      "display_name": "Oklahoma State Cowgirls",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/197.png",
+      "conference": "Big 12 Conference"
+    },
+    {
+      "id": "2628",
+      "abbreviation": "TCU",
+      "display_name": "TCU Horned Frogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2628.png",
+      "conference": "Big 12 Conference"
+    },
+    {
+      "id": "254",
+      "abbreviation": "UTAH",
+      "display_name": "Utah Utes",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/254.png",
+      "conference": "Big 12 Conference"
+    },
+    {
+      "id": "277",
+      "abbreviation": "WVU",
+      "display_name": "West Virginia Mountaineers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/277.png",
+      "conference": "Big 12 Conference"
+    }
+  ],
+  "Southeastern Conference": [
+    {
+      "id": "333",
+      "abbreviation": "ALA",
+      "display_name": "Alabama Crimson Tide",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/333.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "8",
+      "abbreviation": "ARK",
+      "display_name": "Arkansas Razorbacks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/8.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "2",
+      "abbreviation": "AUB",
+      "display_name": "Auburn Tigers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "57",
+      "abbreviation": "FLA",
+      "display_name": "Florida Gators",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/57.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "61",
+      "abbreviation": "UGA",
+      "display_name": "Georgia Lady Bulldogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/61.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "96",
+      "abbreviation": "UK",
+      "display_name": "Kentucky Wildcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/96.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "99",
+      "abbreviation": "LSU",
+      "display_name": "LSU Tigers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/99.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "145",
+      "abbreviation": "MISS",
+      "display_name": "Ole Miss Rebels",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/145.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "344",
+      "abbreviation": "MSST",
+      "display_name": "Mississippi State Bulldogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/344.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "142",
+      "abbreviation": "MIZ",
+      "display_name": "Missouri Tigers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/142.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "2579",
+      "abbreviation": "SC",
+      "display_name": "South Carolina Gamecocks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2579.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "2633",
+      "abbreviation": "TENN",
+      "display_name": "Tennessee Lady Volunteers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2633_ncw.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "251",
+      "abbreviation": "TEX",
+      "display_name": "Texas Longhorns",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/251.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "201",
+      "abbreviation": "OU",
+      "display_name": "Oklahoma Sooners",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/201.png",
+      "conference": "Southeastern Conference"
+    },
+    {
+      "id": "238",
+      "abbreviation": "VAN",
+      "display_name": "Vanderbilt Commodores",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/238.png",
+      "conference": "Southeastern Conference"
+    }
+  ],
+  "Big East Conference": [
+    {
+      "id": "2086",
+      "abbreviation": "BUT",
+      "display_name": "Butler Bulldogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2086.png",
+      "conference": "Big East Conference"
+    },
+    {
+      "id": "156",
+      "abbreviation": "CREI",
+      "display_name": "Creighton Bluejays",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/156.png",
+      "conference": "Big East Conference"
+    },
+    {
+      "id": "41",
+      "abbreviation": "CONN",
+      "display_name": "UConn Huskies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/41.png",
+      "conference": "Big East Conference"
+    },
+    {
+      "id": "305",
+      "abbreviation": "DEP",
+      "display_name": "DePaul Blue Demons",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/305.png",
+      "conference": "Big East Conference"
+    },
+    {
+      "id": "46",
+      "abbreviation": "GTWN",
+      "display_name": "Georgetown Hoyas",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/46.png",
+      "conference": "Big East Conference"
+    },
+    {
+      "id": "269",
+      "abbreviation": "MARQ",
+      "display_name": "Marquette Golden Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/269.png",
+      "conference": "Big East Conference"
+    },
+    {
+      "id": "2507",
+      "abbreviation": "PROV",
+      "display_name": "Providence Friars",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2507.png",
+      "conference": "Big East Conference"
+    },
+    {
+      "id": "2550",
+      "abbreviation": "HALL",
+      "display_name": "Seton Hall Pirates",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2550.png",
+      "conference": "Big East Conference"
+    },
+    {
+      "id": "2752",
+      "abbreviation": "XAV",
+      "display_name": "Xavier Musketeers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2752.png",
+      "conference": "Big East Conference"
+    }
+  ],
+  "American Athletic Conference": [
+    {
+      "id": "151",
+      "abbreviation": "ECU",
+      "display_name": "East Carolina Pirates",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/151.png",
+      "conference": "American Athletic Conference"
+    },
+    {
+      "id": "2226",
+      "abbreviation": "FAU",
+      "display_name": "Florida Atlantic Owls",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2226.png",
+      "conference": "American Athletic Conference"
+    },
+    {
+      "id": "235",
+      "abbreviation": "MEM",
+      "display_name": "Memphis Tigers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/235.png",
+      "conference": "American Athletic Conference"
+    },
+    {
+      "id": "242",
+      "abbreviation": "RICE",
+      "display_name": "Rice Owls",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/242.png",
+      "conference": "American Athletic Conference"
+    },
+    {
+      "id": "2655",
+      "abbreviation": "TULN",
+      "display_name": "Tulane Green Wave",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2655.png",
+      "conference": "American Athletic Conference"
+    },
+    {
+      "id": "5",
+      "abbreviation": "UAB",
+      "display_name": "UAB Blazers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/5.png",
+      "conference": "American Athletic Conference"
+    },
+    {
+      "id": "58",
+      "abbreviation": "USF",
+      "display_name": "South Florida Bulls",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/58.png",
+      "conference": "American Athletic Conference"
+    },
+    {
+      "id": "2636",
+      "abbreviation": "UTSA",
+      "display_name": "UTSA Roadrunners",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2636.png",
+      "conference": "American Athletic Conference"
+    },
+    {
+      "id": "2724",
+      "abbreviation": "WICH",
+      "display_name": "Wichita State Shockers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2724.png",
+      "conference": "American Athletic Conference"
+    }
+  ],
+  "Atlantic 10 Conference": [
+    {
+      "id": "2166",
+      "abbreviation": "DAV",
+      "display_name": "Davidson Wildcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2166.png",
+      "conference": "Atlantic 10 Conference"
+    },
+    {
+      "id": "2184",
+      "abbreviation": "DUQ",
+      "display_name": "Duquesne Dukes",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2184.png",
+      "conference": "Atlantic 10 Conference"
+    },
+    {
+      "id": "2244",
+      "abbreviation": "GMU",
+      "display_name": "George Mason Patriots",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2244.png",
+      "conference": "Atlantic 10 Conference"
+    },
+    {
+      "id": "45",
+      "abbreviation": "GW",
+      "display_name": "George Washington Revolutionaries",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/45.png",
+      "conference": "Atlantic 10 Conference"
+    },
+    {
+      "id": "2325",
+      "abbreviation": "LAS",
+      "display_name": "La Salle Explorers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2325.png",
+      "conference": "Atlantic 10 Conference"
+    },
+    {
+      "id": "113",
+      "abbreviation": "MASS",
+      "display_name": "Massachusetts Minutemen",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/113.png",
+      "conference": "Atlantic 10 Conference"
+    },
+    {
+      "id": "257",
+      "abbreviation": "RICH",
+      "display_name": "Richmond Spiders",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/257.png",
+      "conference": "Atlantic 10 Conference"
+    },
+    {
+      "id": "227",
+      "abbreviation": "URI",
+      "display_name": "Rhode Island Rams",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/227.png",
+      "conference": "Atlantic 10 Conference"
+    },
+    {
+      "id": "179",
+      "abbreviation": "SBU",
+      "display_name": "St. Bonaventure Bonnies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/179.png",
+      "conference": "Atlantic 10 Conference"
+    },
+    {
+      "id": "139",
+      "abbreviation": "SLU",
+      "display_name": "Saint Louis Billikens",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/139.png",
+      "conference": "Atlantic 10 Conference"
+    },
+    {
+      "id": "2603",
+      "abbreviation": "JOES",
+      "display_name": "Saint Joseph's Hawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2603.png",
+      "conference": "Atlantic 10 Conference"
+    },
+    {
+      "id": "2670",
+      "abbreviation": "VCU",
+      "display_name": "VCU Rams",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2670.png",
+      "conference": "Atlantic 10 Conference"
+    }
+  ],
+  "Mountain West Conference": [
+    {
+      "id": "36",
+      "abbreviation": "CSU",
+      "display_name": "Colorado State Rams",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/36.png",
+      "conference": "Mountain West Conference"
+    },
+    {
+      "id": "278",
+      "abbreviation": "FRES",
+      "display_name": "Fresno State Bulldogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/278.png",
+      "conference": "Mountain West Conference"
+    },
+    {
+      "id": "2440",
+      "abbreviation": "NEV",
+      "display_name": "Nevada Wolf Pack",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2440.png",
+      "conference": "Mountain West Conference"
+    },
+    {
+      "id": "21",
+      "abbreviation": "SDSU",
+      "display_name": "San Diego State Aztecs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/21.png",
+      "conference": "Mountain West Conference"
+    },
+    {
+      "id": "23",
+      "abbreviation": "SJSU",
+      "display_name": "San José State Spartans",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/23.png",
+      "conference": "Mountain West Conference"
+    },
+    {
+      "id": "2439",
+      "abbreviation": "UNLV",
+      "display_name": "UNLV Lady Rebels",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2439.png",
+      "conference": "Mountain West Conference"
+    },
+    {
+      "id": "328",
+      "abbreviation": "USU",
+      "display_name": "Utah State Aggies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/328.png",
+      "conference": "Mountain West Conference"
+    },
+    {
+      "id": "2751",
+      "abbreviation": "WYO",
+      "display_name": "Wyoming Cowgirls",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2751.png",
+      "conference": "Mountain West Conference"
+    }
+  ],
+  "West Coast Conference": [
+    {
+      "id": "2250",
+      "abbreviation": "GONZ",
+      "display_name": "Gonzaga Bulldogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2250.png",
+      "conference": "West Coast Conference"
+    },
+    {
+      "id": "2351",
+      "abbreviation": "LMU",
+      "display_name": "Loyola Marymount Lions",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2351.png",
+      "conference": "West Coast Conference"
+    },
+    {
+      "id": "2501",
+      "abbreviation": "PORT",
+      "display_name": "Portland Pilots",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2501.png",
+      "conference": "West Coast Conference"
+    },
+    {
+      "id": "2541",
+      "abbreviation": "SCU",
+      "display_name": "Santa Clara Broncos",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2541.png",
+      "conference": "West Coast Conference"
+    },
+    {
+      "id": "2608",
+      "abbreviation": "SMC",
+      "display_name": "Saint Mary's Gaels",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2608.png",
+      "conference": "West Coast Conference"
+    },
+    {
+      "id": "2539",
+      "abbreviation": "SF",
+      "display_name": "San Francisco Dons",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2539.png",
+      "conference": "West Coast Conference"
+    }
+  ],
+  "Missouri Valley Conference": [
+    {
+      "id": "71",
+      "abbreviation": "BRAD",
+      "display_name": "Bradley Braves",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/71.png",
+      "conference": "Missouri Valley Conference"
+    },
+    {
+      "id": "91",
+      "abbreviation": "BELL",
+      "display_name": "Bellarmine Knights",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/91.png",
+      "conference": "Missouri Valley Conference"
+    },
+    {
+      "id": "2181",
+      "abbreviation": "DRKE",
+      "display_name": "Drake Bulldogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2181.png",
+      "conference": "Missouri Valley Conference"
+    },
+    {
+      "id": "339",
+      "abbreviation": "EVAN",
+      "display_name": "Evansville Purple Aces",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/339.png",
+      "conference": "Missouri Valley Conference"
+    },
+    {
+      "id": "2459",
+      "abbreviation": "NIU",
+      "display_name": "Northern Illinois Huskies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2459.png",
+      "conference": "Missouri Valley Conference"
+    },
+    {
+      "id": "79",
+      "abbreviation": "SIU",
+      "display_name": "Southern Illinois Salukis",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/79.png",
+      "conference": "Missouri Valley Conference"
+    },
+    {
+      "id": "2460",
+      "abbreviation": "UNI",
+      "display_name": "Northern Iowa Panthers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2460.png",
+      "conference": "Missouri Valley Conference"
+    }
+  ],
+  "Independents": [],
+  "Other/Independent": [
+    {
+      "id": "2464",
+      "abbreviation": "NAU",
+      "display_name": "Northern Arizona Lumberjacks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2464.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "299",
+      "abbreviation": "LBSU",
+      "display_name": "Long Beach State Beach",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/299.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "231",
+      "abbreviation": "FUR",
+      "display_name": "Furman Paladins",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/231.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "47",
+      "abbreviation": "HOW",
+      "display_name": "Howard Bison",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/47.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2006",
+      "abbreviation": "AKR",
+      "display_name": "Akron Zips",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2006.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2638",
+      "abbreviation": "UTEP",
+      "display_name": "UTEP Miners",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2638.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2193",
+      "abbreviation": "ETSU",
+      "display_name": "East Tennessee State Bucs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2193.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "160",
+      "abbreviation": "UNH",
+      "display_name": "New Hampshire Wildcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/160.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2755",
+      "abbreviation": "GRAM",
+      "display_name": "Grambling Lady Tigers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2755.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2870",
+      "abbreviation": "PFW",
+      "display_name": "Purdue Fort Wayne Mastodons",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2870.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "202",
+      "abbreviation": "TLSA",
+      "display_name": "Tulsa Golden Hurricane",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/202.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2430",
+      "abbreviation": "UNCG",
+      "display_name": "UNC Greensboro Spartans",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2430.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2330",
+      "abbreviation": "LEM",
+      "display_name": "Le Moyne Dolphins",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2330.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2130",
+      "abbreviation": "CHST",
+      "display_name": "Chicago State Cougars",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2130.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "94",
+      "abbreviation": "NKU",
+      "display_name": "Northern Kentucky Norse",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/94.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2681",
+      "abbreviation": "WAG",
+      "display_name": "Wagner Seahawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2681.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2229",
+      "abbreviation": "FIU",
+      "display_name": "Florida International Panthers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2229.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2154",
+      "abbreviation": "COPP",
+      "display_name": "Coppin State Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2154.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "68",
+      "abbreviation": "BOIS",
+      "display_name": "Boise State Broncos",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/68.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2426",
+      "abbreviation": "NAVY",
+      "display_name": "Navy Midshipmen",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2426.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2506",
+      "abbreviation": "PRES",
+      "display_name": "Presbyterian Blue Hose",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2506.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2031",
+      "abbreviation": "LR",
+      "display_name": "Little Rock Trojans",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2031.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2747",
+      "abbreviation": "WOF",
+      "display_name": "Wofford Terriers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2747.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2142",
+      "abbreviation": "COLG",
+      "display_name": "Colgate Raiders",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2142.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "311",
+      "abbreviation": "ME",
+      "display_name": "Maine Black Bears",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/311.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2115",
+      "abbreviation": "CCSU",
+      "display_name": "Central Connecticut Blue Devils",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2115.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "249",
+      "abbreviation": "UNT",
+      "display_name": "North Texas Mean Green",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/249.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2514",
+      "abbreviation": "QUIN",
+      "display_name": "Quinnipiac Bobcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2514.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "82",
+      "abbreviation": "UIC",
+      "display_name": "UIC Flames",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/82.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2296",
+      "abbreviation": "JKST",
+      "display_name": "Jackson State Lady Tigers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2296.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2934",
+      "abbreviation": "CSUB",
+      "display_name": "Cal State Bakersfield Roadrunners",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2934.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "526",
+      "abbreviation": "FGCU",
+      "display_name": "Florida Gulf Coast Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/526.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2084",
+      "abbreviation": "BUF",
+      "display_name": "Buffalo Bulls",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2084.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2083",
+      "abbreviation": "BUCK",
+      "display_name": "Bucknell Bison",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2083.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2710",
+      "abbreviation": "WIU",
+      "display_name": "Western Illinois Leathernecks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2710.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2448",
+      "abbreviation": "NCAT",
+      "display_name": "North Carolina A&T Aggies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2448.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "28",
+      "abbreviation": "UCSD",
+      "display_name": "UC San Diego Tritons",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/28.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "357",
+      "abbreviation": "AMCC",
+      "display_name": "Texas A&M-Corpus Christi Islanders",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/357.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2210",
+      "abbreviation": "ELON",
+      "display_name": "Elon Phoenix",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2210.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "279",
+      "abbreviation": "PAC",
+      "display_name": "Pacific Tigers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/279.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2239",
+      "abbreviation": "CSUF",
+      "display_name": "Cal State Fullerton Titans",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2239.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "171",
+      "abbreviation": "COLU",
+      "display_name": "Columbia Lions",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/171.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2599",
+      "abbreviation": "SJU",
+      "display_name": "St. John's Red Storm",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2599.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "218",
+      "abbreviation": "TEM",
+      "display_name": "Temple Owls",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/218.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2739",
+      "abbreviation": "GB",
+      "display_name": "Green Bay Phoenix",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2739.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "193",
+      "abbreviation": "M-OH",
+      "display_name": "Miami (OH) RedHawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/193.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2653",
+      "abbreviation": "TROY",
+      "display_name": "Troy Trojans",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2653.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2534",
+      "abbreviation": "SHSU",
+      "display_name": "Sam Houston Bearkats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2534.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2634",
+      "abbreviation": "TNST",
+      "display_name": "Tennessee State Lady Tigers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2634.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "198",
+      "abbreviation": "ORU",
+      "display_name": "Oral Roberts Golden Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/198.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2010",
+      "abbreviation": "AAMU",
+      "display_name": "Alabama A&M Bulldogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2010.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "322",
+      "abbreviation": "LAF",
+      "display_name": "Lafayette Leopards",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/322.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "225",
+      "abbreviation": "BRWN",
+      "display_name": "Brown Bears",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/225.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "155",
+      "abbreviation": "UND",
+      "display_name": "North Dakota Fighting Hawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/155.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2916",
+      "abbreviation": "UIW",
+      "display_name": "Incarnate Word Cardinals",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2916.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "222",
+      "abbreviation": "VILL",
+      "display_name": "Villanova Wildcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/222.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2473",
+      "abbreviation": "OAK",
+      "display_name": "Oakland Golden Grizzlies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2473.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "62",
+      "abbreviation": "HAW",
+      "display_name": "Hawai'i Rainbow Wahine",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/62.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2771",
+      "abbreviation": "MRMK",
+      "display_name": "Merrimack Warriors",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2771.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "245",
+      "abbreviation": "TA&M",
+      "display_name": "Texas A&M Aggies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/245.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "349",
+      "abbreviation": "ARMY",
+      "display_name": "Army Black Knights",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/349.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2199",
+      "abbreviation": "EMU",
+      "display_name": "Eastern Michigan Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2199.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2571",
+      "abbreviation": "SDST",
+      "display_name": "South Dakota State Jackrabbits",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2571.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "167",
+      "abbreviation": "UNM",
+      "display_name": "New Mexico Lobos",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/167.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2174",
+      "abbreviation": "DETM",
+      "display_name": "Detroit Mercy Titans",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2174.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2097",
+      "abbreviation": "CAM",
+      "display_name": "Campbell Fighting Camels",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2097.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "253",
+      "abbreviation": "SUU",
+      "display_name": "Southern Utah Thunderbirds",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/253.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "6",
+      "abbreviation": "USA",
+      "display_name": "South Alabama Jaguars",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/6.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "43",
+      "abbreviation": "YALE",
+      "display_name": "Yale Bulldogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/43.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2197",
+      "abbreviation": "EIU",
+      "display_name": "Eastern Illinois Panthers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2197.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "112358",
+      "abbreviation": "LIU",
+      "display_name": "Long Island University Sharks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/112358.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "16",
+      "abbreviation": "SAC",
+      "display_name": "Sacramento State Hornets",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/16.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2382",
+      "abbreviation": "MER",
+      "display_name": "Mercer Bears",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2382.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2437",
+      "abbreviation": "OMA",
+      "display_name": "Omaha Mavericks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2437.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "163",
+      "abbreviation": "PRIN",
+      "display_name": "Princeton Tigers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/163.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2547",
+      "abbreviation": "SEA",
+      "display_name": "Seattle U Redhawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2547.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "314",
+      "abbreviation": "IONA",
+      "display_name": "Iona Gaels",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/314.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "288",
+      "abbreviation": "LIP",
+      "display_name": "Lipscomb Bisons",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/288.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2127",
+      "abbreviation": "CHSO",
+      "display_name": "Charleston Southern Buccaneers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2127.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "236",
+      "abbreviation": "UTC",
+      "display_name": "Chattanooga Mocs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/236.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2287",
+      "abbreviation": "ILST",
+      "display_name": "Illinois State Redbirds",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2287.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "276",
+      "abbreviation": "MRSH",
+      "display_name": "Marshall Thundering Herd",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/276.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "331",
+      "abbreviation": "EWU",
+      "display_name": "Eastern Washington Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/331.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "219",
+      "abbreviation": "PENN",
+      "display_name": "Pennsylvania Quakers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/219.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2050",
+      "abbreviation": "BALL",
+      "display_name": "Ball State Cardinals",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2050.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "3084",
+      "abbreviation": "UVU",
+      "display_name": "Utah Valley Wolverines",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/3084.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2463",
+      "abbreviation": "CSUN",
+      "display_name": "Cal State Northridge Matadors",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2463.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2441",
+      "abbreviation": "NHVN",
+      "display_name": "New Haven Chargers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2441.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2729",
+      "abbreviation": "W&M",
+      "display_name": "William & Mary Tribe",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2729.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2492",
+      "abbreviation": "PEPP",
+      "display_name": "Pepperdine Waves",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2492.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "164",
+      "abbreviation": "RUTG",
+      "display_name": "Rutgers Scarlet Knights",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/164.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "172",
+      "abbreviation": "COR",
+      "display_name": "Cornell Big Red",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/172.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "93",
+      "abbreviation": "MUR",
+      "display_name": "Murray State Racers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/93.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2110",
+      "abbreviation": "CARK",
+      "display_name": "Central Arkansas Sugar Bears",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2110.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "119",
+      "abbreviation": "TOW",
+      "display_name": "Towson Tigers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/119.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "315",
+      "abbreviation": "NIA",
+      "display_name": "Niagara Purple Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/315.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "70",
+      "abbreviation": "IDHO",
+      "display_name": "Idaho Vandals",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/70.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "189",
+      "abbreviation": "BGSU",
+      "display_name": "Bowling Green Falcons",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/189.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "104",
+      "abbreviation": "BU",
+      "display_name": "Boston University Terriers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/104.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2535",
+      "abbreviation": "SAM",
+      "display_name": "Samford Bulldogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2535.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "27",
+      "abbreviation": "UCR",
+      "display_name": "UC Riverside Highlanders",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/27.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2344",
+      "abbreviation": "LONG",
+      "display_name": "Longwood Lancers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2344.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2363",
+      "abbreviation": "MAN",
+      "display_name": "Manhattan Jaspers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2363.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2275",
+      "abbreviation": "HOF",
+      "display_name": "Hofstra Pride",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2275.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "85",
+      "abbreviation": "IUIN",
+      "display_name": "IU Indianapolis Jaguars",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/85.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2378",
+      "abbreviation": "UMBC",
+      "display_name": "UMBC Retrievers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2378.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2529",
+      "abbreviation": "SHU",
+      "display_name": "Sacred Heart Pioneers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2529.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2908",
+      "abbreviation": "UPST",
+      "display_name": "South Carolina Upstate Spartans",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2908.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2429",
+      "abbreviation": "CLT",
+      "display_name": "Charlotte 49ers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2429.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2046",
+      "abbreviation": "APSU",
+      "display_name": "Austin Peay Governors",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2046.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2623",
+      "abbreviation": "MOST",
+      "display_name": "Missouri State Bears",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2623.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "50",
+      "abbreviation": "FAMU",
+      "display_name": "Florida A&M Rattlers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/50.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "152",
+      "abbreviation": "NCSU",
+      "display_name": "NC State Wolfpack",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/152.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2569",
+      "abbreviation": "SCST",
+      "display_name": "South Carolina State Lady Bulldogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2569.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2815",
+      "abbreviation": "LIN",
+      "display_name": "Lindenwood Lions",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2815.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "300",
+      "abbreviation": "UCI",
+      "display_name": "UC Irvine Anteaters",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/300.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "84",
+      "abbreviation": "IU",
+      "display_name": "Indiana Hoosiers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/84.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2750",
+      "abbreviation": "WRST",
+      "display_name": "Wright State Raiders",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2750.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2453",
+      "abbreviation": "UNA",
+      "display_name": "North Alabama Lions",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2453.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2272",
+      "abbreviation": "HPU",
+      "display_name": "High Point Panthers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2272.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "302",
+      "abbreviation": "UCD",
+      "display_name": "UC Davis Aggies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/302.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "111",
+      "abbreviation": "NE",
+      "display_name": "Northeastern Huskies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/111.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "98",
+      "abbreviation": "WKU",
+      "display_name": "Western Kentucky Lady Toppers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/98.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "159",
+      "abbreviation": "DART",
+      "display_name": "Dartmouth Big Green",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/159.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "108",
+      "abbreviation": "HARV",
+      "display_name": "Harvard Crimson",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/108.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2400",
+      "abbreviation": "MVSU",
+      "display_name": "Mississippi Valley State Devilettes",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2400.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "350",
+      "abbreviation": "UNCW",
+      "display_name": "UNC Wilmington Seahawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/350.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2377",
+      "abbreviation": "MCN",
+      "display_name": "McNeese Cowgirls",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2377.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2572",
+      "abbreviation": "USM",
+      "display_name": "Southern Miss Lady Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2572.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "256",
+      "abbreviation": "JMU",
+      "display_name": "James Madison Dukes",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/256.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2612",
+      "abbreviation": "SPU",
+      "display_name": "Saint Peter's Peacocks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2612.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2182",
+      "abbreviation": "DREX",
+      "display_name": "Drexel Dragons",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2182.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2561",
+      "abbreviation": "SIE",
+      "display_name": "Siena Saints",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2561.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "294",
+      "abbreviation": "JAX",
+      "display_name": "Jacksonville Dolphins",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/294.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2520",
+      "abbreviation": "RID",
+      "display_name": "Rider Broncs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2520.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2900",
+      "abbreviation": "STMN",
+      "display_name": "St. Thomas-Minnesota Tommies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2900.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "161",
+      "abbreviation": "FDU",
+      "display_name": "Fairleigh Dickinson Knights",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/161.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "56",
+      "abbreviation": "STET",
+      "display_name": "Stetson Hatters",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/56.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2803",
+      "abbreviation": "BRY",
+      "display_name": "Bryant Bulldogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2803.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2856",
+      "abbreviation": "CBU",
+      "display_name": "California Baptist Lancers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2856.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2447",
+      "abbreviation": "NICH",
+      "display_name": "Nicholls Colonels",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2447.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "270",
+      "abbreviation": "MILW",
+      "display_name": "Milwaukee Panthers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/270.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "55",
+      "abbreviation": "JXST",
+      "display_name": "Jacksonville State Gamecocks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/55.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "149",
+      "abbreviation": "MONT",
+      "display_name": "Montana Lady Griz",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/149.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "232",
+      "abbreviation": "COFC",
+      "display_name": "Charleston Cougars",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/232.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2026",
+      "abbreviation": "APP",
+      "display_name": "App State Mountaineers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2026.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "44",
+      "abbreviation": "AMER",
+      "display_name": "American University Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/44.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2737",
+      "abbreviation": "WIN",
+      "display_name": "Winthrop Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2737.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2005",
+      "abbreviation": "AF",
+      "display_name": "Air Force Falcons",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2005.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "12",
+      "abbreviation": "ARIZ",
+      "display_name": "Arizona Wildcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/12.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2329",
+      "abbreviation": "LEH",
+      "display_name": "Lehigh Mountain Hawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2329.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2217",
+      "abbreviation": "FAIR",
+      "display_name": "Fairfield Stags",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2217.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "250",
+      "abbreviation": "UTA",
+      "display_name": "UT Arlington Mavericks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/250.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2717",
+      "abbreviation": "WCU",
+      "display_name": "Western Carolina Catamounts",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2717.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2754",
+      "abbreviation": "YSU",
+      "display_name": "Youngstown State Penguins",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2754.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2546",
+      "abbreviation": "SEMO",
+      "display_name": "Southeast Missouri State Redhawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2546.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2837",
+      "abbreviation": "ETAM",
+      "display_name": "East Texas A&M Lions",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2837.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "107",
+      "abbreviation": "HC",
+      "display_name": "Holy Cross Crusaders",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/107.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2405",
+      "abbreviation": "MONM",
+      "display_name": "Monmouth Hawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2405.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2168",
+      "abbreviation": "DAY",
+      "display_name": "Dayton Flyers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2168.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2198",
+      "abbreviation": "EKU",
+      "display_name": "Eastern Kentucky Colonels",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2198.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "233",
+      "abbreviation": "SDAK",
+      "display_name": "South Dakota Coyotes",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/233.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2511",
+      "abbreviation": "QUC",
+      "display_name": "Queens University Royals",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2511.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "166",
+      "abbreviation": "NMSU",
+      "display_name": "New Mexico State Aggies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/166.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "295",
+      "abbreviation": "ODU",
+      "display_name": "Old Dominion Monarchs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/295.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "87",
+      "abbreviation": "ND",
+      "display_name": "Notre Dame Fighting Irish",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/87.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2466",
+      "abbreviation": "NWST",
+      "display_name": "Northwestern State Lady Demons",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2466.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2454",
+      "abbreviation": "UNF",
+      "display_name": "North Florida Ospreys",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2454.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "284",
+      "abbreviation": "STO",
+      "display_name": "Stonehill Skyhawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/284.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2241",
+      "abbreviation": "GWEB",
+      "display_name": "Gardner-Webb Runnin' Bulldogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2241.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "301",
+      "abbreviation": "USD",
+      "display_name": "San Diego Toreros",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/301.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2617",
+      "abbreviation": "SFA",
+      "display_name": "Stephen F. Austin Ladyjacks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2617.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "309",
+      "abbreviation": "UL",
+      "display_name": "Louisiana Ragin' Cajuns",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/309.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2582",
+      "abbreviation": "SOU",
+      "display_name": "Southern Jaguars",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2582.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2433",
+      "abbreviation": "ULM",
+      "display_name": "UL Monroe Warhawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2433.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "195",
+      "abbreviation": "OHIO",
+      "display_name": "Ohio Bobcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/195.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2379",
+      "abbreviation": "UMES",
+      "display_name": "Maryland Eastern Shore Hawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2379.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2450",
+      "abbreviation": "NORF",
+      "display_name": "Norfolk State Spartans",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2450.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "116",
+      "abbreviation": "MSM",
+      "display_name": "Mount St. Mary's Mountaineers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/116.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2674",
+      "abbreviation": "VAL",
+      "display_name": "Valparaiso Beacons",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2674.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2649",
+      "abbreviation": "TOL",
+      "display_name": "Toledo Rockets",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2649.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "282",
+      "abbreviation": "INST",
+      "display_name": "Indiana State Sycamores",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/282.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2598",
+      "abbreviation": "SFPA",
+      "display_name": "Saint Francis Red Flash",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2598.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2413",
+      "abbreviation": "MORE",
+      "display_name": "Morehead State Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2413.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2515",
+      "abbreviation": "RAD",
+      "display_name": "Radford Highlanders",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2515.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2011",
+      "abbreviation": "ALST",
+      "display_name": "Alabama State Lady Hornets",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2011.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "326",
+      "abbreviation": "TXST",
+      "display_name": "Texas State Bobcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/326.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2172",
+      "abbreviation": "DEN",
+      "display_name": "Denver Pioneers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2172.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2565",
+      "abbreviation": "SIUE",
+      "display_name": "SIU Edwardsville Cougars",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2565.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2117",
+      "abbreviation": "CMU",
+      "display_name": "Central Michigan Chippewas",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2117.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2627",
+      "abbreviation": "TAR",
+      "display_name": "Tarleton State Texans",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2627.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "38",
+      "abbreviation": "COLO",
+      "display_name": "Colorado Buffaloes",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/38.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "304",
+      "abbreviation": "IDST",
+      "display_name": "Idaho State Bengals",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/304.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2393",
+      "abbreviation": "MTSU",
+      "display_name": "Middle Tennessee Blue Raiders",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2393.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2711",
+      "abbreviation": "WMU",
+      "display_name": "Western Michigan Broncos",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2711.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2277",
+      "abbreviation": "HCU",
+      "display_name": "Houston Christian Huskies",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2277.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2349",
+      "abbreviation": "UML",
+      "display_name": "UMass Lowell River Hawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2349.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2029",
+      "abbreviation": "UAPB",
+      "display_name": "Arkansas-Pine Bluff Golden Lions",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2029.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "147",
+      "abbreviation": "MTST",
+      "display_name": "Montana State Bobcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/147.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2261",
+      "abbreviation": "HAMP",
+      "display_name": "Hampton Lady Pirates",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2261.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "261",
+      "abbreviation": "UVM",
+      "display_name": "Vermont Catamounts",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/261.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "399",
+      "abbreviation": "UALB",
+      "display_name": "UAlbany Great Danes",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/399.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2309",
+      "abbreviation": "KENT",
+      "display_name": "Kent State Golden Flashes",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2309.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2428",
+      "abbreviation": "NCCU",
+      "display_name": "North Carolina Central Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2428.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2635",
+      "abbreviation": "TNTC",
+      "display_name": "Tennessee Tech Golden Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2635.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2352",
+      "abbreviation": "L-MD",
+      "display_name": "Loyola Maryland Greyhounds",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2352.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "204",
+      "abbreviation": "ORST",
+      "display_name": "Oregon State Beavers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/204.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "290",
+      "abbreviation": "GASO",
+      "display_name": "Georgia Southern Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/290.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2619",
+      "abbreviation": "STBK",
+      "display_name": "Stony Brook Seawolves",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2619.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2057",
+      "abbreviation": "BEL",
+      "display_name": "Belmont Bruins",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2057.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2000",
+      "abbreviation": "ACU",
+      "display_name": "Abilene Christian Wildcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2000.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2640",
+      "abbreviation": "TXSO",
+      "display_name": "Texas Southern Tigers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2640.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2415",
+      "abbreviation": "MORG",
+      "display_name": "Morgan State Lady Bears",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2415.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2016",
+      "abbreviation": "ALCN",
+      "display_name": "Alcorn State Lady Braves",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2016.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "325",
+      "abbreviation": "CLE",
+      "display_name": "Cleveland State Vikings",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/325.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2502",
+      "abbreviation": "PRST",
+      "display_name": "Portland State Vikings",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2502.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2368",
+      "abbreviation": "MRST",
+      "display_name": "Marist Red Foxes",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2368.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "140",
+      "abbreviation": "KC",
+      "display_name": "Kansas City Roos",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/140.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2320",
+      "abbreviation": "LAM",
+      "display_name": "Lamar Cardinals",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2320.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2885",
+      "abbreviation": "NJIT",
+      "display_name": "NJIT Highlanders",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2885.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "13",
+      "abbreviation": "CP",
+      "display_name": "Cal Poly Mustangs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/13.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2065",
+      "abbreviation": "BCU",
+      "display_name": "Bethune-Cookman Wildcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2065.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "48",
+      "abbreviation": "DEL",
+      "display_name": "Delaware Blue Hens",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/48.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2443",
+      "abbreviation": "UNO",
+      "display_name": "New Orleans Privateers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2443.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2692",
+      "abbreviation": "WEB",
+      "display_name": "Weber State Wildcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2692.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2523",
+      "abbreviation": "RMU",
+      "display_name": "Robert Morris Colonials",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2523.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2540",
+      "abbreviation": "UCSB",
+      "display_name": "UC Santa Barbara Gauchos",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2540.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "88",
+      "abbreviation": "USI",
+      "display_name": "Southern Indiana Screaming Eagles",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/88.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "338",
+      "abbreviation": "KENN",
+      "display_name": "Kennesaw State Owls",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/338.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2449",
+      "abbreviation": "NDSU",
+      "display_name": "North Dakota State Bison",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2449.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2458",
+      "abbreviation": "UNCO",
+      "display_name": "Northern Colorado Bears",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2458.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2427",
+      "abbreviation": "UNCA",
+      "display_name": "UNC Asheville Bulldogs",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2427.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "324",
+      "abbreviation": "CCU",
+      "display_name": "Coastal Carolina Chanticleers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/324.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2247",
+      "abbreviation": "GAST",
+      "display_name": "Georgia State Panthers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2247.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2350",
+      "abbreviation": "LUC",
+      "display_name": "Loyola Chicago Ramblers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2350.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2630",
+      "abbreviation": "UTM",
+      "display_name": "UT Martin Skyhawks",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2630.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "3101",
+      "abbreviation": "UTU",
+      "display_name": "Utah Tech Trailblazers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/3101.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2099",
+      "abbreviation": "CAN",
+      "display_name": "Canisius Golden Griffins",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2099.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2253",
+      "abbreviation": "GCU",
+      "display_name": "Grand Canyon Lopes",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2253.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2504",
+      "abbreviation": "PV",
+      "display_name": "Prairie View A&M Lady Panthers",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2504.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2230",
+      "abbreviation": "FOR",
+      "display_name": "Fordham Rams",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2230.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "265",
+      "abbreviation": "WSU",
+      "display_name": "Washington State Cougars",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/265.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2169",
+      "abbreviation": "DSU",
+      "display_name": "Delaware State Hornets",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2169.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2066",
+      "abbreviation": "BING",
+      "display_name": "Binghamton Bearcats",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2066.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "292",
+      "abbreviation": "RGV",
+      "display_name": "UT Rio Grande Valley Vaqueros",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/292.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2032",
+      "abbreviation": "ARST",
+      "display_name": "Arkansas State Red Wolves",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2032.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2335",
+      "abbreviation": "LIB",
+      "display_name": "Liberty Flames",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2335.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2348",
+      "abbreviation": "LT",
+      "display_name": "Louisiana Tech Lady Techsters",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2348.png",
+      "conference": "Other/Independent"
+    },
+    {
+      "id": "2545",
+      "abbreviation": "SELA",
+      "display_name": "SE Louisiana Lady Lions",
+      "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/2545.png",
+      "conference": "Other/Independent"
+    }
+  ]
+}

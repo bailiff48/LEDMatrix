@@ -1,0 +1,785 @@
+{
+  "web_display_autostart": true,
+  "schedule": {
+    "enabled": true,
+    "start_time": "07:30",
+    "end_time": "00:00"
+  },
+  "timezone": "America/Chicago",
+  "location": {
+    "city": "Waukee",
+    "state": "Iowa",
+    "country": "US"
+  },
+  "display": {
+    "hardware": {
+      "rows": 32,
+      "cols": 64,
+      "chain_length": 2,
+      "parallel": 1,
+      "brightness": 50,
+      "hardware_mapping": "regular",
+      "scan_mode": 0,
+      "pwm_bits": 11,
+      "pwm_dither_bits": 0,
+      "pwm_lsb_nanoseconds": 130,
+      "disable_hardware_pulsing": false,
+      "inverse_colors": false,
+      "show_refresh_rate": false,
+      "limit_refresh_rate_hz": 160,
+      "sport_labels": {
+        "enabled": true,
+        "duration": 3,
+        "mode": "on_change"
+      }
+    },
+    "runtime": {
+      "gpio_slowdown": 4
+    },
+    "display_durations": {
+      "clock": 10,
+      "weather": 15,
+      "stocks": 30,
+      "flights": 20,
+      "hourly_forecast": 15,
+      "daily_forecast": 15,
+      "stock_news": 20,
+      "odds_ticker": 60,
+      "leaderboard": 300,
+      "nhl_live": 30,
+      "nhl_recent": 15,
+      "nhl_upcoming": 10,
+      "nba_live": 30,
+      "nba_recent": 15,
+      "nba_upcoming": 15,
+      "nfl_live": 30,
+      "nfl_recent": 15,
+      "nfl_upcoming": 15,
+      "ncaa_fb_live": 30,
+      "ncaa_fb_recent": 15,
+      "ncaa_fb_upcoming": 15,
+      "ncaa_baseball_live": 30,
+      "ncaa_baseball_recent": 15,
+      "ncaa_baseball_upcoming": 15,
+      "calendar": 30,
+      "youtube": 30,
+      "mlb_live": 30,
+      "mlb_recent": 15,
+      "mlb_upcoming": 15,
+      "milb_live": 30,
+      "milb_recent": 15,
+      "milb_upcoming": 15,
+      "text_display": 10,
+      "soccer_live": 30,
+      "soccer_recent": 15,
+      "soccer_upcoming": 15,
+      "ncaam_basketball_live": 30,
+      "ncaam_basketball_recent": 15,
+      "ncaam_basketball_upcoming": 15,
+      "music": 30,
+      "of_the_day": 40,
+      "news_manager": 60,
+      "static_image": 10,
+      "flight_live": 5,
+      "golf": 30,
+      "tennis": 25
+    },
+    "use_short_date_format": true,
+    "use_dynamic_durations": true,
+    "dynamic_duration_config": {
+      "clock": {
+        "fixed": 10
+      },
+      "weather": {
+        "per_screen": 15
+      },
+      "sports": {
+        "base_per_item": 8,
+        "min_per_item": 4,
+        "max_total": 90,
+        "scale_factor": 0.4
+      }
+    }
+  },
+  "clock": {
+    "enabled": true,
+    "format": "%I:%M %p",
+    "update_interval": 1
+  },
+  "weather": {
+    "enabled": true,
+    "location": {
+      "city": "Waukee",
+      "state": "IA",
+      "country": "US",
+      "latitude": 41.6119,
+      "longitude": -93.8858
+    },
+    "update_interval": 1800,
+    "units": "imperial",
+    "display_format": "{temp}\u00b0F\n{condition}"
+  },
+  "stocks": {
+    "enabled": true,
+    "update_interval": 600,
+    "scroll_speed": 1,
+    "scroll_delay": 0.01,
+    "toggle_chart": true,
+    "dynamic_duration": true,
+    "min_duration": 30,
+    "max_duration": 300,
+    "duration_buffer": 0.1,
+    "symbols": [
+      "CNC",
+      "UNH",
+      "ELV",
+      "MOH",
+      "HUM",
+      "OSCR",
+      "CI",
+      "HCA",
+      "THC",
+      "TGT",
+      "RIVN"
+    ],
+    "display_format": "{symbol}: ${price} ({change}%)"
+  },
+  "crypto": {
+    "enabled": false,
+    "update_interval": 600,
+    "symbols": [
+      "BTC-USD",
+      "ETH-USD"
+    ],
+    "display_format": "{symbol}: ${price} ({change}%)"
+  },
+  "stock_news": {
+    "enabled": false,
+    "update_interval": 3600,
+    "scroll_speed": 1,
+    "scroll_delay": 0.01,
+    "max_headlines_per_symbol": 1,
+    "headlines_per_rotation": 2,
+    "dynamic_duration": true,
+    "min_duration": 30,
+    "max_duration": 300,
+    "duration_buffer": 0.1
+  },
+  "odds_ticker": {
+    "enabled": false,
+    "show_favorite_teams_only": true,
+    "games_per_favorite_team": 1,
+    "max_games_per_league": 5,
+    "show_odds_only": false,
+    "sort_order": "soonest",
+    "enabled_leagues": [
+      "nfl",
+      "mlb",
+      "ncaa_fb",
+      "milb"
+    ],
+    "update_interval": 3600,
+    "scroll_speed": 1,
+    "scroll_delay": 0.01,
+    "loop": true,
+    "future_fetch_days": 50,
+    "show_channel_logos": true,
+    "dynamic_duration": true,
+    "min_duration": 30,
+    "max_duration": 300,
+    "duration_buffer": 0.1
+  },
+  "leaderboard": {
+    "enabled": false,
+    "enabled_sports": {
+      "nfl": {
+        "enabled": false,
+        "top_teams": 10
+      },
+      "nba": {
+        "enabled": false,
+        "top_teams": 10
+      },
+      "mlb": {
+        "enabled": false,
+        "top_teams": 10
+      },
+      "ncaa_fb": {
+        "enabled": false,
+        "top_teams": 25,
+        "show_ranking": true
+      },
+      "nhl": {
+        "enabled": false,
+        "top_teams": 10
+      },
+      "ncaam_basketball": {
+        "enabled": false,
+        "top_teams": 25
+      },
+      "ncaam_hockey": {
+        "enabled": false,
+        "top_teams": 10,
+        "show_ranking": true
+      }
+    },
+    "update_interval": 3600,
+    "scroll_speed": 1,
+    "scroll_delay": 0.01,
+    "loop": false,
+    "request_timeout": 30,
+    "dynamic_duration": true,
+    "min_duration": 30,
+    "max_display_time": 600
+  },
+  "calendar": {
+    "enabled": false,
+    "credentials_file": "credentials.json",
+    "token_file": "token.pickle",
+    "update_interval": 3600,
+    "max_events": 3,
+    "calendars": [
+      "birthdays"
+    ]
+  },
+  "nhl_scoreboard": {
+    "enabled": true,
+    "live_priority": false,
+    "live_game_duration": 20,
+    "show_odds": true,
+    "test_mode": false,
+    "update_interval_seconds": 300,
+    "live_update_interval": 30,
+    "recent_update_interval": 300,
+    "upcoming_update_interval": 3600,
+    "recent_games_to_show": 2,
+    "upcoming_games_to_show": 2,
+    "show_favorite_teams_only": true,
+    "show_all_live": false,
+    "show_shots_on_goal": false,
+    "favorite_teams": [
+      "STL"
+    ],
+    "logo_dir": "/home/ledpi/LEDMatrix/assets/sports/nhl_logos",
+    "show_records": true,
+    "display_modes": {
+      "nhl_live": false,
+      "nhl_recent": true,
+      "nhl_upcoming": true
+    }
+  },
+  "nba_scoreboard": {
+    "enabled": false,
+    "live_priority": false,
+    "live_game_duration": 20,
+    "show_odds": true,
+    "test_mode": false,
+    "update_interval_seconds": 3600,
+    "live_update_interval": 30,
+    "live_odds_update_interval": 3600,
+    "odds_update_interval": 3600,
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600,
+    "recent_games_to_show": 1,
+    "upcoming_games_to_show": 1,
+    "show_favorite_teams_only": true,
+    "show_all_live": false,
+    "favorite_teams": [],
+    "logo_dir": "/home/ledpi/LEDMatrix/assets/sports/nba_logos",
+    "show_records": true,
+    "display_modes": {
+      "nba_live": false,
+      "nba_recent": false,
+      "nba_upcoming": false
+    }
+  },
+  "wnba_scoreboard": {
+    "enabled": true,
+    "live_priority": false,
+    "live_game_duration": 20,
+    "show_odds": true,
+    "test_mode": false,
+    "update_interval_seconds": 3600,
+    "live_update_interval": 30,
+    "live_odds_update_interval": 3600,
+    "odds_update_interval": 3600,
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600,
+    "recent_games_to_show": 1,
+    "upcoming_games_to_show": 1,
+    "show_favorite_teams_only": true,
+    "show_all_live": false,
+    "favorite_teams": [
+      "IND"
+    ],
+    "logo_dir": "/home/ledpi/LEDMatrix/assets/sports/wnba_logos",
+    "show_records": true,
+    "display_modes": {
+      "wnba_live": true,
+      "wnba_recent": true,
+      "wnba_upcoming": true,
+      "wnba_scoreboard_live": true,
+      "wnba_scoreboard_recent": true,
+      "wnba_scoreboard_upcoming": true
+    }
+  },
+  "nfl_scoreboard": {
+    "enabled": true,
+    "live_priority": false,
+    "live_game_duration": 30,
+    "show_odds": true,
+    "test_mode": false,
+    "update_interval_seconds": 3600,
+    "live_update_interval": 30,
+    "live_odds_update_interval": 3600,
+    "odds_update_interval": 3600,
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600,
+    "recent_games_to_show": 16,
+    "upcoming_games_to_show": 16,
+    "show_favorite_teams_only": true,
+    "show_all_live": false,
+    "favorite_teams": [
+      "KC"
+    ],
+    "logo_dir": "/home/ledpi/LEDMatrix/assets/sports/nfl_logos",
+    "show_records": true,
+    "display_modes": {
+      "nfl_live": true,
+      "nfl_recent": true,
+      "nfl_upcoming": true
+    }
+  },
+  "ncaa_fb_scoreboard": {
+    "enabled": true,
+    "live_priority": false,
+    "live_game_duration": 20,
+    "show_odds": true,
+    "test_mode": false,
+    "update_interval_seconds": 3600,
+    "live_update_interval": 30,
+    "live_odds_update_interval": 3600,
+    "odds_update_interval": 3600,
+    "recent_games_to_show": 16,
+    "upcoming_games_to_show": 16,
+    "show_favorite_teams_only": true,
+    "show_all_live": false,
+    "favorite_teams": [
+      "IOWA",
+      "ISU",
+      "MIZZ"
+    ],
+    "logo_dir": "/home/ledpi/LEDMatrix/assets/sports/ncaa_logos",
+    "show_records": true,
+    "show_ranking": true,
+    "display_modes": {
+      "ncaa_fb_live": false,
+      "ncaa_fb_recent": true,
+      "ncaa_fb_upcoming": true
+    },
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600
+  },
+  "ncaa_baseball_scoreboard": {
+    "enabled": false,
+    "live_priority": false,
+    "live_game_duration": 30,
+    "show_odds": true,
+    "test_mode": false,
+    "update_interval_seconds": 3600,
+    "live_update_interval": 30,
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600,
+    "recent_games_to_show": 1,
+    "upcoming_games_to_show": 1,
+    "show_favorite_teams_only": true,
+    "show_all_live": false,
+    "show_series_summary": false,
+    "favorite_teams": [],
+    "logo_dir": "/home/ledpi/LEDMatrix/assets/sports/ncaa_logos",
+    "show_records": true,
+    "display_modes": {
+      "ncaa_baseball_live": false,
+      "ncaa_baseball_recent": false,
+      "ncaa_baseball_upcoming": false
+    }
+  },
+  "ncaam_basketball_scoreboard": {
+    "enabled": true,
+    "live_priority": false,
+    "live_game_duration": 20,
+    "show_odds": true,
+    "test_mode": false,
+    "update_interval_seconds": 3600,
+    "live_update_interval": 30,
+    "recent_games_to_show": 16,
+    "upcoming_games_to_show": 16,
+    "show_favorite_teams_only": true,
+    "show_all_live": false,
+    "favorite_teams": [
+      "IOWA",
+      "ISU",
+      "MIZ"
+    ],
+    "logo_dir": "/home/ledpi/LEDMatrix/assets/sports/ncaa_logos",
+    "show_records": true,
+    "display_modes": {
+      "ncaam_basketball_live": true,
+      "ncaam_basketball_recent": true,
+      "ncaam_basketball_upcoming": true
+    },
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600
+  },
+  "ncaaw_basketball_scoreboard": {
+    "enabled": true,
+    "live_priority": false,
+    "live_game_duration": 20,
+    "show_odds": true,
+    "test_mode": false,
+    "update_interval_seconds": 3600,
+    "live_update_interval": 30,
+    "recent_games_to_show": 15,
+    "upcoming_games_to_show": 15,
+    "show_favorite_teams_only": true,
+    "show_all_live": false,
+    "favorite_teams": [
+      "IOWA"
+    ],
+    "logo_dir": "/home/ledpi/LEDMatrix/assets/sports/ncaa_logos",
+    "show_records": true,
+    "display_modes": {
+      "ncaaw_basketball_live": true,
+      "ncaaw_basketball_recent": true,
+      "ncaaw_basketball_upcoming": true,
+      "ncaaw_basketball_scoreboard_live": true,
+      "ncaaw_basketball_scoreboard_recent": true,
+      "ncaaw_basketball_scoreboard_upcoming": true
+    },
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600
+  },
+  "ncaam_hockey_scoreboard": {
+    "enabled": false,
+    "live_priority": false,
+    "live_game_duration": 20,
+    "show_odds": true,
+    "test_mode": false,
+    "update_interval_seconds": 3600,
+    "live_update_interval": 30,
+    "live_odds_update_interval": 3600,
+    "odds_update_interval": 3600,
+    "recent_games_to_show": 1,
+    "upcoming_games_to_show": 1,
+    "show_favorite_teams_only": true,
+    "show_all_live": false,
+    "show_shots_on_goal": false,
+    "favorite_teams": [
+      "RIT"
+    ],
+    "logo_dir": "/home/ledpi/LEDMatrix/assets/sports/ncaa_logos",
+    "show_records": true,
+    "show_ranking": true,
+    "display_modes": {
+      "ncaam_hockey_live": true,
+      "ncaam_hockey_recent": true,
+      "ncaam_hockey_upcoming": true,
+      "ncaam_hockey_scoreboard_live": true,
+      "ncaam_hockey_scoreboard_recent": true,
+      "ncaam_hockey_scoreboard_upcoming": true
+    },
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600
+  },
+  "ncaaw_hockey_scoreboard": {
+    "enabled": false,
+    "live_priority": false,
+    "live_game_duration": 20,
+    "show_odds": true,
+    "test_mode": false,
+    "update_interval_seconds": 3600,
+    "live_update_interval": 30,
+    "live_odds_update_interval": 3600,
+    "odds_update_interval": 3600,
+    "recent_games_to_show": 1,
+    "upcoming_games_to_show": 1,
+    "show_favorite_teams_only": true,
+    "show_all_live": false,
+    "show_shots_on_goal": false,
+    "favorite_teams": [
+      "RIT"
+    ],
+    "logo_dir": "/home/ledpi/LEDMatrix/assets/sports/ncaa_logos",
+    "show_records": false,
+    "show_ranking": false,
+    "display_modes": {
+      "ncaaw_hockey_live": true,
+      "ncaaw_hockey_recent": true,
+      "ncaaw_hockey_upcoming": true,
+      "ncaaw_hockey_scoreboard_live": true,
+      "ncaaw_hockey_scoreboard_recent": true,
+      "ncaaw_hockey_scoreboard_upcoming": true
+    },
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600
+  },
+  "youtube": {
+    "enabled": false,
+    "update_interval": 300
+  },
+  "mlb_scoreboard": {
+    "enabled": false,
+    "live_priority": false,
+    "live_game_duration": 30,
+    "show_odds": true,
+    "test_mode": false,
+    "update_interval_seconds": 3600,
+    "live_update_interval": 30,
+    "live_odds_update_interval": 3600,
+    "odds_update_interval": 3600,
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600,
+    "recent_games_to_show": 1,
+    "upcoming_games_to_show": 1,
+    "show_favorite_teams_only": true,
+    "show_all_live": false,
+    "show_series_summary": false,
+    "favorite_teams": [
+      "STL"
+    ],
+    "logo_dir": "/home/ledpi/LEDMatrix/assets/sports/mlb_logos",
+    "show_records": true,
+    "display_modes": {
+      "mlb_live": true,
+      "mlb_recent": true,
+      "mlb_upcoming": true,
+      "mlb_scoreboard_live": true,
+      "mlb_scoreboard_recent": true,
+      "mlb_scoreboard_upcoming": true
+    }
+  },
+  "milb_scoreboard": {
+    "enabled": false,
+    "live_priority": false,
+    "live_game_duration": 30,
+    "test_mode": false,
+    "update_interval_seconds": 3600,
+    "live_update_interval": 30,
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600,
+    "recent_games_to_show": 1,
+    "upcoming_games_to_show": 1,
+    "favorite_teams": [],
+    "logo_dir": "/home/ledpi/LEDMatrix/assets/sports/milb_logos",
+    "show_records": true,
+    "upcoming_fetch_days": 7,
+    "display_modes": {
+      "milb_live": true,
+      "milb_recent": true,
+      "milb_upcoming": true,
+      "milb_scoreboard_live": true,
+      "milb_scoreboard_recent": true,
+      "milb_scoreboard_upcoming": true
+    },
+    "show_odds": false,
+    "show_favorite_teams_only": false
+  },
+  "text_display": {
+    "enabled": false,
+    "text": "Subscribe to ChuckBuilds",
+    "font_path": "assets/fonts/press-start-2p.ttf",
+    "font_size": 8,
+    "scroll": true,
+    "scroll_speed": 40,
+    "text_color": [
+      255,
+      0,
+      0
+    ],
+    "background_color": [
+      0,
+      0,
+      0
+    ],
+    "scroll_gap_width": 32
+  },
+  "soccer_scoreboard": {
+    "enabled": false,
+    "live_priority": false,
+    "live_game_duration": 30,
+    "show_odds": true,
+    "test_mode": false,
+    "update_interval_seconds": 3600,
+    "live_update_interval": 30,
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600,
+    "recent_games_to_show": 4,
+    "upcoming_games_to_show": 4,
+    "show_favorite_teams_only": true,
+    "favorite_teams": [
+      "BOU",
+      "ARS",
+      "ATL"
+    ],
+    "leagues": [
+      "usa.1",
+      "usa.nwsl",
+      "usa.ncaa.m.1",
+      "usa.ncaa.w.1",
+      "eng.1",
+      "esp.1",
+      "ger.1",
+      "ita.1",
+      "fra.1",
+      "uefa.champions",
+      "uefa.europa",
+      "por.1"
+    ],
+    "logo_dir": "/home/ledpi/LEDMatrix/assets/sports/soccer_logos",
+    "show_records": true,
+    "display_modes": {
+      "soccer_live": false,
+      "soccer_recent": true,
+      "soccer_upcoming": true
+    },
+    "upcoming_fetch_days": 7
+  },
+  "music": {
+    "enabled": false,
+    "preferred_source": "ytm",
+    "YTM_COMPANION_URL": "http://192.168.86.12:9863",
+    "POLLING_INTERVAL_SECONDS": 1,
+    "skip_when_nothing_playing": true,
+    "skip_delay_seconds": 2,
+    "live_priority": true,
+    "live_game_duration": 30
+  },
+  "of_the_day": {
+    "enabled": false,
+    "display_rotate_interval": 20,
+    "update_interval": 3600,
+    "subtitle_rotate_interval": 10,
+    "category_order": [
+      "word_of_the_day",
+      "slovenian_word_of_the_day"
+    ],
+    "categories": {
+      "word_of_the_day": {
+        "enabled": false,
+        "data_file": "of_the_day/word_of_the_day.json",
+        "display_name": "Word of the Day"
+      },
+      "slovenian_word_of_the_day": {
+        "enabled": false,
+        "data_file": "of_the_day/slovenian_word_of_the_day.json",
+        "display_name": "Slovenian Word of the Day"
+      }
+    }
+  },
+  "news_manager": {
+    "enabled": false,
+    "update_interval": 300,
+    "scroll_speed": 1,
+    "scroll_delay": 0.01,
+    "headlines_per_feed": 2,
+    "enabled_feeds": [
+      "NFL",
+      "NCAA FB",
+      "F1",
+      "BBC F1"
+    ],
+    "custom_feeds": {
+      "F1": "https://www.espn.com/espn/rss/rpm/news",
+      "BBC F1": "http://feeds.bbci.co.uk/sport/formula1/rss.xml"
+    },
+    "rotation_enabled": true,
+    "rotation_threshold": 3,
+    "dynamic_duration": true,
+    "min_duration": 30,
+    "max_duration": 300,
+    "duration_buffer": 0.1,
+    "font_size": 8,
+    "font_path": "assets/fonts/PressStart2P-Regular.ttf",
+    "text_color": [
+      255,
+      255,
+      255
+    ],
+    "separator_color": [
+      255,
+      0,
+      0
+    ]
+  },
+  "static_image": {
+    "enabled": false,
+    "image_path": "assets/static_images/default.png",
+    "fit_to_display": true,
+    "preserve_aspect_ratio": true,
+    "background_color": [
+      0,
+      0,
+      0
+    ]
+  },
+  "golf": {
+    "enabled": true,
+    "tours": [
+      "pga"
+    ],
+    "show_top_n": 5,
+    "update_interval": 900,
+    "live_priority": false,
+    "show_odds": false,
+    "show_favorite_teams_only": false,
+    "favorite_teams": [],
+    "live_update_interval": 30,
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600,
+    "recent_games_to_show": 1,
+    "upcoming_games_to_show": 1,
+    "display_modes": {
+      "golf_live": false,
+      "golf_recent": true,
+      "golf_upcoming": true
+    }
+  },
+  "tennis": {
+    "enabled": true,
+    "majors_only": false,
+    "show_completed_matches": false,
+    "max_matches_display": 5,
+    "update_interval": 600,
+    "live_priority": false,
+    "show_odds": false,
+    "show_favorite_teams_only": false,
+    "favorite_teams": [],
+    "live_update_interval": 30,
+    "recent_update_interval": 3600,
+    "upcoming_update_interval": 3600,
+    "recent_games_to_show": 1,
+    "upcoming_games_to_show": 1,
+    "display_modes": {
+      "tennis_live": false,
+      "tennis_recent": true,
+      "tennis_upcoming": true
+    }
+  },
+  "flights": {
+    "enabled": true,
+    "opensky_client_id": "baileyforrest-api-client",
+    "opensky_client_secret": "Nn452TqV2Yc6P2fEkJzRdzZcC6bN0ISP",
+    "home_lat": 41.59105099999999,
+    "home_lon": -93.85926866666667,
+    "radius_km": 15,
+    "max_flights": 5,
+    "min_altitude_m": 150,
+    "update_interval": 30,
+    "start_hour": 8,
+    "end_hour": 21,
+    "live_priority": true
+  },
+  "anti_spoiler_teams": [
+    "NFL_KC"
+  ]
+}

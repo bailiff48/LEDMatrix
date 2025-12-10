@@ -1,0 +1,20 @@
+{
+    "enabled": true,
+    "gpio_pin": 12,
+    "pwm_frequency": 25,
+    "temp_thresholds": {
+        "off": 45,
+        "low": 50,
+        "medium": 60,
+        "high": 70
+    },
+    "fan_speeds": {
+        "off": 0,
+        "low": 40,
+        "medium": 70,
+        "high": 100
+    },
+    "min_fan_speed": 30,
+    "update_interval": 5,
+    "hysteresis": 2
+}

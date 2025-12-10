@@ -47,3 +47,4 @@ logos/
 # Config files with personal data
 config/config.json
 config/config_secrets.json
+_archive_*

@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+import threading
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -1542,6 +1543,65 @@ class SportsLive(SportsCore):
         self.log_interval = 300
         self.last_count_log_time = 0  # Track when we last logged count data
         self.count_log_interval = 5  # Only log count data every 5 seconds
+
+        # Background polling thread for live game detection
+        self._poll_thread = None
+        self._stop_polling = False
+        self._start_background_polling()
+
+
+    def _start_background_polling(self):
+        """Start background thread for live game detection."""
+        if self._poll_thread is not None:
+            return
+        self._poll_thread = threading.Thread(target=self._background_poll_loop, daemon=True)
+        self._poll_thread.start()
+        self.logger.info(f"Background poll loop started for {self.sport_key}")
+
+    def _background_poll_loop(self):
+        """Background loop that polls for live games independently of display."""
+        import time as time_module
+        while not self._stop_polling:
+            try:
+                if self.is_enabled and not self.test_mode:
+                    self._background_fetch_live_games()
+            except Exception as e:
+                self.logger.error(f"Background poll error: {e}")
+            sleep_time = self.update_interval if self.live_games else self.no_data_interval
+            time_module.sleep(sleep_time)
+
+    def _background_fetch_live_games(self):
+        """Fetch and check for live games in background thread."""
+        # Safety check - skip if sport/league not yet initialized
+        if not getattr(self, 'sport', None) or not getattr(self, 'league', None):
+            return
+        try:
+            data = self._fetch_todays_games() if hasattr(self, '_fetch_todays_games') else self._fetch_data()
+            if data and 'events' in data:
+                new_live_games = []
+                for game in data['events']:
+                    details = self._extract_game_details(game)
+                    if details and (details['is_live'] or details['is_halftime']):
+                        if self.show_all_live or not self.show_favorite_teams_only or                            (details['home_abbr'] in self.favorite_teams or details['away_abbr'] in self.favorite_teams):
+                            new_live_games.append(details)
+
+                if new_live_games and (not self.live_games or len(new_live_games) != len(self.live_games)):
+                    self.logger.info(f"[Background] Found {len(new_live_games)} live/halftime games for {self.sport_key}")
+                    for g in new_live_games:
+                        self.logger.info(f"  - {g['away_abbr']}@{g['home_abbr']} ({g.get('status_text', 'N/A')})")
+                elif not new_live_games and self.live_games:
+                    self.logger.info(f"[Background] No more live games for {self.sport_key}")
+
+                if new_live_games:
+                    self.live_games = sorted(new_live_games, key=lambda g: g.get('start_time_utc') or datetime.now(timezone.utc))
+                    if not self.current_game or self.current_game['id'] not in {g['id'] for g in self.live_games}:
+                        self.current_game = self.live_games[0]
+                        self.current_game_index = 0
+                else:
+                    self.live_games = []
+                    self.current_game = None
+        except Exception as e:
+            self.logger.error(f"[Background] Error fetching live games: {e}")
 
     @abstractmethod
     def _test_mode_update(self) -> None:
