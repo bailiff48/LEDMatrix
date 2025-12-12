@@ -105,6 +105,11 @@ class FlightLiveManager:
         self.display_width = self.display_manager.matrix.width if hasattr(self.display_manager, 'matrix') else 128
         self.display_height = self.display_manager.matrix.height if hasattr(self.display_manager, 'matrix') else 32
         
+
+    @property
+    def live_games(self):
+        """Alias for live_flights to match sports manager pattern"""
+        return self.live_flights
         self.logger.info(f"FlightLiveManager initialized: lat={self.home_lat}, lon={self.home_lon}, radius={self.radius_km}km (~{self.radius_km * 0.621371:.1f} miles)")
         self.logger.info(f"Live interruption mode: Will display when flights enter {self.radius_km}km radius")
         self.logger.info(f"Update interval: {self.update_interval}s, Display duration per flight: {self.flight_display_duration}s")
