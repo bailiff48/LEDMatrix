@@ -449,7 +449,7 @@ class FlightLiveManager:
                 self.last_flight_switch = current_time
                 self.logger.debug(f"Switched to flight {self.current_flight_index + 1}/{len(self.live_flights)}: {self.current_flight.get('callsign')}")
     
-    def display(self) -> None:
+    def display(self, force_clear: bool = False) -> None:
         """
         Display current flight (LIVE PATTERN).
         Called by main loop when this manager is active (flights overhead).
