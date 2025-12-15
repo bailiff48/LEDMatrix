@@ -89,6 +89,14 @@ class FlightLiveManager:
         self._poll_thread = None
         self._stop_event = threading.Event()
         self._polling_active = False
+
+        # === MAX DISPLAY TIME FEATURE ===
+        # Prevents flights from dominating display for minutes at a time
+        self._interruption_start_time = None  # When current interruption session started
+        self._max_interruption_time = self.flight_config.get('max_interruption_time', 30)  # Default 30 seconds
+        self._cooldown_flights = {}  # {icao24: last_displayed_time} - prevent re-interrupt
+        self._cooldown_duration = self.flight_config.get('cooldown_duration', 120)  # 2 min before same flight can re-interrupt
+        self._interruption_active = False  # Are we currently in an interruption session?
         
         # Colors for display
         self.COLORS = {
@@ -102,14 +110,22 @@ class FlightLiveManager:
         }
         
         # Display dimensions
+        
+        # Aircraft type icons
+        self.aircraft_icons = {}
+        self._load_aircraft_icons()
+
         self.display_width = self.display_manager.matrix.width if hasattr(self.display_manager, 'matrix') else 128
         self.display_height = self.display_manager.matrix.height if hasattr(self.display_manager, 'matrix') else 32
         
 
     @property
     def live_games(self):
-        """Alias for live_flights to match sports manager pattern"""
-        return self.live_flights
+        """Alias for live_flights to match sports manager pattern.
+        Returns empty list if interruption timed out (so display controller releases priority)."""
+        if self._interruption_active:
+            return self.live_flights
+        return []
         self.logger.info(f"FlightLiveManager initialized: lat={self.home_lat}, lon={self.home_lon}, radius={self.radius_km}km (~{self.radius_km * 0.621371:.1f} miles)")
         self.logger.info(f"Live interruption mode: Will display when flights enter {self.radius_km}km radius")
         self.logger.info(f"Update interval: {self.update_interval}s, Display duration per flight: {self.flight_display_duration}s")
@@ -263,6 +279,96 @@ class FlightLiveManager:
         dx = (lon - self.home_lon) * 111.0 * math.cos(math.radians(self.home_lat))
         dy = (lat - self.home_lat) * 111.0
         return math.sqrt(dx*dx + dy*dy)
+
+    def _calculate_bearing(self, lat: float, lon: float) -> str:
+        """
+        Calculate compass direction from home to given coordinates.
+        Returns cardinal/intercardinal direction (N, NE, E, SE, S, SW, W, NW).
+        """
+        # Calculate bearing angle
+        dx = (lon - self.home_lon) * math.cos(math.radians(self.home_lat))
+        dy = lat - self.home_lat
+        
+        # Get angle in degrees (0 = North, 90 = East, etc.)
+        angle = math.degrees(math.atan2(dx, dy))
+        if angle < 0:
+            angle += 360
+        
+        # Convert to 8-point compass
+        directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+        index = int((angle + 22.5) / 45) % 8
+        return directions[index]
+    def _load_aircraft_icons(self):
+        """Load aircraft type icons from assets directory."""
+        icon_dir = Path(__file__).parent.parent / 'assets' / 'logos' / 'aircraft'
+        icon_files = {
+            'JET': 'jet.png',
+            'MIL': 'military.png',
+            'HELO': 'helicopter.png',
+            'GA': 'ga.png',
+            'UNK': 'unknown.png'
+        }
+        
+        for type_code, filename in icon_files.items():
+            icon_path = icon_dir / filename
+            if icon_path.exists():
+                try:
+                    icon = Image.open(icon_path).convert('RGBA')
+                    # Resize to 16x16 if needed
+                    if icon.size != (16, 16):
+                        icon = icon.resize((16, 16), Image.LANCZOS)
+                    self.aircraft_icons[type_code] = icon
+                    self.logger.debug(f"Loaded aircraft icon: {type_code}")
+                except Exception as e:
+                    self.logger.warning(f"Failed to load aircraft icon {filename}: {e}")
+        
+        self.logger.info(f"Loaded {len(self.aircraft_icons)} aircraft icons")
+
+    def _infer_aircraft_type(self, callsign: str, altitude_ft: int, speed_knots: int) -> str:
+        """
+        Infer aircraft type from callsign patterns and flight characteristics.
+        Returns type_code: MIL, JET, HELO, GA, or UNK
+        """
+        callsign = (callsign or '').upper().strip()
+        
+        # Military patterns
+        military_patterns = ['REACH', 'TETON', 'EVAC', 'RESCUE', 'ARMY', 'NAVY', 
+                           'GUARD', 'DUKE', 'HAWK', 'VIPER', 'RCH', 'CNV', 'PAT',
+                           'IRON', 'STEEL', 'BLADE', 'SABER', 'TOPCAT', 'BOXER',
+                           'KARMA', 'RAID', 'SKULL', 'BONE', 'DEATH']
+        for pattern in military_patterns:
+            if callsign.startswith(pattern):
+                return 'MIL'
+        
+        # Helicopter patterns
+        heli_patterns = ['LIFE', 'MEDEVAC', 'HELI', 'COPTER', 'AIR1', 'MERCY']
+        for pattern in heli_patterns:
+            if pattern in callsign:
+                return 'HELO'
+        
+        # Low & slow = likely helicopter
+        if altitude_ft and speed_knots and altitude_ft < 3000 and speed_knots < 120:
+            return 'HELO'
+        
+        # Commercial airlines
+        airlines = ['AAL', 'UAL', 'DAL', 'SWA', 'JBU', 'ASA', 'FFT', 'NKS', 
+                   'SKW', 'ENY', 'RPA', 'EDV', 'FDX', 'UPS', 'GTI', 'ABX',
+                   'EJA', 'LXJ', 'XOJ', 'TVS', 'XAJ', 'LEA', 'WWI']
+        for code in airlines:
+            if callsign.startswith(code):
+                return 'JET'
+        
+        # High altitude = jet
+        if altitude_ft and altitude_ft > 25000:
+            return 'JET'
+        
+        # N-numbers = general aviation
+        if callsign.startswith('N') and len(callsign) <= 6:
+            return 'GA'
+        
+        return 'UNK'
+
+
     
     def _fetch_flights_internal(self) -> None:
         """
@@ -370,6 +476,8 @@ class FlightLiveManager:
                             'altitude_ft': altitude_ft,
                             'altitude_m': altitude_m,
                             'distance_km': distance_km,
+                            'direction': self._calculate_bearing(lat, lon),
+                            'aircraft_type': self._infer_aircraft_type(callsign, altitude_ft, speed_knots),
                             'speed_knots': speed_knots,
                             'heading': heading,
                             'vertical_rate': vertical_rate,
@@ -474,14 +582,96 @@ class FlightLiveManager:
         except Exception as e:
             self.logger.error(f"Error displaying flight: {e}", exc_info=True)
     
+    def _clean_cooldown_flights(self) -> None:
+        """Remove flights from cooldown that have expired."""
+        current_time = time.time()
+        expired = [icao for icao, timestamp in self._cooldown_flights.items() 
+                   if current_time - timestamp > self._cooldown_duration]
+        for icao in expired:
+            del self._cooldown_flights[icao]
+
     def has_live_content(self) -> bool:
         """
-        Check if there are live flights (LIVE PATTERN).
+        Check if there are live flights that should interrupt display (LIVE PATTERN).
         Main loop uses this to determine if this manager should interrupt.
-        Thread-safe read of live_flights.
+        
+        Implements max display time - returns False after interruption exceeds limit,
+        even if flights are still in range. Prevents flights from dominating display.
+        Thread-safe with _lock for flight data access.
         """
         with self._lock:
-            return len(self.live_flights) > 0
+            flight_count = len(self.live_flights)
+            current_flights = list(self.live_flights)  # Copy for use outside lock
+        
+        # No flights in range = no live content
+        if flight_count == 0:
+            # Reset interruption state when all flights leave
+            if self._interruption_active:
+                self.logger.info("All flights left range - ending interruption session")
+                self._interruption_active = False
+                self._interruption_start_time = None
+            return False
+        
+        current_time = time.time()
+        
+        # Clean up expired cooldowns
+        self._clean_cooldown_flights()
+        
+        # === CASE 1: Not currently interrupting ===
+        if not self._interruption_active:
+            # Check if any flight can trigger new interruption (not in cooldown)
+            has_new = False
+            for flight in current_flights:
+                if flight['icao24'] not in self._cooldown_flights:
+                    has_new = True
+                    break
+            
+            if has_new:
+                # Start new interruption session
+                self._interruption_active = True
+                self._interruption_start_time = current_time
+                
+                # Add all current flights to cooldown
+                for flight in current_flights:
+                    self._cooldown_flights[flight['icao24']] = current_time
+                
+                self.logger.info(f"Starting flight interruption session with {flight_count} flight(s), max {self._max_interruption_time}s")
+                return True
+            else:
+                # All flights are in cooldown, don't interrupt
+                return False
+        
+        # === CASE 2: Currently interrupting ===
+        # Check if max display time exceeded
+        elapsed = current_time - self._interruption_start_time
+        if elapsed >= self._max_interruption_time:
+            self.logger.info(f"Max interruption time ({self._max_interruption_time}s) reached - returning to normal rotation")
+            self._interruption_active = False
+            self._interruption_start_time = None
+            
+            # Refresh cooldown timestamps for all current flights
+            for flight in current_flights:
+                self._cooldown_flights[flight['icao24']] = current_time
+            
+            return False
+        
+        # Check if a NEW flight entered range (one not in cooldown)
+        new_flight_entered = False
+        for flight in current_flights:
+            if flight['icao24'] not in self._cooldown_flights:
+                # New flight! Add to cooldown and note it
+                self._cooldown_flights[flight['icao24']] = current_time
+                new_flight_entered = True
+                self.logger.info(f"New flight entered range during interruption: {flight['callsign']}")
+        
+        # If new flight entered, reset the timer to give it display time
+        if new_flight_entered:
+            self._interruption_start_time = current_time
+            self.logger.info("Resetting interruption timer for new flight")
+        
+        # Still within time limit, continue interruption
+        return True
+
     
     def get_live_flights_count(self) -> int:
         """Thread-safe method to get current flight count."""
@@ -512,16 +702,34 @@ class FlightLiveManager:
         altitude_ft = flight['altitude_ft']
         speed_knots = flight.get('speed_knots')
         heading = flight.get('heading')
+        aircraft_type = flight.get('aircraft_type', 'UNK')
+        direction = flight.get('direction', '')
         
-        # Line 1: Large callsign (centered top)
-        callsign_text = f"✈ {callsign}"
-        bbox = draw.textbbox((0, 0), callsign_text, font=font_large)
-        callsign_width = bbox[2] - bbox[0]
-        callsign_x = (self.display_width - callsign_width) // 2
-        draw.text((callsign_x, 1), callsign_text, fill=self.COLORS['orange'], font=font_large)
+        
+        # Get aircraft icon
+        icon = self.aircraft_icons.get(aircraft_type)
+        icon_width = 16 if icon else 0
+        icon_spacing = 2 if icon else 0
+        
+        # Line 1: Icon + callsign (centered top)
+        bbox = draw.textbbox((0, 0), callsign, font=font_large)
+        text_width = bbox[2] - bbox[0]
+        total_width = icon_width + icon_spacing + text_width
+        start_x = (self.display_width - total_width) // 2
+        
+        # Draw icon if available
+        if icon:
+            # Paste icon (handle transparency)
+            img.paste(icon, (start_x, 1), icon if icon.mode == 'RGBA' else None)
+        
+        # Draw callsign text after icon
+        text_x = start_x + icon_width + icon_spacing
+        draw.text((text_x, 1), callsign, fill=self.COLORS['orange'], font=font_large)
         
         # Line 2: Distance and altitude
-        dist_text = f"{distance_km:.1f}km"
+        direction = flight.get('direction', '')
+        
+        dist_text = f"{direction} {distance_km:.1f}km"
         alt_text = f"{altitude_ft}ft" if altitude_ft else "?ft"
         line2 = f"{dist_text}  {alt_text}"
         bbox = draw.textbbox((0, 0), line2, font=font_medium)
