@@ -708,6 +708,13 @@ def index():
                                system_status=safe_system_status,
                                editor_mode=False)
 
+
+@app.route("/golf-selector")
+def golf_selector():
+    return render_template("golf_selector.html")
+
+
+
 def get_system_status():
     """Get current system status including display state, performance metrics, and CPU utilization."""
     try:
@@ -1047,6 +1054,7 @@ def system_action():
         }), 500
 
 @app.route('/api/system/status')
+
 def get_system_status_api():
     """Get system status as JSON."""
     try:

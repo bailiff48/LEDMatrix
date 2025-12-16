@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorite Golfers - LEDMatrix</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #2d5a27 0%, #1a3a15 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 15px 15px 0 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 28px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1::before {
+            content: "⛳";
+            font-size: 32px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 15px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .main-content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Current Favorites Section */
+        .favorites-section {
+            background: linear-gradient(135deg, #2d5a27 0%, #4a7c42 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .favorites-section h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .favorite-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .favorite-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .favorite-name {
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .favorite-tour {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .remove-btn {
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .remove-btn:hover {
+            background: #e53e3e;
+        }
+
+        .no-favorites {
+            text-align: center;
+            padding: 20px;
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        /* Search Section */
+        .search-section {
+            margin-bottom: 30px;
+        }
+
+        .search-section h3 {
+            margin-bottom: 15px;
+            color: #2d3748;
+            font-size: 18px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #2d5a27;
+        }
+
+        .search-box select {
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .search-box button {
+            padding: 12px 30px;
+            background: #2d5a27;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .search-box button:hover {
+            background: #1a3a15;
+        }
+
+        .search-hint {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 8px;
+        }
+
+        .search-results {
+            margin-top: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .search-results.visible {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s ease;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover {
+            background: #f7fafc;
+        }
+
+        .search-result-info {
+            flex: 1;
+        }
+
+        .search-result-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .search-result-tour {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .add-btn {
+            padding: 8px 16px;
+            background: #2d5a27;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .add-btn:hover {
+            background: #1a3a15;
+        }
+
+        .add-btn.added {
+            background: #718096;
+            cursor: default;
+        }
+
+        .search-loading, .search-empty {
+            padding: 20px;
+            text-align: center;
+            color: #718096;
+        }
+
+        /* Tour Tabs */
+        .tour-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tour-tab {
+            padding: 10px 20px;
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .tour-tab:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .tour-tab.active {
+            background: #2d5a27;
+            color: white;
+            border-color: #2d5a27;
+        }
+
+        /* Popular Golfers Section */
+        .popular-section h3 {
+            margin-bottom: 15px;
+            color: #2d3748;
+            font-size: 18px;
+        }
+
+        .golfers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .golfer-card {
+            background: #f7fafc;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .golfer-card:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+            transform: translateY(-2px);
+        }
+
+        .golfer-card.selected {
+            background: #c6f6d5;
+            border-color: #2d5a27;
+        }
+
+        .golfer-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .golfer-name {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .golfer-tour {
+            font-size: 11px;
+            color: #718096;
+        }
+
+        .golfer-card .add-btn {
+            flex-shrink: 0;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-primary {
+            padding: 14px 30px;
+            background: #2d5a27;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: #1a3a15;
+        }
+
+        .btn-secondary {
+            padding: 14px 30px;
+            background: white;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+        }
+
+        /* Status Messages */
+        .status-message {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #c6f6d5;
+            color: #276749;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #fed7d7;
+            color: #c53030;
+            display: block;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .search-box select {
+                min-width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/" class="back-link">← Back to Dashboard</a>
+            <h1>Favorite Golfers</h1>
+            <p>Select your favorite golfers to highlight on the LED display during tournaments</p>
+        </div>
+
+        <div class="main-content">
+            <div id="statusMessage" class="status-message"></div>
+
+            <!-- Current Favorites -->
+            <div class="favorites-section">
+                <h2>⭐ Your Favorites</h2>
+                <div id="favoritesGrid" class="favorites-grid">
+                    <div class="no-favorites">Loading favorites...</div>
+                </div>
+            </div>
+
+            <!-- Search Section -->
+            <div class="search-section">
+                <h3>🔍 Search for Golfers</h3>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by name (e.g., Tiger, Rory)..." />
+                    <select id="searchTour">
+                        <option value="">All Tours</option>
+                        <option value="pga">PGA Tour</option>
+                        <option value="lpga">LPGA Tour</option>
+                        <option value="eur">DP World Tour</option>
+                        <option value="champions-tour">Champions Tour</option>
+                    </select>
+                    <button onclick="searchGolfers()">Search</button>
+                </div>
+                <p class="search-hint">💡 Search finds golfers in active tournaments. During off-season, use the popular golfers below.</p>
+                
+                <div id="searchResults" class="search-results">
+                    <div class="search-loading">Searching...</div>
+                </div>
+            </div>
+
+            <!-- Popular Golfers Section -->
+            <div class="popular-section">
+                <h3>🏆 Popular Golfers</h3>
+                
+                <div class="tour-tabs">
+                    <button class="tour-tab active" data-tour="all" onclick="filterByTour('all')">All Tours</button>
+                    <button class="tour-tab" data-tour="pga" onclick="filterByTour('pga')">PGA Tour</button>
+                    <button class="tour-tab" data-tour="lpga" onclick="filterByTour('lpga')">LPGA</button>
+                    <button class="tour-tab" data-tour="eur" onclick="filterByTour('eur')">DP World</button>
+                    <button class="tour-tab" data-tour="champions-tour" onclick="filterByTour('champions-tour')">Champions</button>
+                </div>
+
+                <div id="popularGrid" class="golfers-grid">
+                    <div style="padding: 20px; color: #718096;">Loading popular golfers...</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn-primary" onclick="window.location.href='/'">Done</button>
+                <button class="btn-secondary" onclick="clearAllFavorites()">Clear All Favorites</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let favorites = [];
+        let popularGolfers = [];
+        let currentTourFilter = 'all';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFavorites();
+            loadPopularGolfers();
+            
+            // Search on Enter key
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchGolfers();
+            });
+        });
+
+        // Load current favorites
+        async function loadFavorites() {
+            try {
+                const response = await fetch('/api/golf-favorites');
+                const data = await response.json();
+                favorites = data.favorites || [];
+                renderFavorites();
+                renderPopularGolfers(); // Re-render to update "added" states
+            } catch (error) {
+                console.error('Error loading favorites:', error);
+                showStatus('Error loading favorites', 'error');
+            }
+        }
+
+        // Load popular golfers
+        async function loadPopularGolfers() {
+            try {
+                const response = await fetch('/api/golf-athletes/popular');
+                const data = await response.json();
+                popularGolfers = data.golfers || [];
+                renderPopularGolfers();
+            } catch (error) {
+                console.error('Error loading popular golfers:', error);
+                document.getElementById('popularGrid').innerHTML = 
+                    '<div style="padding: 20px; color: #c53030;">Error loading golfers</div>';
+            }
+        }
+
+        // Render favorites grid
+        function renderFavorites() {
+            const grid = document.getElementById('favoritesGrid');
+            
+            if (favorites.length === 0) {
+                grid.innerHTML = '<div class="no-favorites">No favorite golfers yet. Add some below!</div>';
+                return;
+            }
+
+            grid.innerHTML = favorites.map(golfer => `
+                <div class="favorite-card">
+                    <div class="favorite-info">
+                        <div class="favorite-name">${escapeHtml(golfer.name)}</div>
+                        <div class="favorite-tour">${getTourName(golfer.tour)}</div>
+                    </div>
+                    <button class="remove-btn" onclick="removeFavorite('${golfer.id}')" title="Remove">×</button>
+                </div>
+            `).join('');
+        }
+
+        // Render popular golfers grid
+        function renderPopularGolfers() {
+            const grid = document.getElementById('popularGrid');
+            
+            let filtered = popularGolfers;
+            if (currentTourFilter !== 'all') {
+                filtered = popularGolfers.filter(g => g.tour === currentTourFilter);
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div style="padding: 20px; color: #718096;">No golfers for this tour</div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(golfer => {
+                const isFavorite = favorites.some(f => f.id === golfer.id);
+                return `
+                    <div class="golfer-card ${isFavorite ? 'selected' : ''}" data-id="${golfer.id}">
+                        <div class="golfer-info">
+                            <div class="golfer-name">${escapeHtml(golfer.name)}</div>
+                            <div class="golfer-tour">${getTourName(golfer.tour)}</div>
+                        </div>
+                        <button class="add-btn ${isFavorite ? 'added' : ''}" 
+                                onclick="event.stopPropagation(); ${isFavorite ? `removeFavorite('${golfer.id}')` : `addFavorite('${golfer.id}', '${escapeJs(golfer.name)}', '${golfer.tour}')`}">
+                            ${isFavorite ? '✓ Added' : '+ Add'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Filter by tour
+        function filterByTour(tour) {
+            currentTourFilter = tour;
+            
+            // Update tab styling
+            document.querySelectorAll('.tour-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tour === tour);
+            });
+            
+            renderPopularGolfers();
+        }
+
+        // Search golfers
+        async function searchGolfers() {
+            const query = document.getElementById('searchInput').value.trim();
+            const tour = document.getElementById('searchTour').value;
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (query.length < 2) {
+                resultsDiv.classList.remove('visible');
+                return;
+            }
+
+            resultsDiv.classList.add('visible');
+            resultsDiv.innerHTML = '<div class="search-loading">Searching...</div>';
+
+            try {
+                const url = tour 
+                    ? `/api/golf-athletes/search?q=${encodeURIComponent(query)}&tour=${tour}`
+                    : `/api/golf-athletes/search-all?q=${encodeURIComponent(query)}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                const athletes = data.athletes || [];
+                
+                if (athletes.length === 0) {
+                    resultsDiv.innerHTML = `
+                        <div class="search-empty">
+                            No golfers found for "${escapeHtml(query)}"<br>
+                            <small>Search only finds golfers in active tournaments. Try the popular list below.</small>
+                        </div>
+                    `;
+                    return;
+                }
+
+                resultsDiv.innerHTML = athletes.map(golfer => {
+                    const isFavorite = favorites.some(f => f.id === golfer.id);
+                    return `
+                        <div class="search-result-item">
+                            <div class="search-result-info">
+                                <div class="search-result-name">${escapeHtml(golfer.name)}</div>
+                                <div class="search-result-tour">${getTourName(golfer.tour)}${golfer.in_tournament ? ' • ' + escapeHtml(golfer.in_tournament) : ''}</div>
+                            </div>
+                            <button class="add-btn ${isFavorite ? 'added' : ''}" 
+                                    onclick="${isFavorite ? `removeFavorite('${golfer.id}')` : `addFavorite('${golfer.id}', '${escapeJs(golfer.name)}', '${golfer.tour}')`}">
+                                ${isFavorite ? '✓ Added' : '+ Add'}
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsDiv.innerHTML = '<div class="search-empty">Search error. Please try again.</div>';
+            }
+        }
+
+        // Add a golfer to favorites
+        async function addFavorite(id, name, tour) {
+            try {
+                const response = await fetch('/api/golf-favorites/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, name, tour })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success' || data.status === 'exists') {
+                    await loadFavorites();
+                    showStatus(`${name} added to favorites!`, 'success');
+                } else {
+                    showStatus(data.message || 'Error adding favorite', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding favorite:', error);
+                showStatus('Error adding favorite', 'error');
+            }
+        }
+
+        // Remove a golfer from favorites
+        async function removeFavorite(id) {
+            try {
+                const response = await fetch('/api/golf-favorites/remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    await loadFavorites();
+                    showStatus('Removed from favorites', 'success');
+                } else {
+                    showStatus(data.message || 'Error removing favorite', 'error');
+                }
+            } catch (error) {
+                console.error('Error removing favorite:', error);
+                showStatus('Error removing favorite', 'error');
+            }
+        }
+
+        // Clear all favorites
+        async function clearAllFavorites() {
+            if (!confirm('Remove all favorite golfers?')) return;
+            
+            try {
+                const response = await fetch('/api/golf-favorites', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ favorites: [] })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    await loadFavorites();
+                    showStatus('All favorites cleared', 'success');
+                } else {
+                    showStatus(data.message || 'Error clearing favorites', 'error');
+                }
+            } catch (error) {
+                console.error('Error clearing favorites:', error);
+                showStatus('Error clearing favorites', 'error');
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const el = document.getElementById('statusMessage');
+            el.textContent = message;
+            el.className = `status-message ${type}`;
+            
+            setTimeout(() => {
+                el.className = 'status-message';
+            }, 3000);
+        }
+
+        // Get tour display name
+        function getTourName(tourKey) {
+            const names = {
+                'pga': 'PGA Tour',
+                'lpga': 'LPGA Tour',
+                'eur': 'DP World Tour',
+                'champions-tour': 'Champions Tour'
+            };
+            return names[tourKey] || tourKey?.toUpperCase() || 'Unknown';
+        }
+
+        // Escape HTML for display
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        // Escape for JS strings
+        function escapeJs(text) {
+            return (text || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+    </script>
+</body>
+</html>

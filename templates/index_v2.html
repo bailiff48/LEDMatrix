@@ -1751,7 +1751,7 @@
                         
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle"></i>
-                            <strong>Golf Tournaments:</strong> Displays top players from active PGA and LPGA tournaments.
+                            <strong>Golf Tournaments:</strong> Displays top players from PGA, LPGA, DP World, and Champions Tour tournaments.
                             Updates every 15 minutes during tournaments.
                         </div>
 
@@ -1776,6 +1776,44 @@
                                 <label>
                                     <input type="checkbox" id="golf_tour_lpga" name="golf_tour_lpga" value="lpga">
                                     LPGA Tour
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="golf_tour_eur" name="golf_tour_eur" value="eur">
+                                    DP World Tour (European)
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="golf_tour_champions" name="golf_tour_champions" value="champions-tour">
+                                    Champions Tour (Seniors)
+                                </label>
+                            </div>
+
+                            <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--secondary-color);">⭐ Favorite Golfers</h4>
+                            
+                            <div class="form-group">
+                                <p style="margin-bottom: 15px; color: #666;">Track specific golfers and highlight them on the display when they're in tournaments.</p>
+                                <a href="/golf-selector" class="btn btn-info" style="text-decoration: none;">
+                                    <i class="fas fa-star"></i> Manage Favorite Golfers
+                                </a>
+                                <span id="golf_favorites_count" style="margin-left: 15px; color: #666;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="golf_highlight_favorites" name="golf_highlight_favorites" checked>
+                                    Highlight favorites on leaderboard (different color)
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="golf_show_favorites_section" name="golf_show_favorites_section" checked>
+                                    Show separate "Your Golfers" section
                                 </label>
                             </div>
 
@@ -4787,8 +4825,16 @@
                 document.getElementById('golf_enabled').checked = data.enabled || false;
                 document.getElementById('golf_tour_pga').checked = data.tours ? data.tours.includes('pga') : true;
                 document.getElementById('golf_tour_lpga').checked = data.tours ? data.tours.includes('lpga') : true;
+                document.getElementById('golf_tour_eur').checked = data.tours ? data.tours.includes('eur') : false;
+                document.getElementById('golf_tour_champions').checked = data.tours ? data.tours.includes('champions-tour') : false;
                 document.getElementById('golf_show_top_n').value = data.show_top_n || 5;
                 document.getElementById('golf_update_interval').value = data.update_interval || 900;
+                document.getElementById('golf_highlight_favorites').checked = data.highlight_favorites !== false;
+                document.getElementById('golf_show_favorites_section').checked = data.show_favorites_section !== false;
+                
+                // Update favorites count display
+                const favCount = (data.favorite_golfers || []).length;
+                document.getElementById('golf_favorites_count').textContent = favCount > 0 ? `(${favCount} selected)` : '';
                 
                 console.log('Golf config loaded:', data);
             } catch (error) {
@@ -4834,12 +4880,16 @@
             const tours = [];
             if (document.getElementById('golf_tour_pga').checked) tours.push('pga');
             if (document.getElementById('golf_tour_lpga').checked) tours.push('lpga');
+            if (document.getElementById('golf_tour_eur').checked) tours.push('eur');
+            if (document.getElementById('golf_tour_champions').checked) tours.push('champions-tour');
             
             const golfConfig = {
                 enabled: document.getElementById('golf_enabled').checked,
                 tours: tours,
                 show_top_n: parseInt(document.getElementById('golf_show_top_n').value),
-                update_interval: parseInt(document.getElementById('golf_update_interval').value)
+                update_interval: parseInt(document.getElementById('golf_update_interval').value),
+                highlight_favorites: document.getElementById('golf_highlight_favorites').checked,
+                show_favorites_section: document.getElementById('golf_show_favorites_section').checked
             };
             
             try {
