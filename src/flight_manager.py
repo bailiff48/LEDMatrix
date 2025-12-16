@@ -10,6 +10,14 @@ import json
 import os
 from pathlib import Path
 
+# Import aircraft database for make/model lookups
+try:
+    from src.aircraft_db import AircraftDatabase
+    AIRCRAFT_DB_AVAILABLE = True
+except ImportError:
+    AIRCRAFT_DB_AVAILABLE = False
+    AircraftDatabase = None
+
 # Import the API counter function from web interface
 try:
     from web_interface_v2 import increment_api_counter
@@ -114,6 +122,17 @@ class FlightLiveManager:
         # Aircraft type icons
         self.aircraft_icons = {}
         self._load_aircraft_icons()
+        
+        # Initialize aircraft database for make/model lookups
+        self.aircraft_db = None
+        
+        # Initialize fallback cache for hexdb.io lookups
+        self._fallback_cache = {}
+        self._fallback_cache_path = "/home/ledpi/LEDMatrix/data/aircraft_fallback_cache.json"
+        self._last_fallback_request = 0
+        self._fallback_rate_limit = 1.0  # Minimum seconds between API calls
+        
+        self._init_aircraft_database()
 
         self.display_width = self.display_manager.matrix.width if hasattr(self.display_manager, 'matrix') else 128
         self.display_height = self.display_manager.matrix.height if hasattr(self.display_manager, 'matrix') else 32
@@ -300,7 +319,20 @@ class FlightLiveManager:
         return directions[index]
     def _load_aircraft_icons(self):
         """Load aircraft type icons from assets directory."""
-        icon_dir = Path(__file__).parent.parent / 'assets' / 'logos' / 'aircraft'
+        icon_dir = None
+        # Use absolute path to avoid permission issues in service context
+        for try_path in ["/home/ledpi/LEDMatrix/assets/logos/aircraft",
+                         os.path.expanduser("~/LEDMatrix/assets/logos/aircraft")]:
+            try:
+                if os.path.isdir(try_path):
+                    icon_dir = Path(try_path)
+                    break
+            except (PermissionError, OSError):
+                continue
+        
+        if not icon_dir:
+            self.logger.warning("Aircraft icons directory not found")
+            return
         icon_files = {
             'JET': 'jet.png',
             'MIL': 'military.png',
@@ -323,6 +355,198 @@ class FlightLiveManager:
                     self.logger.warning(f"Failed to load aircraft icon {filename}: {e}")
         
         self.logger.info(f"Loaded {len(self.aircraft_icons)} aircraft icons")
+
+    def _init_aircraft_database(self) -> None:
+        """Initialize the aircraft database for make/model lookups."""
+        if not AIRCRAFT_DB_AVAILABLE:
+            self.logger.warning("aircraft_db module not found - make/model lookups disabled")
+            return
+        
+        db_paths = [
+            "/home/ledpi/LEDMatrix/data/aircraft.db",
+            os.path.expanduser("~/LEDMatrix/data/aircraft.db"),
+        ]
+        
+        for db_path in db_paths:
+            if os.path.exists(db_path):
+                try:
+                    self.aircraft_db = AircraftDatabase(db_path)
+                    if self.aircraft_db.is_ready():
+                        stats = self.aircraft_db.get_stats()
+                        self.logger.info(f"Aircraft database loaded: {stats.get('total_aircraft', 0):,} aircraft")
+                        return
+                except Exception as e:
+                    self.logger.warning(f"Failed to load aircraft DB: {e}")
+        
+        self.logger.warning("Aircraft database not found - run 'python3 aircraft_db.py --setup'")
+        
+        # Initialize fallback cache for hexdb.io lookups
+        self._fallback_cache = {}
+        self._fallback_cache_path = "/home/ledpi/LEDMatrix/data/aircraft_fallback_cache.json"
+        self._load_fallback_cache()
+        self._last_fallback_request = 0
+        self._fallback_rate_limit = 1.0  # Minimum seconds between API calls
+
+    def _lookup_aircraft_info(self, icao24: str) -> dict:
+        """Look up aircraft make/model from database, with hexdb.io fallback."""
+        info = None
+        
+        # Try local database first
+        if self.aircraft_db:
+            info = self.aircraft_db.lookup(icao24)
+        
+        # If not found, try fallback API
+        if not info:
+            fallback_result = self._fallback_lookup(icao24)
+            if fallback_result:
+                return fallback_result
+            return {}
+        
+        result = {}
+        manufacturer = info.get('manufacturer', '')
+        model = info.get('model', '')
+        typecode = info.get('typecode', '')
+        
+        # Build display string
+        if manufacturer and model:
+            # Shorten common manufacturer names
+            short_mfr = manufacturer.upper()
+            if 'BOEING' in short_mfr:
+                manufacturer = 'Boeing'
+            elif 'AIRBUS' in short_mfr:
+                manufacturer = 'Airbus'
+            elif 'CESSNA' in short_mfr:
+                manufacturer = 'Cessna'
+            elif 'PIPER' in short_mfr:
+                manufacturer = 'Piper'
+            elif 'EMBRAER' in short_mfr:
+                manufacturer = 'Embraer'
+            elif 'BOMBARDIER' in short_mfr:
+                manufacturer = 'Bombardier'
+            elif 'GULFSTREAM' in short_mfr:
+                manufacturer = 'Gulfstream'
+            else:
+                manufacturer = manufacturer.title()[:10]
+            
+            result['display_type'] = f"{manufacturer} {model}"
+        elif model:
+            result['display_type'] = model
+        elif typecode:
+            result['display_type'] = typecode
+        
+        result['typecode'] = typecode
+        result['registration'] = info.get('registration')
+        result['operator'] = info.get('operator')
+        
+        return result
+
+    def _load_fallback_cache(self) -> None:
+        """Load the hexdb.io fallback cache from disk."""
+        try:
+            if os.path.exists(self._fallback_cache_path):
+                with open(self._fallback_cache_path, 'r') as f:
+                    self._fallback_cache = json.load(f)
+                self.logger.info(f"Loaded {len(self._fallback_cache)} entries from fallback cache")
+        except Exception as e:
+            self.logger.warning(f"Failed to load fallback cache: {e}")
+            self._fallback_cache = {}
+
+    def _save_fallback_cache(self) -> None:
+        """Save the hexdb.io fallback cache to disk."""
+        try:
+            os.makedirs(os.path.dirname(self._fallback_cache_path), exist_ok=True)
+            with open(self._fallback_cache_path, 'w') as f:
+                json.dump(self._fallback_cache, f)
+        except Exception as e:
+            self.logger.warning(f"Failed to save fallback cache: {e}")
+
+    def _fallback_lookup(self, icao24: str) -> dict:
+        """
+        Fallback lookup using hexdb.io API when local DB misses.
+        Results are cached persistently since icao24 = same physical aircraft.
+        """
+        # Check cache first
+        if icao24 in self._fallback_cache:
+            cached = self._fallback_cache[icao24]
+            if cached:  # Could be None if previously not found
+                return cached
+            return {}
+        
+        # Rate limit - be nice to free API
+        current_time = time.time()
+        if current_time - self._last_fallback_request < self._fallback_rate_limit:
+            return {}
+        
+        try:
+            self._last_fallback_request = current_time
+            url = f"https://hexdb.io/api/v1/aircraft/{icao24}"
+            response = requests.get(url, timeout=5)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check for "not found" response
+                if data.get('status') == '404' or data.get('error'):
+                    self._fallback_cache[icao24] = None
+                    self._save_fallback_cache()
+                    return {}
+                
+                # Build result matching our format
+                result = {}
+                manufacturer = data.get('Manufacturer', '')
+                model = data.get('Type', '')
+                typecode = data.get('ICAOTypeCode', '')
+                
+                if manufacturer and model:
+                    # Shorten manufacturer names
+                    short_mfr = manufacturer.upper()
+                    if 'BOEING' in short_mfr:
+                        manufacturer = 'Boeing'
+                    elif 'AIRBUS' in short_mfr:
+                        manufacturer = 'Airbus'
+                    elif 'CESSNA' in short_mfr:
+                        manufacturer = 'Cessna'
+                    elif 'PIPER' in short_mfr:
+                        manufacturer = 'Piper'
+                    elif 'EMBRAER' in short_mfr:
+                        manufacturer = 'Embraer'
+                    elif 'BOMBARDIER' in short_mfr:
+                        manufacturer = 'Bombardier'
+                    elif 'GULFSTREAM' in short_mfr:
+                        manufacturer = 'Gulfstream'
+                    else:
+                        manufacturer = manufacturer.title()[:12]
+                    
+                    result['display_type'] = f"{manufacturer} {model}"
+                elif model:
+                    result['display_type'] = model
+                elif typecode:
+                    result['display_type'] = typecode
+                
+                result['typecode'] = typecode
+                result['registration'] = data.get('Registration')
+                result['operator'] = data.get('RegisteredOwners')
+                result['source'] = 'hexdb.io'
+                
+                # Cache the result
+                self._fallback_cache[icao24] = result
+                self._save_fallback_cache()
+                
+                self.logger.info(f"Fallback lookup success: {icao24} -> {result.get('display_type', 'unknown')}")
+                return result
+                
+            elif response.status_code == 404:
+                # Not found - cache the miss
+                self._fallback_cache[icao24] = None
+                self._save_fallback_cache()
+                return {}
+            else:
+                self.logger.debug(f"Fallback API returned {response.status_code}")
+                return {}
+                
+        except Exception as e:
+            self.logger.debug(f"Fallback lookup error for {icao24}: {e}")
+            return {}
 
     def _infer_aircraft_type(self, callsign: str, altitude_ft: int, speed_knots: int) -> str:
         """
@@ -470,6 +694,9 @@ class FlightLiveManager:
                         # Convert velocity to knots if available
                         speed_knots = int(velocity * 1.94384) if velocity else None
                         
+                        # Look up aircraft info from database
+                        aircraft_info = self._lookup_aircraft_info(icao24)
+                        
                         new_live_flights.append({
                             'icao24': icao24,
                             'callsign': callsign,
@@ -478,6 +705,10 @@ class FlightLiveManager:
                             'distance_km': distance_km,
                             'direction': self._calculate_bearing(lat, lon),
                             'aircraft_type': self._infer_aircraft_type(callsign, altitude_ft, speed_knots),
+                            'display_type': aircraft_info.get('display_type'),  # e.g., "Boeing 737-824"
+                            'typecode': aircraft_info.get('typecode'),          # e.g., "B738"
+                            'registration': aircraft_info.get('registration'),
+                            'operator': aircraft_info.get('operator'),
                             'speed_knots': speed_knots,
                             'heading': heading,
                             'vertical_rate': vertical_rate,
@@ -681,7 +912,7 @@ class FlightLiveManager:
     def _create_flight_display(self, flight: Dict[str, Any]) -> Image.Image:
         """
         Create a PIL image displaying a single flight.
-        Format: Large callsign, distance, altitude, speed, heading
+        Format: 3 lines - callsign, aircraft type, distance/altitude
         """
         # Create blank image
         img = Image.new('RGB', (self.display_width, self.display_height), color=(0, 0, 0))
@@ -689,53 +920,69 @@ class FlightLiveManager:
         
         # Try to load fonts
         try:
-            font_large = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 16)
-            font_medium = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 11)
+            font_callsign = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 12)
+            font_type = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 9)
+            font_info = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 9)
             font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 8)
         except:
-            font_large = ImageFont.load_default()
-            font_medium = ImageFont.load_default()
+            font_callsign = ImageFont.load_default()
+            font_type = ImageFont.load_default()
+            font_info = ImageFont.load_default()
             font_small = ImageFont.load_default()
         
         callsign = flight['callsign']
         distance_km = flight['distance_km']
         altitude_ft = flight['altitude_ft']
-        speed_knots = flight.get('speed_knots')
-        heading = flight.get('heading')
         aircraft_type = flight.get('aircraft_type', 'UNK')
+        display_type = flight.get('display_type', '')  # e.g., "Boeing 737-824"
         direction = flight.get('direction', '')
         
-        
-        # Get aircraft icon
+        # Get aircraft icon (will be resized to 12x12)
         icon = self.aircraft_icons.get(aircraft_type)
-        icon_width = 16 if icon else 0
+        icon_width = 12 if icon else 0
         icon_spacing = 2 if icon else 0
         
-        # Line 1: Icon + callsign (centered top)
-        bbox = draw.textbbox((0, 0), callsign, font=font_large)
+        # === LINE 1: Icon + Callsign (y=0) ===
+        bbox = draw.textbbox((0, 0), callsign, font=font_callsign)
         text_width = bbox[2] - bbox[0]
         total_width = icon_width + icon_spacing + text_width
         start_x = (self.display_width - total_width) // 2
         
-        # Draw icon if available
+        # Draw icon if available (resize to 12x12)
         if icon:
-            # Paste icon (handle transparency)
-            img.paste(icon, (start_x, 1), icon if icon.mode == 'RGBA' else None)
+            small_icon = icon.resize((12, 12), Image.LANCZOS) if icon.size != (12, 12) else icon
+            img.paste(small_icon, (start_x, 1), small_icon if small_icon.mode == 'RGBA' else None)
         
-        # Draw callsign text after icon
+        # Draw callsign
         text_x = start_x + icon_width + icon_spacing
-        draw.text((text_x, 1), callsign, fill=self.COLORS['orange'], font=font_large)
+        draw.text((text_x, 0), callsign, fill=self.COLORS['orange'], font=font_callsign)
         
-        # Line 2: Distance and altitude
-        direction = flight.get('direction', '')
+        # === LINE 2: Aircraft Type (y=12) ===
+        if display_type:
+            # Truncate if too long for display
+            if len(display_type) > 20:
+                display_type = display_type[:19] + "…"
+            bbox = draw.textbbox((0, 0), display_type, font=font_type)
+            type_width = bbox[2] - bbox[0]
+            type_x = (self.display_width - type_width) // 2
+            draw.text((type_x, 12), display_type, fill=self.COLORS['cyan'], font=font_type)
+        else:
+            # Show typecode or aircraft_type if no display_type
+            typecode = flight.get('typecode', '')
+            fallback_text = typecode if typecode else aircraft_type
+            bbox = draw.textbbox((0, 0), fallback_text, font=font_type)
+            type_width = bbox[2] - bbox[0]
+            type_x = (self.display_width - type_width) // 2
+            draw.text((type_x, 12), fallback_text, fill=self.COLORS['gray'], font=font_type)
         
+        # === LINE 3: Direction, Distance, Altitude (y=22) ===
         dist_text = f"{direction} {distance_km:.1f}km"
-        alt_text = f"{altitude_ft}ft" if altitude_ft else "?ft"
-        line2 = f"{dist_text}  {alt_text}"
-        bbox = draw.textbbox((0, 0), line2, font=font_medium)
-        line2_width = bbox[2] - bbox[0]
-        line2_x = (self.display_width - line2_width) // 2
-        draw.text((line2_x, 19), line2, fill=self.COLORS['white'], font=font_medium)
+        alt_text = f"@{altitude_ft}ft" if altitude_ft else ""
+        line3 = f"{dist_text}  {alt_text}"
+        bbox = draw.textbbox((0, 0), line3, font=font_info)
+        line3_width = bbox[2] - bbox[0]
+        line3_x = (self.display_width - line3_width) // 2
+        draw.text((line3_x, 22), line3, fill=self.COLORS['white'], font=font_info)
         
         # Optional: Show count if multiple flights (thread-safe read)
         with self._lock:
@@ -744,7 +991,7 @@ class FlightLiveManager:
         
         if flight_count > 1:
             count_text = f"{current_idx + 1}/{flight_count}"
-            draw.text((2, 1), count_text, fill=self.COLORS['gray'], font=font_small)
+            draw.text((2, 0), count_text, fill=self.COLORS['gray'], font=font_small)
         
         return img
     
