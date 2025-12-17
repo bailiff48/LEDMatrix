@@ -886,7 +886,7 @@
                 <button class="btn btn-danger" onclick="runAction('stop_display')"><i class="fas fa-stop"></i> Stop Display</button>
                 <button class="btn btn-primary" onclick="systemAction('restart_service')"><i class="fas fa-redo"></i> Restart Service</button>
                 <button class="btn btn-warning" onclick="systemAction('git_pull')"><i class="fas fa-download"></i> Update Code</button>
-                <button class="btn btn-info" onclick="systemAction('migrate_config')"><i class="fas fa-sync-alt"></i> Migrate Config</button>
+                <button class="btn btn-primary" onclick="systemAction('migrate_config')"><i class="fas fa-sync-alt"></i> Migrate Config</button>
                 <button class="btn btn-danger" onclick="systemAction('reboot_system')"><i class="fas fa-power-off"></i> Reboot</button>
                 <button class="btn btn-secondary" onclick="stopOnDemand()"><i class="fas fa-ban"></i> Stop On-Demand</button>
                 <span id="ondemand-status" style="margin-left:auto; font-size:12px; color:#333; background:#f3f3f3; padding:6px 10px; border-radius:8px;">On-Demand: None</span>
@@ -1089,7 +1089,7 @@
                         <button class="btn btn-warning" onclick="systemAction('git_pull')">
                             <i class="fas fa-download"></i> Update Code
                         </button>
-                        <button class="btn btn-info" onclick="systemAction('migrate_config')">
+                        <button class="btn btn-primary" onclick="systemAction('migrate_config')">
                             <i class="fas fa-sync-alt"></i> Migrate Config
                         </button>
                         <button class="btn btn-danger" onclick="systemAction('reboot_system')">
@@ -1407,9 +1407,9 @@
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Weather Configuration</h3>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-info" onclick="startOnDemand('weather_current')"><i class="fas fa-bolt"></i> On-Demand Current</button>
-                                <button type="button" class="btn btn-info" onclick="startOnDemand('weather_hourly')"><i class="fas fa-bolt"></i> Hourly</button>
-                                <button type="button" class="btn btn-info" onclick="startOnDemand('weather_daily')"><i class="fas fa-bolt"></i> Daily</button>
+                                <button type="button" class="btn btn-primary" onclick="startOnDemand('weather_current')"><i class="fas fa-bolt"></i> On-Demand Current</button>
+                                <button type="button" class="btn btn-primary" onclick="startOnDemand('weather_hourly')"><i class="fas fa-bolt"></i> Hourly</button>
+                                <button type="button" class="btn btn-primary" onclick="startOnDemand('weather_daily')"><i class="fas fa-bolt"></i> Daily</button>
                             </div>
                         </div>
                         <form id="weather-form">
@@ -1458,7 +1458,7 @@
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Stocks & Crypto Configuration</h3>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-info" onclick="startOnDemand('stocks')"><i class="fas fa-bolt"></i> On-Demand Stocks</button>
+                                <button type="button" class="btn btn-primary" onclick="startOnDemand('stocks')"><i class="fas fa-bolt"></i> On-Demand Stocks</button>
                             </div>
                         </div>
                         <form id="stocks-form">
@@ -1555,7 +1555,7 @@
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Stock News</h3>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-info" onclick="startOnDemand('stock_news')"><i class="fas fa-bolt"></i> On-Demand News</button>
+                                <button type="button" class="btn btn-primary" onclick="startOnDemand('stock_news')"><i class="fas fa-bolt"></i> On-Demand News</button>
                             </div>
                         </div>
                         <form id="stocknews-form">
@@ -1611,8 +1611,8 @@
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Flight Tracker Configuration</h3>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-info" onclick="testFlightConnection()"><i class="fas fa-wifi"></i> Test Connection</button>
-                                <button type="button" class="btn btn-info" onclick="loadFlightStatus()"><i class="fas fa-sync"></i> Refresh Status</button>
+                                <button type="button" class="btn btn-primary" onclick="testFlightConnection()"><i class="fas fa-wifi"></i> Test Connection</button>
+                                <button type="button" class="btn btn-primary" onclick="loadFlightStatus()"><i class="fas fa-sync"></i> Refresh Status</button>
                             </div>
                         </div>
                         
@@ -1744,7 +1744,7 @@
                     <div class="config-section">
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Golf Configuration</h3>
-                            <button type="button" class="btn btn-info" onclick="loadGolfStatus()">
+                            <button type="button" class="btn btn-primary" onclick="loadGolfStatus()">
                                 <i class="fas fa-sync"></i> Refresh Status
                             </button>
                         </div>
@@ -1797,7 +1797,7 @@
                             
                             <div class="form-group">
                                 <p style="margin-bottom: 15px; color: #666;">Track specific golfers and highlight them on the display when they're in tournaments.</p>
-                                <a href="/golf-selector" class="btn btn-info" style="text-decoration: none;">
+                                <a href="/golf-selector" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
                                     <i class="fas fa-star"></i> Manage Favorite Golfers
                                 </a>
                                 <span id="golf_favorites_count" style="margin-left: 15px; color: #666;"></span>
@@ -1848,7 +1848,7 @@
                     <div class="config-section">
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Tennis Configuration</h3>
-                            <button type="button" class="btn btn-info" onclick="loadTennisStatus()">
+                            <button type="button" class="btn btn-primary" onclick="loadTennisStatus()">
                                 <i class="fas fa-sync"></i> Refresh Status
                             </button>
                         </div>
@@ -1875,6 +1875,32 @@
                                     Grand Slams Only
                                 </label>
                                 <div class="description">Show only Australian Open, French Open, Wimbledon, and US Open</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tours:</label>
+                                <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 8px;">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="tennis_tour_atp" checked> ATP Tour
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="tennis_tour_wta" checked> WTA Tour
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 15px;">
+                                <a href="/tennis-selector" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-user-plus"></i> Manage Favorite Players
+                                </a>
+                                <span id="tennis-favorites-count" style="margin-left: 15px; color: var(--success-color);"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="tennis_highlight_favorites" checked>
+                                    Highlight favorite players in display
+                                </label>
                             </div>
 
                             <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--secondary-color);">Display Settings</h4>
@@ -2108,7 +2134,7 @@
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Odds Ticker</h3>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-info" onclick="startOnDemand('odds_ticker')"><i class="fas fa-bolt"></i> On-Demand</button>
+                                <button type="button" class="btn btn-primary" onclick="startOnDemand('odds_ticker')"><i class="fas fa-bolt"></i> On-Demand</button>
                                 <button type="button" class="btn btn-secondary" onclick="stopOnDemand()"><i class="fas fa-ban"></i> Stop</button>
                             </div>
                         </div>
@@ -2166,7 +2192,7 @@
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Leaderboard Configuration</h3>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-info" onclick="startOnDemand('leaderboard')"><i class="fas fa-bolt"></i> On-Demand</button>
+                                <button type="button" class="btn btn-primary" onclick="startOnDemand('leaderboard')"><i class="fas fa-bolt"></i> On-Demand</button>
                                 <button type="button" class="btn btn-secondary" onclick="stopOnDemand()"><i class="fas fa-ban"></i> Stop</button>
                             </div>
                         </div>
@@ -2307,7 +2333,7 @@
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Text Display</h3>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-info" onclick="startOnDemand('text_display')"><i class="fas fa-bolt"></i> On-Demand</button>
+                                <button type="button" class="btn btn-primary" onclick="startOnDemand('text_display')"><i class="fas fa-bolt"></i> On-Demand</button>
                             </div>
                         </div>
                         <form id="text-form">
@@ -2335,7 +2361,7 @@
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Static Image Display</h3>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-info" onclick="startOnDemand('static_image')"><i class="fas fa-bolt"></i> On-Demand</button>
+                                <button type="button" class="btn btn-primary" onclick="startOnDemand('static_image')"><i class="fas fa-bolt"></i> On-Demand</button>
                             </div>
                         </div>
                         <form id="static_image-form">
@@ -2378,7 +2404,7 @@
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Of The Day Configuration</h3>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-info" onclick="startOnDemand('of_the_day')"><i class="fas fa-bolt"></i> On-Demand</button>
+                                <button type="button" class="btn btn-primary" onclick="startOnDemand('of_the_day')"><i class="fas fa-bolt"></i> On-Demand</button>
                             </div>
                         </div>
                         <form id="of_the_day-form">
@@ -2521,7 +2547,7 @@
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>YouTube</h3>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-info" onclick="startOnDemand('youtube')"><i class="fas fa-bolt"></i> On-Demand</button>
+                                <button type="button" class="btn btn-primary" onclick="startOnDemand('youtube')"><i class="fas fa-bolt"></i> On-Demand</button>
                             </div>
                         </div>
                         <form id="youtube-form">
@@ -2538,7 +2564,7 @@
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Calendar Configuration</h3>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-info" onclick="startOnDemand('calendar')"><i class="fas fa-bolt"></i> On-Demand</button>
+                                <button type="button" class="btn btn-primary" onclick="startOnDemand('calendar')"><i class="fas fa-bolt"></i> On-Demand</button>
                             </div>
                         </div>
                         <form id="calendar-form">
@@ -2574,7 +2600,7 @@
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>News Manager Configuration</h3>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-info" onclick="startOnDemand('news_manager')"><i class="fas fa-bolt"></i> On-Demand</button>
+                                <button type="button" class="btn btn-primary" onclick="startOnDemand('news_manager')"><i class="fas fa-bolt"></i> On-Demand</button>
                             </div>
                         </div>
                         <p>Configure RSS news feeds and scrolling ticker settings</p>
@@ -4552,9 +4578,9 @@
                                     <strong>${l.label}</strong>
                                 </label>
                                 <div style="display:flex; gap:6px;">
-                                    <button type="button" class="btn btn-info" onclick="startOnDemand('${p}_live')"><i class="fas fa-bolt"></i> Live</button>
-                                    <button type="button" class="btn btn-info" onclick="startOnDemand('${p}_recent')"><i class="fas fa-bolt"></i> Recent</button>
-                                    <button type="button" class="btn btn-info" onclick="startOnDemand('${p}_upcoming')"><i class="fas fa-bolt"></i> Upcoming</button>
+                                    <button type="button" class="btn btn-primary" onclick="startOnDemand('${p}_live')"><i class="fas fa-bolt"></i> Live</button>
+                                    <button type="button" class="btn btn-primary" onclick="startOnDemand('${p}_recent')"><i class="fas fa-bolt"></i> Recent</button>
+                                    <button type="button" class="btn btn-primary" onclick="startOnDemand('${p}_upcoming')"><i class="fas fa-bolt"></i> Upcoming</button>
                                     <button type="button" class="btn btn-secondary" onclick="stopOnDemand()"><i class="fas fa-ban"></i> Stop</button>
                                 </div>
                             </div>
@@ -4920,6 +4946,23 @@
                 document.getElementById('tennis_show_completed').checked = data.show_completed_matches || false;
                 document.getElementById('tennis_max_matches').value = data.max_matches_display || 5;
                 document.getElementById('tennis_update_interval').value = data.update_interval || 600;
+
+                // Tours
+                const tours = data.tours || ['atp', 'wta'];
+                document.getElementById('tennis_tour_atp').checked = tours.includes('atp');
+                document.getElementById('tennis_tour_wta').checked = tours.includes('wta');
+        
+                // Favorites
+                if (document.getElementById('tennis_highlight_favorites')) {
+                    document.getElementById('tennis_highlight_favorites').checked = data.highlight_favorites !== false;
+                }
+        
+                // Show favorites count
+                const favCount = (data.favorite_players || []).length;
+                const countSpan = document.getElementById('tennis-favorites-count');
+                if (countSpan) {
+                    countSpan.textContent = favCount > 0 ? `(${favCount} favorites)` : '';
+                }
                 
                 console.log('Tennis config loaded:', data);
             } catch (error) {
@@ -4963,12 +5006,19 @@
         document.getElementById('tennis-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            // Build tours array
+            const tours = [];
+            if (document.getElementById('tennis_tour_atp').checked) tours.push('atp');
+            if (document.getElementById('tennis_tour_wta').checked) tours.push('wta');
+
             const tennisConfig = {
                 enabled: document.getElementById('tennis_enabled').checked,
+                tours: tours,
                 majors_only: document.getElementById('tennis_majors_only').checked,
                 show_completed_matches: document.getElementById('tennis_show_completed').checked,
                 max_matches_display: parseInt(document.getElementById('tennis_max_matches').value),
-                update_interval: parseInt(document.getElementById('tennis_update_interval').value)
+                update_interval: parseInt(document.getElementById('tennis_update_interval').value),
+                highlight_favorites: document.getElementById('tennis_highlight_favorites')?.checked ?? true
             };
             
             try {

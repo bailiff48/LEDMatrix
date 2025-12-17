@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Favorite Golfers - LEDMatrix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -30,10 +31,16 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
         .header h1 {
             color: #2d3748;
             font-size: 28px;
-            margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -49,16 +56,23 @@
             font-size: 14px;
         }
 
-        .back-link {
-            display: inline-block;
-            margin-bottom: 15px;
-            color: #667eea;
+        .back-btn {
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-weight: 500;
+            transition: all 0.3s;
         }
 
-        .back-link:hover {
-            text-decoration: underline;
+        .back-btn:hover {
+            background: #cbd5e0;
         }
 
         .main-content {
@@ -66,6 +80,76 @@
             padding: 30px;
             border-radius: 0 0 15px 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Action Buttons Bar - Consistent with Team Selector */
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #2d5a27, #4a7c42);
+            color: white;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(45, 90, 39, 0.4);
+        }
+
+        .btn-clear {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-clear:hover {
+            background: #e53e3e;
+            color: white;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2d5a27;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #718096;
+            text-transform: uppercase;
         }
 
         /* Current Favorites Section */
@@ -372,85 +456,42 @@
             flex-shrink: 0;
         }
 
-        /* Action Buttons */
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .btn-primary {
-            padding: 14px 30px;
-            background: #2d5a27;
+        /* Status Messages - Toast Style */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
             color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s ease;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
         }
 
-        .btn-primary:hover {
-            background: #1a3a15;
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
         }
 
-        .btn-secondary {
-            padding: 14px 30px;
-            background: white;
-            color: #4a5568;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .notification.success {
+            background: #2d5a27;
         }
 
-        .btn-secondary:hover {
-            background: #f7fafc;
-            border-color: #cbd5e0;
-        }
-
-        /* Status Messages */
-        .status-message {
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .status-message.success {
-            background: #c6f6d5;
-            color: #276749;
-            display: block;
-        }
-
-        .status-message.error {
-            background: #fed7d7;
-            color: #c53030;
-            display: block;
-        }
-
-        /* Loading Spinner */
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .notification.error {
+            background: #e53e3e;
         }
 
         /* Responsive */
         @media (max-width: 600px) {
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
             .search-box {
                 flex-direction: column;
             }
@@ -459,8 +500,13 @@
                 min-width: 100%;
             }
 
-            .action-buttons {
+            .action-bar {
                 flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -468,17 +514,39 @@
 <body>
     <div class="container">
         <div class="header">
-            <a href="/" class="back-link">← Back to Dashboard</a>
-            <h1>Favorite Golfers</h1>
+            <div class="header-top">
+                <h1>Favorite Golfers</h1>
+                <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            </div>
             <p>Select your favorite golfers to highlight on the LED display during tournaments</p>
         </div>
 
         <div class="main-content">
-            <div id="statusMessage" class="status-message"></div>
+            <!-- Action Buttons - At Top for Consistency -->
+            <div class="action-bar">
+                <button class="btn btn-save" onclick="saveAndReturn()">
+                    <i class="fas fa-save"></i> Save Configuration
+                </button>
+                <button class="btn btn-clear" onclick="clearAllFavorites()">
+                    <i class="fas fa-trash"></i> Clear All
+                </button>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-golfers">0</div>
+                    <div class="stat-label">Total Golfers</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="selected-count">0</div>
+                    <div class="stat-label">Selected</div>
+                </div>
+            </div>
 
             <!-- Current Favorites -->
             <div class="favorites-section">
-                <h2>⭐ Your Favorites</h2>
+                <h2><i class="fas fa-star"></i> Your Favorites</h2>
                 <div id="favoritesGrid" class="favorites-grid">
                     <div class="no-favorites">Loading favorites...</div>
                 </div>
@@ -486,7 +554,7 @@
 
             <!-- Search Section -->
             <div class="search-section">
-                <h3>🔍 Search for Golfers</h3>
+                <h3><i class="fas fa-search"></i> Search for Golfers</h3>
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="Search by name (e.g., Tiger, Rory)..." />
                     <select id="searchTour">
@@ -498,7 +566,7 @@
                     </select>
                     <button onclick="searchGolfers()">Search</button>
                 </div>
-                <p class="search-hint">💡 Search finds golfers in active tournaments. During off-season, use the popular golfers below.</p>
+                <p class="search-hint"><i class="fas fa-lightbulb"></i> Search finds golfers in active tournaments. During off-season, use the popular golfers below.</p>
                 
                 <div id="searchResults" class="search-results">
                     <div class="search-loading">Searching...</div>
@@ -507,7 +575,7 @@
 
             <!-- Popular Golfers Section -->
             <div class="popular-section">
-                <h3>🏆 Popular Golfers</h3>
+                <h3><i class="fas fa-trophy"></i> Popular Golfers</h3>
                 
                 <div class="tour-tabs">
                     <button class="tour-tab active" data-tour="all" onclick="filterByTour('all')">All Tours</button>
@@ -521,14 +589,11 @@
                     <div style="padding: 20px; color: #718096;">Loading popular golfers...</div>
                 </div>
             </div>
-
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <button class="btn-primary" onclick="window.location.href='/'">Done</button>
-                <button class="btn-secondary" onclick="clearAllFavorites()">Clear All Favorites</button>
-            </div>
         </div>
     </div>
+
+    <!-- Notification Toast -->
+    <div class="notification" id="notification"></div>
 
     <script>
         // State
@@ -547,6 +612,11 @@
             });
         });
 
+        // Update stats display
+        function updateStats() {
+            document.getElementById('selected-count').textContent = favorites.length;
+        }
+
         // Load current favorites
         async function loadFavorites() {
             try {
@@ -555,9 +625,10 @@
                 favorites = data.favorites || [];
                 renderFavorites();
                 renderPopularGolfers(); // Re-render to update "added" states
+                updateStats();
             } catch (error) {
                 console.error('Error loading favorites:', error);
-                showStatus('Error loading favorites', 'error');
+                showNotification('Error loading favorites', 'error');
             }
         }
 
@@ -567,6 +638,7 @@
                 const response = await fetch('/api/golf-athletes/popular');
                 const data = await response.json();
                 popularGolfers = data.golfers || [];
+                document.getElementById('total-golfers').textContent = popularGolfers.length;
                 renderPopularGolfers();
             } catch (error) {
                 console.error('Error loading popular golfers:', error);
@@ -578,6 +650,7 @@
         // Render favorites grid
         function renderFavorites() {
             const grid = document.getElementById('favoritesGrid');
+            updateStats();
             
             if (favorites.length === 0) {
                 grid.innerHTML = '<div class="no-favorites">No favorite golfers yet. Add some below!</div>';
@@ -707,13 +780,13 @@
                 
                 if (data.status === 'success' || data.status === 'exists') {
                     await loadFavorites();
-                    showStatus(`${name} added to favorites!`, 'success');
+                    showNotification(`${name} added to favorites!`, 'success');
                 } else {
-                    showStatus(data.message || 'Error adding favorite', 'error');
+                    showNotification(data.message || 'Error adding favorite', 'error');
                 }
             } catch (error) {
                 console.error('Error adding favorite:', error);
-                showStatus('Error adding favorite', 'error');
+                showNotification('Error adding favorite', 'error');
             }
         }
 
@@ -730,19 +803,26 @@
                 
                 if (data.status === 'success') {
                     await loadFavorites();
-                    showStatus('Removed from favorites', 'success');
+                    showNotification('Removed from favorites', 'success');
                 } else {
-                    showStatus(data.message || 'Error removing favorite', 'error');
+                    showNotification(data.message || 'Error removing favorite', 'error');
                 }
             } catch (error) {
                 console.error('Error removing favorite:', error);
-                showStatus('Error removing favorite', 'error');
+                showNotification('Error removing favorite', 'error');
             }
         }
 
         // Clear all favorites
         async function clearAllFavorites() {
-            if (!confirm('Remove all favorite golfers?')) return;
+            if (favorites.length === 0) {
+                showNotification('No favorites to clear', 'error');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to remove all ${favorites.length} favorite golfers?`)) {
+                return;
+            }
             
             try {
                 const response = await fetch('/api/golf-favorites', {
@@ -755,24 +835,32 @@
                 
                 if (data.status === 'success') {
                     await loadFavorites();
-                    showStatus('All favorites cleared', 'success');
+                    showNotification('All favorites cleared', 'success');
                 } else {
-                    showStatus(data.message || 'Error clearing favorites', 'error');
+                    showNotification(data.message || 'Error clearing favorites', 'error');
                 }
             } catch (error) {
                 console.error('Error clearing favorites:', error);
-                showStatus('Error clearing favorites', 'error');
+                showNotification('Error clearing favorites', 'error');
             }
         }
 
-        // Show status message
-        function showStatus(message, type) {
-            const el = document.getElementById('statusMessage');
-            el.textContent = message;
-            el.className = `status-message ${type}`;
+        // Save and return to dashboard
+        function saveAndReturn() {
+            showNotification('Configuration saved!', 'success');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 500);
+        }
+
+        // Show notification toast
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
             
             setTimeout(() => {
-                el.className = 'status-message';
+                notification.classList.remove('show');
             }, 3000);
         }
 

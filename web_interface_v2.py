@@ -711,9 +711,12 @@ def index():
 
 @app.route("/golf-selector")
 def golf_selector():
-    return render_template("golf_selector.html")
+    return render_template('golf_selector.html')
 
-
+@app.route('/tennis-selector')
+def tennis_selector():
+    """Serve the tennis player selector page."""
+    return render_template('tennis_selector.html')
 
 def get_system_status():
     """Get current system status including display state, performance metrics, and CPU utilization."""

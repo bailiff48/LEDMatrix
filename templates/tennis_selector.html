@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tennis Player Selector - LED Matrix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --card-bg: #16213e;
+            --accent-color: #e94560;
+            --success-color: #4ecca3;
+            --warning-color: #ffc107;
+            --text-color: #eee;
+            --text-muted: #888;
+            --border-color: #0f3460;
+            --atp-color: #0099cc;
+            --wta-color: #cc0066;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1 i {
+            color: var(--success-color);
+        }
+
+        .back-btn {
+            background: var(--border-color);
+            color: var(--text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--accent-color);
+        }
+
+        /* Action Buttons Bar - Consistent with Team Selector */
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--success-color), #3db88a);
+            color: var(--bg-color);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(78, 204, 163, 0.4);
+        }
+
+        .btn-clear {
+            background: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .btn-clear:hover {
+            background: var(--accent-color);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--success-color);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* Current Favorites Section */
+        .favorites-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .favorites-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .favorites-header h2 {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .favorites-count {
+            background: var(--success-color);
+            color: var(--bg-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .favorites-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .favorite-chip {
+            background: var(--border-color);
+            border-radius: 25px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+        }
+
+        .favorite-chip .tour-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .favorite-chip .tour-badge.atp {
+            background: var(--atp-color);
+        }
+
+        .favorite-chip .tour-badge.wta {
+            background: var(--wta-color);
+        }
+
+        .favorite-chip .remove-btn {
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: transform 0.2s;
+        }
+
+        .favorite-chip .remove-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .no-favorites {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .search-section h2 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--success-color);
+        }
+
+        .search-btn {
+            background: var(--success-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.3s;
+        }
+
+        .search-btn:hover {
+            opacity: 0.9;
+        }
+
+        .search-results {
+            margin-top: 15px;
+        }
+
+        .search-result-item {
+            background: var(--bg-color);
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .search-result-item .player-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .search-result-item .player-name {
+            font-weight: 500;
+        }
+
+        .search-result-item .player-details {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .add-btn {
+            background: var(--success-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.3s;
+        }
+
+        .add-btn:hover {
+            opacity: 0.9;
+        }
+
+        .add-btn.added {
+            background: var(--text-muted);
+            cursor: default;
+        }
+
+        /* Tour Filter Tabs */
+        .tour-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tour-tab {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .tour-tab:hover {
+            border-color: var(--success-color);
+        }
+
+        .tour-tab.active {
+            background: var(--success-color);
+            color: var(--bg-color);
+            border-color: var(--success-color);
+        }
+
+        .tour-tab.atp.active {
+            background: var(--atp-color);
+            border-color: var(--atp-color);
+            color: white;
+        }
+
+        .tour-tab.wta.active {
+            background: var(--wta-color);
+            border-color: var(--wta-color);
+            color: white;
+        }
+
+        /* Popular Players Section */
+        .popular-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .popular-section h2 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .player-card {
+            background: var(--bg-color);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.3s;
+        }
+
+        .player-card:hover {
+            border-color: var(--success-color);
+        }
+
+        .player-card.is-favorite {
+            border-color: var(--success-color);
+            background: rgba(78, 204, 163, 0.1);
+        }
+
+        .player-card .player-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .player-card .player-name {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .player-card .player-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .player-card .tour-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .player-card .tour-badge.atp {
+            background: var(--atp-color);
+            color: white;
+        }
+
+        .player-card .tour-badge.wta {
+            background: var(--wta-color);
+            color: white;
+        }
+
+        .player-card .toggle-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .player-card .toggle-btn.add {
+            background: var(--success-color);
+            color: var(--bg-color);
+        }
+
+        .player-card .toggle-btn.remove {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Notification Toast */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            background: var(--success-color);
+            color: var(--bg-color);
+        }
+
+        .notification.error {
+            background: var(--accent-color);
+        }
+
+        /* Loading Spinner */
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        /* Unsaved Changes Indicator */
+        .unsaved-indicator {
+            display: none;
+            color: var(--warning-color);
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+
+        .unsaved-indicator.show {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .players-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-bar {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-baseball-ball"></i> Tennis Player Selector</h1>
+            <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        </header>
+
+        <!-- Action Buttons - Consistent with Team Selector -->
+        <div class="action-bar">
+            <button class="btn btn-save" id="save-btn" onclick="saveAndReturn()">
+                <i class="fas fa-save"></i> Save Configuration
+            </button>
+            <button class="btn btn-clear" id="clear-btn" onclick="clearAllFavorites()">
+                <i class="fas fa-trash"></i> Clear All
+            </button>
+            <span class="unsaved-indicator" id="unsaved-indicator">
+                <i class="fas fa-exclamation-circle"></i> Unsaved changes
+            </span>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="total-players">70</div>
+                <div class="stat-label">Total Players</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="selected-count">0</div>
+                <div class="stat-label">Selected</div>
+            </div>
+        </div>
+
+        <!-- Current Favorites -->
+        <section class="favorites-section">
+            <div class="favorites-header">
+                <h2><i class="fas fa-star"></i> Your Favorite Players</h2>
+                <span class="favorites-count" id="favorites-count">0</span>
+            </div>
+            <div class="favorites-grid" id="favorites-grid">
+                <p class="no-favorites">No favorite players yet. Add some below!</p>
+            </div>
+        </section>
+
+        <!-- Search Section -->
+        <section class="search-section">
+            <h2><i class="fas fa-search"></i> Search Players</h2>
+            <div class="search-container">
+                <input type="text" class="search-input" id="search-input" placeholder="Search by player name..." autocomplete="off">
+                <button class="search-btn" id="search-btn"><i class="fas fa-search"></i> Search</button>
+            </div>
+            <div class="search-results" id="search-results"></div>
+        </section>
+
+        <!-- Tour Filter Tabs -->
+        <div class="tour-tabs">
+            <button class="tour-tab active" data-tour="all">All Tours</button>
+            <button class="tour-tab atp" data-tour="atp">ATP Tour</button>
+            <button class="tour-tab wta" data-tour="wta">WTA Tour</button>
+        </div>
+
+        <!-- Popular Players -->
+        <section class="popular-section">
+            <h2><i class="fas fa-trophy"></i> Popular Players</h2>
+            <div class="players-grid" id="players-grid">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading players...</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // State
+        let favorites = [];
+        let originalFavorites = []; // Track original state for unsaved changes
+        let allPlayers = [];
+        let currentTourFilter = 'all';
+        let hasUnsavedChanges = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFavorites();
+            loadPopularPlayers();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Search
+            document.getElementById('search-btn').addEventListener('click', performSearch);
+            document.getElementById('search-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') performSearch();
+            });
+
+            // Tour tabs
+            document.querySelectorAll('.tour-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tour-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentTourFilter = tab.dataset.tour;
+                    renderPopularPlayers();
+                });
+            });
+
+            // Warn on leave if unsaved
+            window.addEventListener('beforeunload', (e) => {
+                if (hasUnsavedChanges) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+        }
+
+        function markUnsavedChanges() {
+            hasUnsavedChanges = true;
+            document.getElementById('unsaved-indicator').classList.add('show');
+        }
+
+        function clearUnsavedChanges() {
+            hasUnsavedChanges = false;
+            document.getElementById('unsaved-indicator').classList.remove('show');
+        }
+
+        async function loadFavorites() {
+            try {
+                const response = await fetch('/api/tennis-favorites');
+                const data = await response.json();
+                favorites = data.favorites || [];
+                originalFavorites = JSON.parse(JSON.stringify(favorites)); // Deep copy
+                renderFavorites();
+                renderPopularPlayers();
+                updateStats();
+            } catch (error) {
+                console.error('Error loading favorites:', error);
+                showNotification('Error loading favorites', 'error');
+            }
+        }
+
+        async function loadPopularPlayers() {
+            try {
+                const response = await fetch('/api/tennis-athletes/popular');
+                const data = await response.json();
+                allPlayers = data.athletes || [];
+                document.getElementById('total-players').textContent = allPlayers.length;
+                renderPopularPlayers();
+            } catch (error) {
+                console.error('Error loading players:', error);
+                document.getElementById('players-grid').innerHTML = 
+                    '<p style="color: var(--accent-color);">Error loading players. Try refreshing.</p>';
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('selected-count').textContent = favorites.length;
+            document.getElementById('favorites-count').textContent = favorites.length;
+        }
+
+        function renderFavorites() {
+            const grid = document.getElementById('favorites-grid');
+            updateStats();
+
+            if (favorites.length === 0) {
+                grid.innerHTML = '<p class="no-favorites">No favorite players yet. Add some below!</p>';
+                return;
+            }
+
+            grid.innerHTML = favorites.map(player => `
+                <div class="favorite-chip">
+                    <span class="tour-badge ${player.tour?.toLowerCase() || 'atp'}">${player.tour || 'ATP'}</span>
+                    <span class="player-name">${player.name}</span>
+                    <button class="remove-btn" onclick="removeFavorite('${player.id}')" title="Remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function renderPopularPlayers() {
+            const grid = document.getElementById('players-grid');
+            
+            let filtered = allPlayers;
+            if (currentTourFilter !== 'all') {
+                filtered = allPlayers.filter(p => p.tour?.toLowerCase() === currentTourFilter);
+            }
+
+            // Sort by rank
+            filtered.sort((a, b) => (a.rank || 999) - (b.rank || 999));
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p style="color: var(--text-muted);">No players found for this tour.</p>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(player => {
+                const isFavorite = favorites.some(f => f.id === player.id);
+                return `
+                    <div class="player-card ${isFavorite ? 'is-favorite' : ''}">
+                        <div class="player-info">
+                            <span class="player-name">${player.name}</span>
+                            <div class="player-meta">
+                                <span class="tour-badge ${player.tour?.toLowerCase() || 'atp'}">${player.tour || 'ATP'}</span>
+                                ${player.rank && player.rank < 99 ? `<span>#${player.rank}</span>` : ''}
+                                ${player.country ? `<span>${player.country}</span>` : ''}
+                            </div>
+                        </div>
+                        <button class="toggle-btn ${isFavorite ? 'remove' : 'add'}" 
+                                onclick="${isFavorite ? `removeFavorite('${player.id}')` : `addFavorite(${JSON.stringify(player).replace(/"/g, '&quot;')})`}">
+                            <i class="fas fa-${isFavorite ? 'minus' : 'plus'}"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function performSearch() {
+            const query = document.getElementById('search-input').value.trim();
+            if (query.length < 2) {
+                showNotification('Please enter at least 2 characters', 'error');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('search-results');
+            resultsDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Searching...</p></div>';
+
+            try {
+                // Try active tournaments first
+                let response = await fetch(`/api/tennis-athletes/search?q=${encodeURIComponent(query)}`);
+                let data = await response.json();
+                
+                // If no results, try global search
+                if (!data.athletes || data.athletes.length === 0) {
+                    response = await fetch(`/api/tennis-athletes/search-all?q=${encodeURIComponent(query)}`);
+                    data = await response.json();
+                }
+
+                const athletes = data.athletes || [];
+                
+                if (athletes.length === 0) {
+                    resultsDiv.innerHTML = '<p style="color: var(--text-muted); padding: 10px;">No players found. Try a different search term.</p>';
+                    return;
+                }
+
+                resultsDiv.innerHTML = athletes.map(player => {
+                    const isFavorite = favorites.some(f => f.id === player.id);
+                    return `
+                        <div class="search-result-item">
+                            <div class="player-info">
+                                <span class="tour-badge ${player.tour?.toLowerCase() || 'atp'}" style="margin-right: 10px;">${player.tour || 'ATP'}</span>
+                                <div>
+                                    <div class="player-name">${player.name}</div>
+                                    <div class="player-details">${player.tournament || player.country || ''}</div>
+                                </div>
+                            </div>
+                            <button class="add-btn ${isFavorite ? 'added' : ''}" 
+                                    onclick="${isFavorite ? '' : `addFavorite(${JSON.stringify(player).replace(/"/g, '&quot;')})`}"
+                                    ${isFavorite ? 'disabled' : ''}>
+                                ${isFavorite ? 'Added' : 'Add'}
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsDiv.innerHTML = '<p style="color: var(--accent-color); padding: 10px;">Search error. Please try again.</p>';
+            }
+        }
+
+        async function addFavorite(player) {
+            try {
+                const response = await fetch('/api/tennis-favorites/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ player })
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    favorites.push(player);
+                    renderFavorites();
+                    renderPopularPlayers();
+                    showNotification(`Added ${player.name}`, 'success');
+                    // Note: Changes are auto-saved via API, but we track for UI feedback
+                } else if (data.status === 'exists') {
+                    showNotification(`${player.name} is already a favorite`, 'error');
+                } else {
+                    showNotification(data.message || 'Error adding player', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error adding favorite:', error);
+                showNotification('Error adding player', 'error');
+            }
+        }
+
+        async function removeFavorite(playerId) {
+            try {
+                const response = await fetch('/api/tennis-favorites/remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ player_id: playerId })
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const player = favorites.find(f => f.id === playerId);
+                    favorites = favorites.filter(f => f.id !== playerId);
+                    renderFavorites();
+                    renderPopularPlayers();
+                    showNotification(`Removed ${player?.name || 'player'}`, 'success');
+                } else {
+                    showNotification(data.message || 'Error removing player', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error removing favorite:', error);
+                showNotification('Error removing player', 'error');
+            }
+        }
+
+        async function clearAllFavorites() {
+            if (favorites.length === 0) {
+                showNotification('No favorites to clear', 'error');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to remove all ${favorites.length} favorite players?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/tennis-favorites', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ favorites: [] })
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    favorites = [];
+                    renderFavorites();
+                    renderPopularPlayers();
+                    showNotification('All favorites cleared', 'success');
+                } else {
+                    showNotification('Error clearing favorites', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error clearing favorites:', error);
+                showNotification('Error clearing favorites', 'error');
+            }
+        }
+
+        function saveAndReturn() {
+            // Since changes are auto-saved via API, just show confirmation and redirect
+            showNotification('Configuration saved!', 'success');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 500);
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
