@@ -563,7 +563,14 @@
             "DAL"
         ],
         "leagues": [
-            "usa.1"
+            "usa.1",
+            "usa.nwsl",
+            "eng.1",
+            "esp.1",
+            "ger.1",
+            "ita.1",
+            "fra.1",
+            "uefa.champions"
         ],
         "logo_dir": "assets/sports/soccer_logos",
         "show_records": true,
