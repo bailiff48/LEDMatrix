@@ -4148,6 +4148,44 @@
                 await saveConfigJson(payload);
             });
         })();
+        // Secrets form submit (API Keys)
+        (function augmentSecretsForm(){
+            const form = document.getElementById('secrets-form');
+            if (form) {
+                form.addEventListener('submit', async function(e){
+                    e.preventDefault();
+                    
+                    // Build secrets JSON structure
+                    const secretsData = {
+                        weather: {
+                            api_key: document.getElementById('weather_api_key').value || ''
+                        },
+                        youtube: {
+                            api_key: document.getElementById('youtube_api_key').value || ''
+                        },
+                        music: {
+                            SPOTIFY_CLIENT_ID: document.getElementById('spotify_client_id').value || '',
+                            SPOTIFY_CLIENT_SECRET: document.getElementById('spotify_client_secret').value || ''
+                        }
+                    };
+                    
+                    try {
+                        const response = await fetch('/save_raw_json', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                config_type: 'secrets',
+                                config_data: JSON.stringify(secretsData, null, 4)
+                            })
+                        });
+                        const data = await response.json();
+                        showNotification(data.message, data.status);
+                    } catch (error) {
+                        showNotification('Error saving API keys: ' + error, 'error');
+                    }
+                });
+            }
+        })();
 
         // News advanced save
         async function saveNewsAdvancedSettings(){
