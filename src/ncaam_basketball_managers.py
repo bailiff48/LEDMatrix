@@ -203,8 +203,8 @@ class BaseNCAAMBasketballManager(Basketball):
         season_year = now.year
         if now.month < 8:
             season_year = now.year - 1
-        start_date = (now - timedelta(days=5)).strftime("%Y%m%d")
-        end_date = (now + timedelta(days=7)).strftime("%Y%m%d")
+        start_date = (now - timedelta(days=28)).strftime("%Y%m%d")
+        end_date = (now + timedelta(days=14)).strftime("%Y%m%d")
         datestring = f"{start_date}-{end_date}"
         cache_key = f"{self.sport_key}_schedule_{season_year}"
 
@@ -256,8 +256,8 @@ class BaseNCAAMBasketballManager(Basketball):
         priority = background_config.get("priority", 2)
 
         # Calculate date range (5 days back, 7 forward - matching original)
-        from_date = (now - timedelta(days=5)).strftime("%Y%m%d")
-        to_date = (now + timedelta(days=7)).strftime("%Y%m%d")
+        from_date = (now - timedelta(days=28)).strftime("%Y%m%d")
+        to_date = (now + timedelta(days=14)).strftime("%Y%m%d")
         date_range = f"{from_date}-{to_date}"
         
         # Submit background fetch request

@@ -210,7 +210,7 @@ class BaseSoccerManager:
         """Fetch data for all known leagues to build the team-to-league map."""
         cls.logger.info("[Soccer] Building team-league map...")
         new_map = {}
-        yesterday = (datetime.now(pytz.utc) - timedelta(days=1)).strftime('%Y%m%d')
+        yesterday = (datetime.now(pytz.utc) - timedelta(days=21)).strftime('%Y%m%d')
 
         # Fetch data for all leagues defined in LEAGUE_SLUGS to get comprehensive team info
         for league_slug in LEAGUE_SLUGS.keys():
@@ -270,11 +270,11 @@ class BaseSoccerManager:
         all_data = {"events": []}
         favorite_teams = self.soccer_config.get("favorite_teams", [])
         target_leagues_config = self.soccer_config.get("leagues", list(LEAGUE_SLUGS.keys()))
-        upcoming_fetch_days = self.soccer_config.get("upcoming_fetch_days", 1)
+        upcoming_fetch_days = self.soccer_config.get("upcoming_fetch_days", 7)
         leagues_to_fetch = set(target_leagues_config)
         today = datetime.now(pytz.utc).date()
         # Use date range instead of individual dates (reduces API calls from leagues×days to just leagues)
-        start_date = (today - timedelta(days=1)).strftime('%Y%m%d')
+        start_date = (today - timedelta(days=21)).strftime('%Y%m%d')
         end_date = (today + timedelta(days=upcoming_fetch_days)).strftime('%Y%m%d')
         date_range = f"{start_date}-{end_date}"
         cache_key_suffix = f"{start_date}_{end_date}"

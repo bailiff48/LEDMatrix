@@ -920,14 +920,20 @@ class SportsUpcoming(SportsCore):
 
             # Filter for favorite teams only if the config is set
             if self.show_favorite_teams_only:                
-                # Select one game per favorite team (earliest upcoming game for each team)
+                # Select N upcoming games per favorite team (where N = upcoming_games_to_show)
+                seen_ids = set()
                 team_games = []
                 for team in self.favorite_teams:
                     # Find games where this team is playing                  
-                    if team_specific_games := [game for game in processed_games if game['home_abbr'] == team or game['away_abbr'] == team]:
-                        # Sort by game time and take the earliest
+                    team_specific_games = [game for game in processed_games if game['home_abbr'] == team or game['away_abbr'] == team]
+                    if team_specific_games:
+                        # Sort by game time (earliest first)
                         team_specific_games.sort(key=lambda g: g.get('start_time_utc') or datetime.max.replace(tzinfo=timezone.utc))
-                        team_games.append(team_specific_games[0])
+                        # Take the N earliest for this team, deduplicating
+                        for game in team_specific_games[:self.upcoming_games_to_show]:
+                            if game["id"] not in seen_ids:
+                                seen_ids.add(game["id"])
+                                team_games.append(game)
                 
                 # Sort the final list by game time
                 team_games.sort(key=lambda g: g.get('start_time_utc') or datetime.max.replace(tzinfo=timezone.utc))
@@ -1245,20 +1251,23 @@ class SportsRecent(SportsCore):
                                          game['away_abbr'] in self.favorite_teams]
                 self.logger.info(f"Found {len(favorite_team_games)} favorite team games out of {len(processed_games)} total final games within last 21 days")
                 
-                # Show ALL recent games for favorite teams, limited by config
-                # Deduplicate by game ID (in case both teams are favorites)
+                # Get N most recent games PER favorite team, then combine and dedupe
                 seen_ids = set()
                 team_games = []
-                for game in favorite_team_games:
-                    if game["id"] not in seen_ids:
-                        seen_ids.add(game["id"])
-                        team_games.append(game)
+                for team in self.favorite_teams:
+                    # Find games where this team played
+                    team_specific_games = [game for game in favorite_team_games 
+                                          if game['home_abbr'] == team or game['away_abbr'] == team]
+                    # Sort by game time (most recent first)
+                    team_specific_games.sort(key=lambda g: g.get('start_time_utc') or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
+                    # Take the N most recent for this team
+                    for game in team_specific_games[:self.recent_games_to_show]:
+                        if game["id"] not in seen_ids:
+                            seen_ids.add(game["id"])
+                            team_games.append(game)
 
-                # Sort by game time (most recent first)
+                # Sort combined list by game time (most recent first)
                 team_games.sort(key=lambda g: g.get('start_time_utc') or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
-
-                # Limit to configured number of recent games
-                team_games = team_games[:self.recent_games_to_show]
 
                 # Format game_date for display and debug output
                 for i, game in enumerate(team_games):
