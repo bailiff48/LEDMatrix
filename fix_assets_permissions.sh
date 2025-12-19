@@ -22,7 +22,18 @@ ASSETS_DIR="$PROJECT_DIR/assets"
 echo "Project directory: $PROJECT_DIR"
 echo "Assets directory: $ASSETS_DIR"
 echo "Real user: $REAL_USER"
+echo "Real home: $REAL_HOME"
 echo "Real group: $REAL_GROUP"
+
+# Fix home directory permissions to allow daemon user traversal
+# (rgbmatrix drops privileges to daemon after GPIO init)
+echo ""
+echo "Fixing home directory traversal permissions..."
+if sudo chmod 755 "$REAL_HOME"; then
+    echo "✓ Set home directory ($REAL_HOME) to 755 for daemon traversal"
+else
+    echo "✗ Failed to set home directory permissions"
+fi
 
 # Check if assets directory exists
 if [ ! -d "$ASSETS_DIR" ]; then
@@ -42,10 +53,10 @@ else
     exit 1
 fi
 
-# Set permissions to allow read/write for owner and group, read for others
+# Set permissions to allow read/write for all users (daemon user needs write access)
 echo "Setting permissions for assets directory..."
-if sudo chmod -R 775 "$ASSETS_DIR"; then
-    echo "✓ Set assets directory permissions to 775"
+if sudo chmod -R 777 "$ASSETS_DIR"; then
+    echo "✓ Set assets directory permissions to 777"
 else
     echo "✗ Failed to set assets directory permissions"
     exit 1
@@ -60,6 +71,7 @@ SPORTS_DIRS=(
     "sports/mlb_logos"
     "sports/milb_logos"
     "sports/soccer_logos"
+    "sports/wnba_logos"
 )
 
 echo ""
@@ -75,8 +87,8 @@ for SPORTS_DIR in "${SPORTS_DIRS[@]}"; do
         echo "  - Current permissions:"
         ls -ld "$FULL_PATH"
         
-        # Ensure the directory is writable
-        sudo chmod 775 "$FULL_PATH"
+        # Ensure the directory is writable by all (daemon user needs access)
+        sudo chmod 777 "$FULL_PATH"
         sudo chown "$REAL_USER:$REAL_GROUP" "$FULL_PATH"
         
         echo "  - Updated permissions:"
@@ -93,7 +105,7 @@ for SPORTS_DIR in "${SPORTS_DIRS[@]}"; do
         echo "  - Directory does not exist, creating it..."
         sudo mkdir -p "$FULL_PATH"
         sudo chown "$REAL_USER:$REAL_GROUP" "$FULL_PATH"
-        sudo chmod 775 "$FULL_PATH"
+        sudo chmod 777 "$FULL_PATH"
         echo "  - Created directory with proper permissions"
     fi
 done
@@ -120,8 +132,7 @@ echo ""
 echo "Assets permissions fix completed!"
 echo ""
 echo "The application should now be able to download and save team logos."
-echo "If you still see permission errors, check which user is running the LEDMatrix service"
-echo "and ensure it matches the owner above ($REAL_USER)."
+echo "The daemon user (used by rgbmatrix after privilege drop) now has access."
 echo ""
 echo "You may need to restart the LEDMatrix service for the changes to take effect:"
 echo "  sudo systemctl restart ledmatrix.service"
