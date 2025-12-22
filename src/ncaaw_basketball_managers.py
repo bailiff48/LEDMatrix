@@ -291,7 +291,7 @@ class BaseNCAAWBasketballManager(Basketball):
             return self._fetch_todays_games()
         else:
             # Recent and Upcoming managers should use cached season data
-            return self._fetch_ncaaw_basketball_api_data(use_cache=True)
+            return self._get_weeks_data()
 
 
 class NCAAWBasketballLiveManager(BaseNCAAWBasketballManager, BasketballLive):

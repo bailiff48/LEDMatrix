@@ -290,9 +290,8 @@ class BaseNCAAMBasketballManager(Basketball):
             # Live games should fetch only current games, not entire season
             return self._fetch_todays_games()
         else:
-            # Recent and Upcoming managers should use cached season data
-            return self._fetch_ncaam_basketball_api_data(use_cache=True)
-
+            # Use conference-based fetch directly for reliable results
+            return self._get_weeks_data()
 
 class NCAAMBasketballLiveManager(BaseNCAAMBasketballManager, BasketballLive):
     """Manager for live NCAA MB games."""

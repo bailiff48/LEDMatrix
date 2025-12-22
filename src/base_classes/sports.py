@@ -383,7 +383,7 @@ class SportsCore(ABC):
         if sport_key in SportsCore._teams_in_spoiler_window:
             teams_in_window = SportsCore._teams_in_spoiler_window[sport_key].get('teams', set())
             if team_abbr in teams_in_window:
-                self.logger.info(f"[ANTI-SPOILER] Team {team_abbr} found in shared window state")
+                self.logger.debug(f"[ANTI-SPOILER] Team {team_abbr} found in shared window state")
                 return True
         
         # Fallback: check this instance's games directly (including live_games!)
