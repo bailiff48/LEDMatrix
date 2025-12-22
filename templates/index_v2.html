@@ -1458,7 +1458,8 @@
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Stocks & Crypto Configuration</h3>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-primary" onclick="startOnDemand('stocks')"><i class="fas fa-bolt"></i> On-Demand Stocks</button>
+                                <a href="/stock-selector" class="btn btn-primary"><i class="fas fa-search-dollar"></i> Stock Selector</a>
+                                <button type="button" class="btn btn-info" onclick="startOnDemand('stocks')"><i class="fas fa-bolt"></i> On-Demand</button>
                             </div>
                         </div>
                         <form id="stocks-form">
@@ -1470,8 +1471,11 @@
                             </div>
                             <div class="form-group">
                                 <label for="stocks_symbols">Stock Symbols:</label>
-                                <input type="text" class="form-control" id="stocks_symbols" name="stocks_symbols" value="{{ safe_config_get(main_config, 'stocks', 'symbols', default=['ASTS', 'SCHD', 'INTC', 'NVDA', 'T', 'VOO', 'SMCI'])|join(', ') }}" placeholder="AAPL, GOOGL, MSFT">
-                                <div class="description">Comma-separated stock symbols</div>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" class="form-control" id="stocks_symbols" name="stocks_symbols" value="{{ safe_config_get(main_config, 'stocks', 'symbols', default=['ASTS', 'SCHD', 'INTC', 'NVDA', 'T', 'VOO', 'SMCI'])|join(', ') }}" placeholder="AAPL, GOOGL, MSFT" style="flex: 1;">
+                                    <a href="/stock-selector" class="btn btn-secondary" target="_blank" title="Open Stock Selector"><i class="fas fa-search"></i></a>
+                                </div>
+                                <div class="description">Comma-separated symbols. Use Stock Selector for easy searching, then reload this page.</div>
                             </div>
                             <div class="form-group">
                                 <label for="stocks_update_interval">Update Interval (seconds):</label>
@@ -1536,8 +1540,11 @@
                             </div>
                             <div class="form-group">
                                 <label for="crypto_symbols">Crypto Symbols:</label>
-                                <input type="text" class="form-control" id="crypto_symbols" name="crypto_symbols" value="{{ safe_config_get(main_config, 'crypto', 'symbols', default=['BTC-USD', 'ETH-USD'])|join(', ') }}" placeholder="BTC-USD, ETH-USD">
-                                <div class="description">Comma-separated crypto symbols (e.g., BTC-USD, ETH-USD)</div>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" class="form-control" id="crypto_symbols" name="crypto_symbols" value="{{ safe_config_get(main_config, 'crypto', 'symbols', default=['BTC-USD', 'ETH-USD'])|join(', ') }}" placeholder="BTC-USD, ETH-USD" style="flex: 1;">
+                                    <a href="/stock-selector" class="btn btn-secondary" target="_blank" title="Open Stock Selector"><i class="fas fa-search"></i></a>
+                                </div>
+                                <div class="description">Comma-separated symbols. Use Stock Selector for easy searching, then reload this page.</div>
                             </div>
                             <div class="form-group">
                                 <label for="crypto_update_interval">Update Interval (seconds):</label>

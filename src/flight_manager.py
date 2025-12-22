@@ -338,7 +338,9 @@ class FlightLiveManager:
             'MIL': 'military.png',
             'HELO': 'helicopter.png',
             'GA': 'ga.png',
-            'UNK': 'unknown.png'
+            'UNK': 'unknown.png',
+            'MIL_HELO': 'military_helicopter.png',
+            'STAR': 'star.png'
         }
         
         for type_code, filename in icon_files.items():
@@ -551,7 +553,7 @@ class FlightLiveManager:
     def _infer_aircraft_type(self, callsign: str, altitude_ft: int, speed_knots: int) -> str:
         """
         Infer aircraft type from callsign patterns and flight characteristics.
-        Returns type_code: MIL, JET, HELO, GA, or UNK
+        Returns type_code: MIL, MIL_HELO, JET, HELO, GA, or UNK
         """
         callsign = (callsign or '').upper().strip()
         
@@ -559,16 +561,37 @@ class FlightLiveManager:
         military_patterns = ['REACH', 'TETON', 'EVAC', 'RESCUE', 'ARMY', 'NAVY', 
                            'GUARD', 'DUKE', 'HAWK', 'VIPER', 'RCH', 'CNV', 'PAT',
                            'IRON', 'STEEL', 'BLADE', 'SABER', 'TOPCAT', 'BOXER',
-                           'KARMA', 'RAID', 'SKULL', 'BONE', 'DEATH']
-        for pattern in military_patterns:
-            if callsign.startswith(pattern):
-                return 'MIL'
+                           'KARMA', 'RAID', 'SKULL', 'BONE', 'DEATH', 'DUSTOFF']
         
         # Helicopter patterns
-        heli_patterns = ['LIFE', 'MEDEVAC', 'HELI', 'COPTER', 'AIR1', 'MERCY']
+        heli_patterns = ['LIFE', 'MEDEVAC', 'HELI', 'COPTER', 'AIR1', 'MERCY', 'DUSTOFF']
+        
+        # Check military first
+        is_military = False
+        for pattern in military_patterns:
+            if callsign.startswith(pattern):
+                is_military = True
+                break
+        
+        # Check helicopter patterns
+        is_helo = False
         for pattern in heli_patterns:
             if pattern in callsign:
-                return 'HELO'
+                is_helo = True
+                break
+        
+        # Military helicopter (military callsign + helo indicator OR low/slow military)
+        if is_military:
+            if is_helo:
+                return 'MIL_HELO'
+            # Low and slow military = likely helicopter
+            if altitude_ft and speed_knots and altitude_ft < 5000 and speed_knots < 180:
+                return 'MIL_HELO'
+            return 'MIL'
+        
+        # Civilian helicopter
+        if is_helo:
+            return 'HELO'
         
         # Low & slow = likely helicopter
         if altitude_ft and speed_knots and altitude_ft < 3000 and speed_knots < 120:
@@ -937,24 +960,40 @@ class FlightLiveManager:
         display_type = flight.get('display_type', '')  # e.g., "Boeing 737-824"
         direction = flight.get('direction', '')
         
+        # Check if military aircraft (show star prefix)
+        is_military = aircraft_type in ('MIL', 'MIL_HELO')
+        
         # Get aircraft icon (will be resized to 12x12)
         icon = self.aircraft_icons.get(aircraft_type)
-        icon_width = 12 if icon else 0
-        icon_spacing = 2 if icon else 0
+        star_icon = self.aircraft_icons.get('STAR') if is_military else None
         
-        # === LINE 1: Icon + Callsign (y=0) ===
+        icon_width = 12 if icon else 0
+        star_width = 12 if star_icon else 0
+        icon_spacing = 2 if icon else 0
+        star_spacing = 2 if star_icon else 0
+        
+        # === LINE 1: [Star] + Icon + Callsign (y=0) ===
         bbox = draw.textbbox((0, 0), callsign, font=font_callsign)
         text_width = bbox[2] - bbox[0]
-        total_width = icon_width + icon_spacing + text_width
+        total_width = star_width + star_spacing + icon_width + icon_spacing + text_width
         start_x = (self.display_width - total_width) // 2
         
-        # Draw icon if available (resize to 12x12)
+        current_x = start_x
+        
+        # Draw star icon first if military
+        if star_icon:
+            small_star = star_icon.resize((12, 12), Image.LANCZOS) if star_icon.size != (12, 12) else star_icon
+            img.paste(small_star, (current_x, 1), small_star if small_star.mode == 'RGBA' else None)
+            current_x += star_width + star_spacing
+        
+        # Draw aircraft icon if available (resize to 12x12)
         if icon:
             small_icon = icon.resize((12, 12), Image.LANCZOS) if icon.size != (12, 12) else icon
-            img.paste(small_icon, (start_x, 1), small_icon if small_icon.mode == 'RGBA' else None)
+            img.paste(small_icon, (current_x, 1), small_icon if small_icon.mode == 'RGBA' else None)
+            current_x += icon_width + icon_spacing
         
         # Draw callsign
-        text_x = start_x + icon_width + icon_spacing
+        text_x = current_x
         draw.text((text_x, 0), callsign, fill=self.COLORS['orange'], font=font_callsign)
         
         # === LINE 2: Aircraft Type (y=12) ===

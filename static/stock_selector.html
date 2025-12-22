@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock & Crypto Selector - LEDMatrix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header {
+            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+            padding: 25px;
+            border-radius: 15px 15px 0 0;
+            border: 1px solid #2a2a4a;
+        }
+        .header h1 { color: #00d4aa; font-size: 28px; margin-bottom: 10px; }
+        .header p { color: #8892b0; font-size: 14px; }
+        .main-content {
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 0 0 15px 15px;
+            border: 1px solid #2a2a4a;
+            border-top: none;
+        }
+        .search-section { margin-bottom: 25px; }
+        .search-section h3 { color: #00d4aa; margin-bottom: 15px; font-size: 18px; }
+        .search-box { position: relative; }
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #2a2a4a;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #0f0f1a;
+            color: #e0e0e0;
+        }
+        .search-input:focus { outline: none; border-color: #00d4aa; }
+        .search-input::placeholder { color: #6a6a8a; }
+        .search-hint { color: #6a6a8a; font-size: 12px; margin-top: 8px; }
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #0f0f1a;
+            border: 2px solid #2a2a4a;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+        .search-results.show { display: block; }
+        .search-result-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #2a2a4a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .search-result-item:hover { background: #2a2a4a; }
+        .search-result-item .info { flex: 1; }
+        .search-result-item .symbol { font-weight: 700; font-size: 16px; color: #00d4aa; }
+        .search-result-item .name { font-size: 13px; color: #8892b0; margin-top: 2px; }
+        .search-result-item .type-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .type-badge.equity, .type-badge.stock { background: #3498db; color: white; }
+        .type-badge.etf { background: #9b59b6; color: white; }
+        .type-badge.cryptocurrency { background: #f39c12; color: white; }
+        .type-badge.index { background: #e74c3c; color: white; }
+        .search-result-item .add-btn {
+            background: #00d4aa;
+            color: #1a1a2e;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .search-result-item.already-added { opacity: 0.5; }
+        .search-result-item.already-added .add-btn { background: #6a6a8a; cursor: not-allowed; }
+        .no-results, .searching { padding: 20px; text-align: center; color: #6a6a8a; }
+        .searching { color: #00d4aa; }
+        .selected-section {
+            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border: 1px solid #2a2a4a;
+        }
+        .selected-section h3 { color: #00d4aa; margin-bottom: 15px; font-size: 18px; }
+        .selected-items { display: flex; flex-wrap: wrap; gap: 10px; min-height: 50px; }
+        .selected-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #2a2a4a;
+            padding: 10px 14px;
+            border-radius: 25px;
+            font-size: 14px;
+            border: 1px solid #3a3a5a;
+        }
+        .selected-item .symbol { font-weight: 700; color: #00d4aa; }
+        .selected-item .name { color: #8892b0; font-size: 12px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .selected-item .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .selected-item .remove-btn:hover { background: #c0392b; }
+        .empty-message { color: #6a6a8a; font-style: italic; padding: 10px; }
+        .quick-add-section { margin-bottom: 25px; }
+        .quick-add-section h4 { color: #8892b0; margin-bottom: 12px; font-size: 14px; }
+        .quick-add-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .quick-add-btn {
+            padding: 8px 14px;
+            background: #2a2a4a;
+            border: 1px solid #3a3a5a;
+            border-radius: 20px;
+            color: #e0e0e0;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .quick-add-btn:hover { background: #3a3a5a; border-color: #00d4aa; }
+        .quick-add-btn.selected { background: rgba(0, 212, 170, 0.2); border-color: #00d4aa; color: #00d4aa; }
+        .save-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #2a2a4a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .save-btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #00d4aa 0%, #00a896 100%);
+            color: #1a1a2e;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .save-btn:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(0, 212, 170, 0.4); }
+        .back-link { color: #8892b0; text-decoration: none; font-size: 14px; }
+        .back-link:hover { color: #00d4aa; }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        .notification.show { transform: translateX(0); }
+        .notification.success { background: linear-gradient(135deg, #00d4aa 0%, #00a896 100%); color: #1a1a2e; }
+        .notification.error { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; }
+        .section-divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0 20px 0;
+            color: #6a6a8a;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: #2a2a4a; }
+        .section-divider::before { margin-right: 15px; }
+        .section-divider::after { margin-left: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 Stock & Crypto Selector</h1>
+            <p>Search for any stock, ETF, or cryptocurrency. Powered by Yahoo Finance.</p>
+        </div>
+        <div class="main-content">
+            <div class="selected-section">
+                <h3>📊 Selected Stocks (<span id="stock-count">0</span>)</h3>
+                <div id="selected-stocks" class="selected-items">
+                    <span class="empty-message">No stocks selected. Search below to add.</span>
+                </div>
+            </div>
+            <div class="selected-section">
+                <h3>🪙 Selected Crypto (<span id="crypto-count">0</span>)</h3>
+                <div id="selected-crypto" class="selected-items">
+                    <span class="empty-message">No crypto selected. Search below to add.</span>
+                </div>
+            </div>
+            <div class="section-divider">Search & Add</div>
+            <div class="search-section">
+                <h3>🔍 Search Stocks & Crypto</h3>
+                <div class="search-box">
+                    <input type="text" id="search-input" class="search-input" 
+                           placeholder="Type to search (e.g., AAPL, Apple, Bitcoin, BTC)..." autocomplete="off">
+                    <div id="search-results" class="search-results"></div>
+                </div>
+                <div class="search-hint">Search by symbol or name. Results appear as you type. Press Enter to add directly by symbol.</div>
+            </div>
+            <div class="quick-add-section">
+                <h4>⚡ Quick Add - Popular Stocks</h4>
+                <div class="quick-add-grid" id="quick-stocks">
+                    <button class="quick-add-btn" onclick="quickAdd('AAPL', 'Apple', 'stock')">AAPL</button>
+                    <button class="quick-add-btn" onclick="quickAdd('MSFT', 'Microsoft', 'stock')">MSFT</button>
+                    <button class="quick-add-btn" onclick="quickAdd('GOOGL', 'Alphabet', 'stock')">GOOGL</button>
+                    <button class="quick-add-btn" onclick="quickAdd('AMZN', 'Amazon', 'stock')">AMZN</button>
+                    <button class="quick-add-btn" onclick="quickAdd('NVDA', 'NVIDIA', 'stock')">NVDA</button>
+                    <button class="quick-add-btn" onclick="quickAdd('TSLA', 'Tesla', 'stock')">TSLA</button>
+                    <button class="quick-add-btn" onclick="quickAdd('META', 'Meta', 'stock')">META</button>
+                    <button class="quick-add-btn" onclick="quickAdd('SPY', 'S&P 500 ETF', 'etf')">SPY</button>
+                    <button class="quick-add-btn" onclick="quickAdd('QQQ', 'Nasdaq 100', 'etf')">QQQ</button>
+                    <button class="quick-add-btn" onclick="quickAdd('VOO', 'Vanguard S&P', 'etf')">VOO</button>
+                    <button class="quick-add-btn" onclick="quickAdd('SCHD', 'Schwab Div', 'etf')">SCHD</button>
+                    <button class="quick-add-btn" onclick="quickAdd('AMD', 'AMD', 'stock')">AMD</button>
+                    <button class="quick-add-btn" onclick="quickAdd('INTC', 'Intel', 'stock')">INTC</button>
+                </div>
+            </div>
+            <div class="quick-add-section">
+                <h4>⚡ Quick Add - Popular Crypto</h4>
+                <div class="quick-add-grid" id="quick-crypto">
+                    <button class="quick-add-btn" onclick="quickAdd('BTC-USD', 'Bitcoin', 'crypto')">BTC</button>
+                    <button class="quick-add-btn" onclick="quickAdd('ETH-USD', 'Ethereum', 'crypto')">ETH</button>
+                    <button class="quick-add-btn" onclick="quickAdd('SOL-USD', 'Solana', 'crypto')">SOL</button>
+                    <button class="quick-add-btn" onclick="quickAdd('XRP-USD', 'Ripple', 'crypto')">XRP</button>
+                    <button class="quick-add-btn" onclick="quickAdd('DOGE-USD', 'Dogecoin', 'crypto')">DOGE</button>
+                    <button class="quick-add-btn" onclick="quickAdd('ADA-USD', 'Cardano', 'crypto')">ADA</button>
+                    <button class="quick-add-btn" onclick="quickAdd('AVAX-USD', 'Avalanche', 'crypto')">AVAX</button>
+                    <button class="quick-add-btn" onclick="quickAdd('LINK-USD', 'Chainlink', 'crypto')">LINK</button>
+                    <button class="quick-add-btn" onclick="quickAdd('MATIC-USD', 'Polygon', 'crypto')">MATIC</button>
+                    <button class="quick-add-btn" onclick="quickAdd('SHIB-USD', 'Shiba Inu', 'crypto')">SHIB</button>
+                </div>
+            </div>
+            <div class="save-section">
+                <a href="/" class="back-link">← Back to Dashboard</a>
+                <button class="save-btn" onclick="saveSelections()">💾 Save Changes</button>
+            </div>
+        </div>
+    </div>
+    <div id="notification" class="notification"></div>
+    <script>
+        let selectedStocks = [];
+        let selectedCrypto = [];
+        let stockNames = {};
+        let searchTimeout = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCurrentSelections();
+            setupSearchListener();
+        });
+
+        async function loadCurrentSelections() {
+            try {
+                const response = await fetch('/api/stocks/config');
+                const result = await response.json();
+                if (result.status === 'success') {
+                    selectedStocks = result.stocks?.symbols || [];
+                    selectedCrypto = result.crypto?.symbols || [];
+                }
+                updateSelectedDisplay();
+                updateQuickAddStates();
+            } catch (error) {
+                console.error('Error loading config:', error);
+            }
+        }
+
+        function setupSearchListener() {
+            const input = document.getElementById('search-input');
+            input.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                const query = e.target.value.trim();
+                if (query.length < 1) { hideSearchResults(); return; }
+                showSearching();
+                searchTimeout = setTimeout(() => searchSymbols(query), 300);
+            });
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-box')) hideSearchResults();
+            });
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const query = e.target.value.trim().toUpperCase();
+                    if (query && /^[A-Z0-9]{1,6}(-USD)?$/.test(query)) {
+                        const isCrypto = query.endsWith('-USD');
+                        quickAdd(query, query, isCrypto ? 'crypto' : 'stock');
+                        e.target.value = '';
+                        hideSearchResults();
+                    }
+                }
+            });
+        }
+
+        async function searchSymbols(query) {
+            try {
+                const response = await fetch(`/api/stocks/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                if (data.status === 'success' && data.results?.length > 0) {
+                    displaySearchResults(data.results);
+                } else {
+                    displayNoResults();
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                displayNoResults();
+            }
+        }
+
+        function displaySearchResults(results) {
+            const container = document.getElementById('search-results');
+            container.innerHTML = results.map(item => {
+                const symbol = item.symbol;
+                const name = item.name || item.shortname || symbol;
+                const type = item.quoteType?.toLowerCase() || 'equity';
+                const isCrypto = type === 'cryptocurrency' || symbol.endsWith('-USD');
+                const isSelected = isCrypto ? selectedCrypto.includes(symbol) : selectedStocks.includes(symbol);
+                return `
+                    <div class="search-result-item ${isSelected ? 'already-added' : ''}" 
+                         onclick="${isSelected ? '' : `addFromSearch('${symbol}', '${name.replace(/'/g, "\\'")}', '${type}')`}">
+                        <div class="info">
+                            <div class="symbol">${symbol}</div>
+                            <div class="name">${name}</div>
+                        </div>
+                        <span class="type-badge ${type}">${type === 'cryptocurrency' ? 'Crypto' : type.toUpperCase()}</span>
+                        <button class="add-btn">${isSelected ? '✓' : '+'}</button>
+                    </div>
+                `;
+            }).join('');
+            container.classList.add('show');
+        }
+
+        function showSearching() {
+            const container = document.getElementById('search-results');
+            container.innerHTML = '<div class="searching">🔍 Searching...</div>';
+            container.classList.add('show');
+        }
+
+        function displayNoResults() {
+            const container = document.getElementById('search-results');
+            container.innerHTML = '<div class="no-results">No results found. Try a different term or enter symbol directly.</div>';
+            container.classList.add('show');
+        }
+
+        function hideSearchResults() {
+            document.getElementById('search-results').classList.remove('show');
+        }
+
+        function addFromSearch(symbol, name, type) {
+            const isCrypto = type === 'cryptocurrency' || symbol.endsWith('-USD');
+            if (isCrypto) {
+                if (!selectedCrypto.includes(symbol)) { selectedCrypto.push(symbol); stockNames[symbol] = name; }
+            } else {
+                if (!selectedStocks.includes(symbol)) { selectedStocks.push(symbol); stockNames[symbol] = name; }
+            }
+            updateSelectedDisplay();
+            updateQuickAddStates();
+            const query = document.getElementById('search-input').value.trim();
+            if (query) searchSymbols(query);
+            showNotification(`Added ${symbol}`, 'success');
+        }
+
+        function quickAdd(symbol, name, type) {
+            stockNames[symbol] = name;
+            addFromSearch(symbol, name, type);
+        }
+
+        function removeStock(symbol) {
+            selectedStocks = selectedStocks.filter(s => s !== symbol);
+            updateSelectedDisplay();
+            updateQuickAddStates();
+        }
+
+        function removeCrypto(symbol) {
+            selectedCrypto = selectedCrypto.filter(c => c !== symbol);
+            updateSelectedDisplay();
+            updateQuickAddStates();
+        }
+
+        function updateSelectedDisplay() {
+            const stocksContainer = document.getElementById('selected-stocks');
+            document.getElementById('stock-count').textContent = selectedStocks.length;
+            stocksContainer.innerHTML = selectedStocks.length === 0 
+                ? '<span class="empty-message">No stocks selected. Search below to add.</span>'
+                : selectedStocks.map(symbol => `
+                    <div class="selected-item">
+                        <span class="symbol">${symbol}</span>
+                        <span class="name">${stockNames[symbol] || ''}</span>
+                        <button class="remove-btn" onclick="removeStock('${symbol}')">×</button>
+                    </div>
+                `).join('');
+
+            const cryptoContainer = document.getElementById('selected-crypto');
+            document.getElementById('crypto-count').textContent = selectedCrypto.length;
+            cryptoContainer.innerHTML = selectedCrypto.length === 0
+                ? '<span class="empty-message">No crypto selected. Search below to add.</span>'
+                : selectedCrypto.map(symbol => `
+                    <div class="selected-item">
+                        <span class="symbol">${symbol.replace('-USD', '')}</span>
+                        <span class="name">${stockNames[symbol] || ''}</span>
+                        <button class="remove-btn" onclick="removeCrypto('${symbol}')">×</button>
+                    </div>
+                `).join('');
+        }
+
+        function updateQuickAddStates() {
+            document.querySelectorAll('.quick-add-btn').forEach(btn => {
+                const match = btn.getAttribute('onclick').match(/quickAdd\('([^']+)'/);
+                if (match) {
+                    const symbol = match[1];
+                    btn.classList.toggle('selected', selectedStocks.includes(symbol) || selectedCrypto.includes(symbol));
+                }
+            });
+        }
+
+        async function saveSelections() {
+            try {
+                const response = await fetch('/api/stocks/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stocks: { symbols: selectedStocks }, crypto: { symbols: selectedCrypto } })
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showNotification(`Saved ${selectedStocks.length} stocks and ${selectedCrypto.length} crypto!`, 'success');
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                showNotification('Error saving: ' + error.message, 'error');
+            }
+        }
+
+        function showNotification(message, type) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = `notification ${type} show`;
+            setTimeout(() => notif.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>
