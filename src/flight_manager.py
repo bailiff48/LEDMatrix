@@ -18,6 +18,15 @@ except ImportError:
     AIRCRAFT_DB_AVAILABLE = False
     AircraftDatabase = None
 
+# Import FAA database for authoritative aircraft type lookup
+# This provides definitive classification (no more guessing based on altitude/speed!)
+try:
+    from src.faa_database import get_faa_database
+    FAA_DB_AVAILABLE = True
+except ImportError:
+    FAA_DB_AVAILABLE = False
+    get_faa_database = None
+
 # Import the API counter function from web interface
 try:
     from web_interface_v2 import increment_api_counter
@@ -133,6 +142,10 @@ class FlightLiveManager:
         self._fallback_rate_limit = 1.0  # Minimum seconds between API calls
         
         self._init_aircraft_database()
+
+        # Initialize FAA database for definitive aircraft type classification
+        self.faa_db = None
+        self._init_faa_database()
 
         self.display_width = self.display_manager.matrix.width if hasattr(self.display_manager, 'matrix') else 128
         self.display_height = self.display_manager.matrix.height if hasattr(self.display_manager, 'matrix') else 32
@@ -340,7 +353,16 @@ class FlightLiveManager:
             'GA': 'ga.png',
             'UNK': 'unknown.png',
             'MIL_HELO': 'military_helicopter.png',
-            'STAR': 'star.png'
+            'STAR': 'star.png',
+            'GLIDER': 'glider.png',
+            'TWIN': 'twin.png',
+            'BALLOON': 'balloon.png',
+            'CHUTE': 'parachute.png',
+            'CARGO': 'cargo.png',
+            'UPS': 'ups.png',
+            'FDX': 'fedex.png',
+            'AMAZON': 'amazon.png',
+            'DHL': 'dhl.png'
         }
         
         for type_code, filename in icon_files.items():
@@ -388,6 +410,28 @@ class FlightLiveManager:
         self._load_fallback_cache()
         self._last_fallback_request = 0
         self._fallback_rate_limit = 1.0  # Minimum seconds between API calls
+
+    def _init_faa_database(self) -> None:
+        """
+        Initialize FAA database for authoritative aircraft type lookups.
+        
+        The FAA database provides definitive aircraft classification (rotorcraft vs
+        fixed-wing) eliminating false positives from heuristic-based classification.
+        """
+        if not FAA_DB_AVAILABLE:
+            self.logger.warning("faa_database module not found - using heuristic classification")
+            return
+        
+        try:
+            self.faa_db = get_faa_database()
+            if self.faa_db and self.faa_db.is_ready():
+                stats = self.faa_db.get_stats()
+                self.logger.info(f"FAA database ready: {stats.get('aircraft_count', 0):,} aircraft for type classification")
+            else:
+                self.logger.warning("FAA database not ready - run: python3 -m src.faa_database --update")
+        except Exception as e:
+            self.logger.warning(f"Failed to initialize FAA database: {e}")
+            self.faa_db = None
 
     def _lookup_aircraft_info(self, icao24: str) -> dict:
         """Look up aircraft make/model from database, with hexdb.io fallback."""
@@ -550,68 +594,92 @@ class FlightLiveManager:
             self.logger.debug(f"Fallback lookup error for {icao24}: {e}")
             return {}
 
-    def _infer_aircraft_type(self, callsign: str, altitude_ft: int, speed_knots: int) -> str:
+    def _infer_aircraft_type(self, callsign: str, altitude_ft: int, speed_knots: int, icao24: str = None) -> str:
         """
-        Infer aircraft type from callsign patterns and flight characteristics.
+        Determine aircraft type using FAA database (primary) with heuristic fallback.
+        
         Returns type_code: MIL, MIL_HELO, JET, HELO, GA, or UNK
+        
+        Priority:
+        1. Military callsign patterns (FAA DB doesn't track military)
+        2. FAA database lookup by ICAO24 or N-number (definitive for US civil aircraft)
+        3. Heuristic classification (for non-US aircraft or missing data)
+        
+        NOTE: The old "low & slow = helicopter" heuristic has been REMOVED because
+        it caused false positives (e.g., Cessna in landing pattern = not a helicopter!)
         """
         callsign = (callsign or '').upper().strip()
         
-        # Military patterns
+        # === STEP 1: Check military patterns first (FAA DB doesn't track military) ===
         military_patterns = ['REACH', 'TETON', 'EVAC', 'RESCUE', 'ARMY', 'NAVY', 
                            'GUARD', 'DUKE', 'HAWK', 'VIPER', 'RCH', 'CNV', 'PAT',
                            'IRON', 'STEEL', 'BLADE', 'SABER', 'TOPCAT', 'BOXER',
                            'KARMA', 'RAID', 'SKULL', 'BONE', 'DEATH', 'DUSTOFF']
         
-        # Helicopter patterns
         heli_patterns = ['LIFE', 'MEDEVAC', 'HELI', 'COPTER', 'AIR1', 'MERCY', 'DUSTOFF']
         
-        # Check military first
-        is_military = False
-        for pattern in military_patterns:
-            if callsign.startswith(pattern):
-                is_military = True
-                break
+        is_military = any(callsign.startswith(p) for p in military_patterns)
+        is_helo_callsign = any(p in callsign for p in heli_patterns)
         
-        # Check helicopter patterns
-        is_helo = False
-        for pattern in heli_patterns:
-            if pattern in callsign:
-                is_helo = True
-                break
-        
-        # Military helicopter (military callsign + helo indicator OR low/slow military)
         if is_military:
-            if is_helo:
+            if is_helo_callsign:
                 return 'MIL_HELO'
-            # Low and slow military = likely helicopter
+            # Low and slow military = likely helicopter (keep this heuristic for military)
             if altitude_ft and speed_knots and altitude_ft < 5000 and speed_knots < 180:
                 return 'MIL_HELO'
             return 'MIL'
         
-        # Civilian helicopter
-        if is_helo:
+        # === STEP 2: Try FAA database lookup (definitive for US civil aircraft) ===
+        if self.faa_db and self.faa_db.is_ready():
+            faa_type = self.faa_db.get_aircraft_type(icao24=icao24, callsign=callsign)
+            if faa_type:
+                # FAA database is authoritative - trust it completely!
+                # Return the type directly - includes HELO, JET, GA, TWIN, GLIDER, BALLOON, CHUTE
+                self.logger.debug(f"FAA DB: {callsign}/{icao24} -> {faa_type}")
+                return faa_type
+        
+        # === STEP 3: Fallback heuristics for non-US aircraft ===
+        
+        # Civilian helicopter callsign patterns
+        if is_helo_callsign:
             return 'HELO'
         
-        # Low & slow = likely helicopter
-        if altitude_ft and speed_knots and altitude_ft < 3000 and speed_knots < 120:
-            return 'HELO'
+        # Specific cargo carriers (check BEFORE passenger airlines!)
+        # Return carrier-specific type for branded icons
+        if callsign.startswith('UPS'):
+            return 'UPS'
+        if callsign.startswith(('FDX', 'FXE')):  # FedEx and FedEx Feeder
+            return 'FDX'
+        if callsign.startswith(('GTI', 'ATN', 'ABX')):  # Atlas/Amazon partners
+            return 'AMAZON'
+        if callsign.startswith(('DHL', 'BCS', 'DAE')):  # DHL and partners
+            return 'DHL'
         
-        # Commercial airlines
+        # Other cargo carriers -> generic cargo icon
+        other_cargo = ['KFS', 'CLX', 'MPH', 'PAC', 'SQC', 'BOX', 'GEC',
+                       'ICL', 'NCR', 'AHK', 'CAL', 'CKS', 'NCA', 'POL']
+        if any(callsign.startswith(code) for code in other_cargo):
+            return 'CARGO'
+        
+        # Commercial passenger airlines (known ICAO prefixes)
         airlines = ['AAL', 'UAL', 'DAL', 'SWA', 'JBU', 'ASA', 'FFT', 'NKS', 
-                   'SKW', 'ENY', 'RPA', 'EDV', 'FDX', 'UPS', 'GTI', 'ABX',
-                   'EJA', 'LXJ', 'XOJ', 'TVS', 'XAJ', 'LEA', 'WWI']
-        for code in airlines:
-            if callsign.startswith(code):
-                return 'JET'
+                   'SKW', 'ENY', 'RPA', 'EDV', 'EJA', 'LXJ', 'XOJ', 'TVS', 
+                   'XAJ', 'LEA', 'WWI', 'VIR', 'BAW', 'AFR', 'DLH', 'KLM']
+        if any(callsign.startswith(code) for code in airlines):
+            return 'JET'
         
         # High altitude = jet
         if altitude_ft and altitude_ft > 25000:
             return 'JET'
         
-        # N-numbers = general aviation
+        # N-numbers without FAA data = still probably GA
         if callsign.startswith('N') and len(callsign) <= 6:
             return 'GA'
+        
+        # === REMOVED: Low/slow = helicopter heuristic ===
+        # This was causing false positives for slow Cessnas in landing patterns!
+        # Without FAA data, we can't reliably distinguish fixed-wing from rotorcraft
+        # based on speed/altitude alone. Better to show 'UNK' than guess wrong.
         
         return 'UNK'
 
@@ -727,7 +795,7 @@ class FlightLiveManager:
                             'altitude_m': altitude_m,
                             'distance_km': distance_km,
                             'direction': self._calculate_bearing(lat, lon),
-                            'aircraft_type': self._infer_aircraft_type(callsign, altitude_ft, speed_knots),
+                            'aircraft_type': self._infer_aircraft_type(callsign, altitude_ft, speed_knots, icao24),
                             'display_type': aircraft_info.get('display_type'),  # e.g., "Boeing 737-824"
                             'typecode': aircraft_info.get('typecode'),          # e.g., "B738"
                             'registration': aircraft_info.get('registration'),

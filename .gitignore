@@ -50,3 +50,4 @@ config/config_secrets.json
 _archive_*
 data/aircraft.db
 data/aircraft_fallback_cache.json
+data/faa/
