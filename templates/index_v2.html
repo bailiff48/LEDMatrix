@@ -3066,6 +3066,217 @@
         }
 
 
+        // WiFi Form Handlers - Connect to network from scan list
+        async function connectToNetwork(event) {
+            event.preventDefault();
+            
+            const ssid = document.getElementById('connectSSID').textContent;
+            const password = document.getElementById('networkPassword').value;
+            const statusEl = document.getElementById('connectStatus');
+            
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+            statusEl.className = 'alert alert-info';
+            
+            try {
+                const response = await fetch('/api/wifi/connect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ssid, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusEl.innerHTML = '<i class="fas fa-check"></i> ' + data.message;
+                    statusEl.className = 'alert alert-success';
+                    showNotification('Connected to ' + ssid, 'success');
+                    
+                    // Hide form and refresh status after delay
+                    setTimeout(() => {
+                        hideConnectForm();
+                        hideNetworkList();
+                        refreshWiFiStatus();
+                    }, 2000);
+                } else {
+                    statusEl.innerHTML = '<i class="fas fa-times"></i> ' + data.message;
+                    statusEl.className = 'alert alert-danger';
+                }
+            } catch (error) {
+                statusEl.innerHTML = '<i class="fas fa-times"></i> Connection error: ' + error.message;
+                statusEl.className = 'alert alert-danger';
+            }
+        }
+        
+        // WiFi Form Handlers - Manual network entry
+        async function connectManual(event) {
+            event.preventDefault();
+            
+            const ssid = document.getElementById('manualSSID').value;
+            const password = document.getElementById('manualPassword').value;
+            const statusEl = document.getElementById('manualConnectStatus');
+            
+            if (!ssid) {
+                showNotification('Please enter a network name', 'error');
+                return;
+            }
+            
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting to ' + ssid + '...';
+            statusEl.className = 'alert alert-info';
+            
+            try {
+                const response = await fetch('/api/wifi/connect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ssid, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusEl.innerHTML = '<i class="fas fa-check"></i> ' + data.message;
+                    statusEl.className = 'alert alert-success';
+                    showNotification('Connected to ' + ssid, 'success');
+                    
+                    // Clear form and refresh status
+                    document.getElementById('manualSSID').value = '';
+                    document.getElementById('manualPassword').value = '';
+                    setTimeout(() => {
+                        statusEl.style.display = 'none';
+                        refreshWiFiStatus();
+                    }, 3000);
+                } else {
+                    statusEl.innerHTML = '<i class="fas fa-times"></i> ' + data.message;
+                    statusEl.className = 'alert alert-danger';
+                }
+            } catch (error) {
+                statusEl.innerHTML = '<i class="fas fa-times"></i> Connection error: ' + error.message;
+                statusEl.className = 'alert alert-danger';
+            }
+        }
+        
+        // Scan for available networks
+        async function scanNetworks() {
+            const networkList = document.getElementById('networkList');
+            const scanLoading = document.getElementById('networkScanLoading');
+            const listContent = document.getElementById('networkListContent');
+            
+            if (scanLoading) scanLoading.style.display = 'block';
+            if (networkList) networkList.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/wifi/scan');
+                const data = await response.json();
+                
+                if (scanLoading) scanLoading.style.display = 'none';
+                
+                if (data.success && data.networks && data.networks.length > 0) {
+                    let html = '';
+                    data.networks.forEach(network => {
+                        const signalClass = network.signal >= 70 ? 'strong' : network.signal >= 40 ? 'medium' : 'weak';
+                        const lockIcon = network.encrypted ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open"></i>';
+                        
+                        html += `
+                            <div class="network-item" onclick="selectNetwork('${network.ssid.replace(/'/g, "\'")}', ${network.encrypted})" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--card-background); border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s;">
+                                <div>
+                                    <div style="font-weight: 600;">${network.ssid}</div>
+                                    <div style="font-size: 12px; opacity: 0.7;">${lockIcon} ${network.security || 'Open'}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div><i class="fas fa-wifi"></i> ${network.signal}%</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    networkList.innerHTML = html;
+                } else {
+                    networkList.innerHTML = '<div style="padding: 20px; text-align: center; opacity: 0.7;">No networks found. Try scanning again.</div>';
+                }
+            } catch (error) {
+                if (scanLoading) scanLoading.style.display = 'none';
+                networkList.innerHTML = '<div style="padding: 20px; text-align: center; color: #ef4444;">Error scanning networks: ' + error.message + '</div>';
+            }
+        }
+        
+        // Show network selection list
+        function showNetworkList() {
+            document.getElementById('networkListCard').style.display = 'block';
+            scanNetworks();
+        }
+        
+        // Hide network selection list
+        function hideNetworkList() {
+            document.getElementById('networkListCard').style.display = 'none';
+        }
+        
+        // Select a network from scan results
+        function selectNetwork(ssid, encrypted) {
+            document.getElementById('connectSSID').textContent = ssid;
+            document.getElementById('networkPassword').value = '';
+            document.getElementById('connectStatus').style.display = 'none';
+            
+            // Show/hide password field based on encryption
+            const passwordGroup = document.getElementById('networkPassword').parentElement;
+            if (!encrypted) {
+                passwordGroup.style.display = 'none';
+                document.getElementById('networkPassword').required = false;
+            } else {
+                passwordGroup.style.display = 'block';
+                document.getElementById('networkPassword').required = true;
+            }
+            
+            document.getElementById('connectFormCard').style.display = 'block';
+            
+            // Focus password field if encrypted
+            if (encrypted) {
+                document.getElementById('networkPassword').focus();
+            }
+        }
+        
+        // Hide connection form
+        function hideConnectForm() {
+            document.getElementById('connectFormCard').style.display = 'none';
+        }
+        
+        // Forget current network
+        async function forgetNetwork() {
+            if (!confirm('Are you sure you want to forget this network? The ticker will enter setup mode.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/wifi/forget', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Network forgotten. Setup mode activated.', 'success');
+                    document.getElementById('setupModeCard').style.display = 'block';
+                    refreshWiFiStatus();
+                } else {
+                    showNotification('Error: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showNotification('Error forgetting network: ' + error.message, 'error');
+            }
+        }
+        
+        // Toggle password visibility
+        function togglePasswordVisibility() {
+            const passwordField = document.getElementById('networkPassword');
+            passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+        }
+        
+        // Toggle manual password visibility
+        function toggleManualPasswordVisibility() {
+            const passwordField = document.getElementById('manualPassword');
+            passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+        }
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             initializeSocket();
