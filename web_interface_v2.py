@@ -39,6 +39,7 @@ from src.ncaam_hockey_managers import NCAAMHockeyLiveManager, NCAAMHockeyRecentM
 from src.flight_config_api import register_flight_config_routes
 from src.golf_config_api import register_golf_config_routes
 from src.tennis_config_api import register_tennis_config_routes
+from src.stock_selector_api import register_stock_selector_routes
 from PIL import Image
 import io
 import signal
@@ -48,8 +49,27 @@ import logging
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 register_team_selector_routes(app)
+register_stock_selector_routes(app)
 wifi_manager = WiFiManager()
 register_wifi_routes(app, wifi_manager)
+
+# Auto-check WiFi on startup - start AP if no connection
+def check_wifi_on_startup():
+    """Check WiFi connection after boot, start AP mode if not connected."""
+    import logging
+    logger = logging.getLogger(__name__)
+    time.sleep(15)  # Give NetworkManager time to auto-connect
+    try:
+        conn = wifi_manager.get_current_connection()
+        if not conn.get('connected'):
+            logger.warning("No WiFi connection detected, starting AP mode for setup")
+            wifi_manager.start_ap_mode()
+        else:
+            logger.info(f"WiFi connected to {conn.get('ssid')} - {conn.get('ip_address')}")
+    except Exception as e:
+        logger.error(f"WiFi auto-config check failed: {e}")
+
+threading.Thread(target=check_wifi_on_startup, daemon=True).start()
 register_flight_config_routes(app)
 register_golf_config_routes(app)
 register_tennis_config_routes(app)
