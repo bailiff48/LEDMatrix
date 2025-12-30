@@ -1,0 +1,14 @@
+[Unit]
+Description=LED Matrix Fan Controller
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/ledpi/LEDMatrix
+ExecStart=/usr/bin/python3 /home/ledpi/LEDMatrix/src/fan_manager.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

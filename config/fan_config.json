@@ -1,7 +1,7 @@
 {
     "enabled": true,
     "gpio_pin": 12,
-    "pwm_frequency": 25,
+    "pwm_frequency": 25000,
     "temp_thresholds": {
         "off": 45,
         "low": 50,
