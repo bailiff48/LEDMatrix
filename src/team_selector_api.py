@@ -33,6 +33,10 @@ def register_team_selector_routes(app):
         'WNBA': {'config_key': 'wnba_scoreboard', 'sport_key': 'wnba'},
         'SOCCER': {'config_key': 'soccer_scoreboard', 'sport_key': 'soccer'},
         'MLS': {'config_key': 'soccer_scoreboard', 'sport_key': 'soccer'},
+        'NCAAMSOC': {'config_key': 'ncaam_soccer_scoreboard', 'sport_key': 'ncaam_soccer'},
+        'NCAAM_SOCCER': {'config_key': 'ncaam_soccer_scoreboard', 'sport_key': 'ncaam_soccer'},
+        'NCAAWSOC': {'config_key': 'ncaaw_soccer_scoreboard', 'sport_key': 'ncaaw_soccer'},
+        'NCAAW_SOCCER': {'config_key': 'ncaaw_soccer_scoreboard', 'sport_key': 'ncaaw_soccer'},
     }
 
     # Reverse mapping: config_key -> team_db league format (for loading saved teams)
@@ -48,6 +52,8 @@ def register_team_selector_routes(app):
         'ncaa_baseball_scoreboard': 'NCAAB',
         'wnba_scoreboard': 'WNBA',
         'soccer_scoreboard': 'SOCCER',
+        'ncaam_soccer_scoreboard': 'NCAAMSOC',
+        'ncaaw_soccer_scoreboard': 'NCAAWSOC',
     }
     
     @app.route('/team-selector')

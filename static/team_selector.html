@@ -210,6 +210,33 @@
             border-color: #667eea;
         }
 
+        /* A-Z Letter Filter */
+        .az-filter {
+            display: flex;
+            
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+        .az-filter-btn {
+            padding: 8px 12px;
+            min-width: 36px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: #4a5568;
+            transition: all 0.2s ease;
+        }
+        .az-filter-btn:hover { background: #edf2f7; border-color: #cbd5e0; }
+        .az-filter-btn.active { background: #667eea; color: white; border-color: #667eea; }
+        .az-filter-label { display: flex; align-items: center; font-weight: 600; color: #4a5568; margin-right: 10px; }
+
         /* Teams Grid */
         .teams-grid {
             display: grid;
@@ -244,7 +271,7 @@
         .team-card input[type="checkbox"] {
             width: 20px;
             height: 20px;
-            cursor: pointer;
+            pointer-events: none;
         }
 
         .team-info {
@@ -552,7 +579,7 @@
             </div>
 
             <!-- Filters -->
-            <div class="filters" id="filtersSection" style="display: none;">
+            <div class="filters" id="filtersSection" style="">
                 <div class="filter-group">
                     <label for="conferenceFilter">Conference</label>
                     <select id="conferenceFilter" onchange="applyFilters()">
@@ -565,6 +592,38 @@
                         <option value="">All Divisions</option>
                     </select>
                 </div>
+            </div>
+
+            <!-- A-Z Letter Filter (NCAA Soccer only) -->
+            <div class="az-filter" id="azFilter">
+                <span class="az-filter-label">Filter:</span>
+                <button class="az-filter-btn active" onclick="filterByLetter('all')">All</button>
+                <button class="az-filter-btn" onclick="filterByLetter('A')">A</button>
+                <button class="az-filter-btn" onclick="filterByLetter('B')">B</button>
+                <button class="az-filter-btn" onclick="filterByLetter('C')">C</button>
+                <button class="az-filter-btn" onclick="filterByLetter('D')">D</button>
+                <button class="az-filter-btn" onclick="filterByLetter('E')">E</button>
+                <button class="az-filter-btn" onclick="filterByLetter('F')">F</button>
+                <button class="az-filter-btn" onclick="filterByLetter('G')">G</button>
+                <button class="az-filter-btn" onclick="filterByLetter('H')">H</button>
+                <button class="az-filter-btn" onclick="filterByLetter('I')">I</button>
+                <button class="az-filter-btn" onclick="filterByLetter('J')">J</button>
+                <button class="az-filter-btn" onclick="filterByLetter('K')">K</button>
+                <button class="az-filter-btn" onclick="filterByLetter('L')">L</button>
+                <button class="az-filter-btn" onclick="filterByLetter('M')">M</button>
+                <button class="az-filter-btn" onclick="filterByLetter('N')">N</button>
+                <button class="az-filter-btn" onclick="filterByLetter('O')">O</button>
+                <button class="az-filter-btn" onclick="filterByLetter('P')">P</button>
+                <button class="az-filter-btn" onclick="filterByLetter('Q')">Q</button>
+                <button class="az-filter-btn" onclick="filterByLetter('R')">R</button>
+                <button class="az-filter-btn" onclick="filterByLetter('S')">S</button>
+                <button class="az-filter-btn" onclick="filterByLetter('T')">T</button>
+                <button class="az-filter-btn" onclick="filterByLetter('U')">U</button>
+                <button class="az-filter-btn" onclick="filterByLetter('V')">V</button>
+                <button class="az-filter-btn" onclick="filterByLetter('W')">W</button>
+                <button class="az-filter-btn" onclick="filterByLetter('X')">X</button>
+                <button class="az-filter-btn" onclick="filterByLetter('Y')">Y</button>
+                <button class="az-filter-btn" onclick="filterByLetter('Z')">Z</button>
             </div>
 
             <!-- Teams Grid -->
@@ -597,6 +656,7 @@
         let soccerLoaded = false;
         let selectedSoccerLeague = 'all';  // Track selected league filter
         let expandedCategories = new Set(['us_professional']); // Track expanded categories
+        let currentLetterFilter = 'all'; // Track A-Z filter
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', async function() {
@@ -1089,8 +1149,16 @@
             currentTeams = leagueData.teams;
 
             // Show/hide filters based on league
-            const hasConference = currentTeams.some(t => t.conference);
+            const hasConference = currentTeams.some(t => t.conference && t.conference !== 'Other/Independent' && t.conference !== '');
             document.getElementById('filtersSection').style.display = hasConference ? 'flex' : 'none';
+            
+            // Show A-Z filter for NCAA Soccer
+            const isNcaaSoccer = league.toLowerCase().includes('ncaamsoc') || league.toLowerCase().includes('ncaawsoc');
+            const azFilter = document.getElementById('azFilter');
+            if (azFilter) {
+                azFilter.classList.toggle('show', isNcaaSoccer);
+                if (!isNcaaSoccer) currentLetterFilter = 'all';
+            }
 
             if (hasConference) {
                 populateFilters();
@@ -1117,6 +1185,7 @@
         function applyFilters() {
             const conference = document.getElementById('conferenceFilter').value;
             const division = document.getElementById('divisionFilter').value;
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
 
             let filtered = currentTeams;
 
@@ -1126,6 +1195,24 @@
 
             if (division) {
                 filtered = filtered.filter(t => t.division === division);
+            }
+            
+            // Apply A-Z letter filter
+            if (currentLetterFilter && currentLetterFilter !== 'all') {
+                filtered = filtered.filter(t => {
+                    const name = t.name || t.display_name || '';
+                    return name.toUpperCase().startsWith(currentLetterFilter);
+                });
+            }
+            
+            // Apply search filter
+            if (searchQuery) {
+                filtered = filtered.filter(team =>
+                    team.name.toLowerCase().includes(searchQuery) ||
+                    team.display_name.toLowerCase().includes(searchQuery) ||
+                    team.location.toLowerCase().includes(searchQuery) ||
+                    team.abbreviation.toLowerCase().includes(searchQuery)
+                );
             }
 
             renderTeams(filtered);
@@ -1205,24 +1292,25 @@
             loadKCFavorites();
         }
 
+        // Filter by letter (A-Z)
+        function filterByLetter(letter) {
+            currentLetterFilter = letter;
+            document.querySelectorAll('.az-filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            applyFilters();
+            // Clear search when using letter filter
+            document.getElementById('searchInput').value = '';
+            applyFilters();
+        }
 
         // Search teams
         function searchTeams() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-
-            if (!query) {
-                loadLeague(currentLeague);
-                return;
-            }
-
-            const filtered = currentTeams.filter(team =>
-                team.name.toLowerCase().includes(query) ||
-                team.display_name.toLowerCase().includes(query) ||
-                team.location.toLowerCase().includes(query) ||
-                team.abbreviation.toLowerCase().includes(query)
-            );
-
-            renderTeams(filtered);
+            // Reset letter filter when searching
+            currentLetterFilter = 'all';
+            document.querySelectorAll('.az-filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.az-filter-btn').classList.add('active');
+            
+            applyFilters();
         }
 
         // Update stats

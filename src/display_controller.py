@@ -28,6 +28,7 @@ from src.wnba_managers import WNBALiveManager, WNBARecentManager, WNBAUpcomingMa
 from src.mlb_manager import MLBLiveManager, MLBRecentManager, MLBUpcomingManager
 from src.milb_manager import MiLBLiveManager, MiLBRecentManager, MiLBUpcomingManager
 from src.soccer_managers import SoccerLiveManager, SoccerRecentManager, SoccerUpcomingManager
+from src.ncaa_soccer_managers import NCAAMSoccerLiveManager, NCAAMSoccerRecentManager, NCAAMSoccerUpcomingManager, NCAAWSoccerLiveManager, NCAAWSoccerRecentManager, NCAAWSoccerUpcomingManager
 from src.nfl_managers import NFLLiveManager, NFLRecentManager, NFLUpcomingManager
 from src.ncaa_fb_managers import NCAAFBLiveManager, NCAAFBRecentManager, NCAAFBUpcomingManager
 from src.ncaa_baseball_managers import NCAABaseballLiveManager, NCAABaseballRecentManager, NCAABaseballUpcomingManager
@@ -87,6 +88,13 @@ SPORT_LABELS = {
     'soccer_live': 'SOCCER',
     'soccer_recent': 'SOCCER',
     'soccer_upcoming': 'SOCCER',
+    
+    'ncaam_soccer_live': 'NCAAMSOC',
+    'ncaam_soccer_recent': 'NCAAMSOC',
+    'ncaam_soccer_upcoming': 'NCAAMSOC',
+    'ncaaw_soccer_live': 'NCAAWSOC',
+    'ncaaw_soccer_recent': 'NCAAWSOC',
+    'ncaaw_soccer_upcoming': 'NCAAWSOC',
 }
 
 
@@ -486,6 +494,37 @@ class DisplayController:
             self.ncaaw_hockey_recent = None
             self.ncaaw_hockey_upcoming = None
         logger.info("NCAA Men's Hockey managers initialized in %.3f seconds", time.time() - ncaaw_hockey_time)
+        
+        # --- NCAA Men's Soccer managers (Plugin-ready) ---
+        ncaam_soccer_time = time.time()
+        ncaam_soccer_enabled = self.config.get('ncaam_soccer_scoreboard', {}).get('enabled', False)
+        ncaam_soccer_display_modes = self.config.get('ncaam_soccer_scoreboard', {}).get('display_modes', {})
+        
+        if ncaam_soccer_enabled:
+            self.ncaam_soccer_live = NCAAMSoccerLiveManager(self.config, self.display_manager, self.cache_manager) if ncaam_soccer_display_modes.get('ncaam_soccer_live', True) else None
+            self.ncaam_soccer_recent = NCAAMSoccerRecentManager(self.config, self.display_manager, self.cache_manager) if ncaam_soccer_display_modes.get('ncaam_soccer_recent', True) else None
+            self.ncaam_soccer_upcoming = NCAAMSoccerUpcomingManager(self.config, self.display_manager, self.cache_manager) if ncaam_soccer_display_modes.get('ncaam_soccer_upcoming', True) else None
+        else:
+            self.ncaam_soccer_live = None
+            self.ncaam_soccer_recent = None
+            self.ncaam_soccer_upcoming = None
+        logger.info("NCAA Men's Soccer managers initialized in %.3f seconds", time.time() - ncaam_soccer_time)
+
+        # --- NCAA Women's Soccer managers (Plugin-ready) ---
+        ncaaw_soccer_time = time.time()
+        ncaaw_soccer_enabled = self.config.get('ncaaw_soccer_scoreboard', {}).get('enabled', False)
+        ncaaw_soccer_display_modes = self.config.get('ncaaw_soccer_scoreboard', {}).get('display_modes', {})
+        
+        if ncaaw_soccer_enabled:
+            self.ncaaw_soccer_live = NCAAWSoccerLiveManager(self.config, self.display_manager, self.cache_manager) if ncaaw_soccer_display_modes.get('ncaaw_soccer_live', True) else None
+            self.ncaaw_soccer_recent = NCAAWSoccerRecentManager(self.config, self.display_manager, self.cache_manager) if ncaaw_soccer_display_modes.get('ncaaw_soccer_recent', True) else None
+            self.ncaaw_soccer_upcoming = NCAAWSoccerUpcomingManager(self.config, self.display_manager, self.cache_manager) if ncaaw_soccer_display_modes.get('ncaaw_soccer_upcoming', True) else None
+        else:
+            self.ncaaw_soccer_live = None
+            self.ncaaw_soccer_recent = None
+            self.ncaaw_soccer_upcoming = None
+        logger.info("NCAA Women's Soccer managers initialized in %.3f seconds", time.time() - ncaaw_soccer_time)
+
         # Build managers dict for memory cleanup
         self.managers = {
             "nhl_live": self.nhl_live, "nhl_recent": self.nhl_recent, "nhl_upcoming": self.nhl_upcoming,
@@ -494,6 +533,8 @@ class DisplayController:
             "mlb_live": self.mlb_live, "mlb_recent": self.mlb_recent, "mlb_upcoming": self.mlb_upcoming,
             "milb_live": self.milb_live, "milb_recent": self.milb_recent, "milb_upcoming": self.milb_upcoming,
             "soccer_live": self.soccer_live, "soccer_recent": self.soccer_recent, "soccer_upcoming": self.soccer_upcoming,
+            "ncaam_soccer_live": self.ncaam_soccer_live, "ncaam_soccer_recent": self.ncaam_soccer_recent, "ncaam_soccer_upcoming": self.ncaam_soccer_upcoming,
+            "ncaaw_soccer_live": self.ncaaw_soccer_live, "ncaaw_soccer_recent": self.ncaaw_soccer_recent, "ncaaw_soccer_upcoming": self.ncaaw_soccer_upcoming,
             "nfl_live": self.nfl_live, "nfl_recent": self.nfl_recent, "nfl_upcoming": self.nfl_upcoming,
             "ncaa_fb_live": self.ncaa_fb_live, "ncaa_fb_recent": self.ncaa_fb_recent, "ncaa_fb_upcoming": self.ncaa_fb_upcoming,
             "ncaa_baseball_live": self.ncaa_baseball_live, "ncaa_baseball_recent": self.ncaa_baseball_recent, "ncaa_baseball_upcoming": self.ncaa_baseball_upcoming,
@@ -596,6 +637,14 @@ class DisplayController:
         if ncaaw_hockey_enabled:
             if self.ncaaw_hockey_recent: self.available_modes.append('ncaaw_hockey_recent')
             if self.ncaaw_hockey_upcoming: self.available_modes.append('ncaaw_hockey_upcoming')
+        # NCAA Men's Soccer modes
+        if ncaam_soccer_enabled:
+            if self.ncaam_soccer_recent: self.available_modes.append('ncaam_soccer_recent')
+            if self.ncaam_soccer_upcoming: self.available_modes.append('ncaam_soccer_upcoming')
+        # NCAA Women's Soccer modes
+        if ncaaw_soccer_enabled:
+            if self.ncaaw_soccer_recent: self.available_modes.append('ncaaw_soccer_recent')
+            if self.ncaaw_soccer_upcoming: self.available_modes.append('ncaaw_soccer_upcoming')
         # Add golf and tennis to rotation if enabled
         if self.golf_manager: self.available_modes.append('golf')
         if self.tennis_manager: self.available_modes.append('tennis')
@@ -663,6 +712,18 @@ class DisplayController:
         self.ncaaw_basketball_favorite_teams = self.config.get('ncaaw_basketball_scoreboard', {}).get('favorite_teams', [])
         self.in_ncaaw_basketball_rotation = False
         
+        # NCAA Men's Soccer rotation state
+        self.ncaam_soccer_current_team_index = 0
+        self.ncaam_soccer_showing_recent = True
+        self.ncaam_soccer_favorite_teams = self.config.get('ncaam_soccer_scoreboard', {}).get('favorite_teams', [])
+        self.in_ncaam_soccer_rotation = False
+
+        # NCAA Women's Soccer rotation state
+        self.ncaaw_soccer_current_team_index = 0
+        self.ncaaw_soccer_showing_recent = True
+        self.ncaaw_soccer_favorite_teams = self.config.get('ncaaw_soccer_scoreboard', {}).get('favorite_teams', [])
+        self.in_ncaaw_soccer_rotation = False
+        
         # Update display durations to include all modes
         self.display_durations = self.config['display'].get('display_durations', {})
         # Backward-compatibility: map legacy weather keys to current keys if provided in config
@@ -725,7 +786,13 @@ class DisplayController:
             'ncaam_hockey_upcoming': 15,
             'ncaaw_hockey_live': 30, # Added NCAA Men's Hockey durations
             'ncaaw_hockey_recent': 15,
-            'ncaaw_hockey_upcoming': 15
+            'ncaaw_hockey_upcoming': 15,
+            'ncaam_soccer_live': 30,
+            'ncaam_soccer_recent': 15,
+            'ncaam_soccer_upcoming': 15,
+            'ncaaw_soccer_live': 30,
+            'ncaaw_soccer_recent': 15,
+            'ncaaw_soccer_upcoming': 15
         }
         # Merge loaded durations with defaults
         for key, value in default_durations.items():

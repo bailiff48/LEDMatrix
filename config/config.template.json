@@ -580,6 +580,56 @@
             "soccer_upcoming": true
         }
     },
+    "ncaam_soccer_scoreboard": {
+        "enabled": false,
+        "league": "usa.ncaa.m.1",
+        "live_priority": true,
+        "live_game_duration": 30,
+        "show_odds": false,
+        "test_mode": false,
+        "update_interval_seconds": 3600,
+        "live_update_interval": 30,
+        "recent_update_interval": 3600,
+        "upcoming_update_interval": 3600,
+        "recent_games_to_show": 1,
+        "upcoming_games_to_show": 1,
+        "upcoming_fetch_days": 7,
+        "show_favorite_teams_only": true,
+        "show_all_live": false,
+        "favorite_teams": [],
+        "logo_dir": "assets/sports/ncaa_soccer_logos",
+        "show_records": true,
+        "display_modes": {
+            "ncaam_soccer_live": true,
+            "ncaam_soccer_recent": true,
+            "ncaam_soccer_upcoming": true
+        }
+    },
+    "ncaaw_soccer_scoreboard": {
+        "enabled": false,
+        "league": "usa.ncaa.w.1",
+        "live_priority": true,
+        "live_game_duration": 30,
+        "show_odds": false,
+        "test_mode": false,
+        "update_interval_seconds": 3600,
+        "live_update_interval": 30,
+        "recent_update_interval": 3600,
+        "upcoming_update_interval": 3600,
+        "recent_games_to_show": 1,
+        "upcoming_games_to_show": 1,
+        "upcoming_fetch_days": 7,
+        "show_favorite_teams_only": true,
+        "show_all_live": false,
+        "favorite_teams": [],
+        "logo_dir": "assets/sports/ncaa_soccer_logos",
+        "show_records": true,
+        "display_modes": {
+            "ncaaw_soccer_live": true,
+            "ncaaw_soccer_recent": true,
+            "ncaaw_soccer_upcoming": true
+        }
+    },
     "music": {
         "enabled": false,
         "preferred_source": "ytm",

@@ -202,8 +202,10 @@ class FlightLiveManager:
             'JET': 'jet.png',
             'MIL': 'military.png',
             'HELO': 'helicopter.png',
+            'MIL_HELO': 'military_helicopter.png',  # Military helicopter
             'GA': 'ga.png',
             'UNK': 'unknown.png',
+            'STAR': 'star.png',  # Military prefix indicator
         }
         
         for icon_type, filename in icon_files.items():
@@ -314,19 +316,38 @@ class FlightLiveManager:
         Infer aircraft type from callsign and flight characteristics.
         Used as fallback when aircraft database doesn't have the aircraft.
         
-        Returns: 'MIL', 'JET', 'HELO', 'GA', or 'UNK'
+        Returns: 'MIL', 'MIL_HELO', 'JET', 'HELO', 'GA', or 'UNK'
         """
         callsign_upper = callsign.upper()
         
         # Check for military callsigns
+        is_military = False
         for mil_prefix in self.MILITARY_CALLSIGNS:
             if callsign_upper.startswith(mil_prefix):
-                return 'MIL'
+                is_military = True
+                break
         
         # Check for helicopter/medevac callsigns
+        is_helo = False
         for helo_prefix in self.HELO_CALLSIGNS:
             if helo_prefix in callsign_upper:
-                return 'HELO'
+                is_helo = True
+                break
+        
+        # Military helicopter (military + helicopter indicators)
+        if is_military and is_helo:
+            return 'MIL_HELO'
+        
+        # Military helicopter can also be inferred from low/slow military flights
+        if is_military:
+            if altitude_ft and speed_knots:
+                if altitude_ft < 5000 and speed_knots < 180:
+                    return 'MIL_HELO'
+            return 'MIL'
+        
+        # Civilian helicopter
+        if is_helo:
+            return 'HELO'
         
         # Check for airline prefixes (commercial jets)
         prefix = callsign_upper[:3]
@@ -449,10 +470,19 @@ class FlightLiveManager:
         
         tc = typecode.upper()
         
-        # Helicopters
+        # Military helicopters (common military helo typecodes)
+        if tc.startswith(('UH60', 'AH64', 'CH47', 'CH53', 'MH60', 'HH60', 'V22', 'UH1')):
+            return 'MIL_HELO'
+        
+        # Civilian helicopters
         if tc.startswith(('R22', 'R44', 'R66', 'EC', 'AS', 'B06', 'B47', 'B04', 
                          'S76', 'S92', 'A10', 'B20', 'B41', 'BK', 'MD5', 'H1')):
             return 'HELO'
+        
+        # Military jets (common military typecodes)
+        if tc.startswith(('F15', 'F16', 'F18', 'F22', 'F35', 'A10', 'B1', 'B2', 'B52',
+                         'C17', 'C5', 'C130', 'KC', 'E3', 'E8', 'P8', 'T38', 'T6')):
+            return 'MIL'
         
         # Large commercial jets
         if tc.startswith(('A3', 'A2', 'B73', 'B74', 'B75', 'B76', 'B77', 'B78', 
@@ -722,7 +752,7 @@ class FlightLiveManager:
         
         Layout:
         ┌────────────────────────────────────┐
-        │ [icon] CALLSIGN  [type]           │
+        │ [⭐][icon] CALLSIGN  [type]        │  (star shown for military)
         │        Boeing 737-824              │
         │      NE 3.1km  35000ft             │
         └────────────────────────────────────┘
@@ -747,12 +777,22 @@ class FlightLiveManager:
         aircraft_type = flight.get('aircraft_type', 'UNK')
         display_type = flight.get('display_type')  # e.g., "Boeing 737-824"
         
+        # Check if this is a military aircraft (MIL or MIL_HELO)
+        is_military = aircraft_type in ('MIL', 'MIL_HELO')
+        
         y_offset = 0
         
-        # Line 1: Icon + Callsign + Type code
+        # Line 1: [Star] + Icon + Callsign + Type code
         x_pos = 2
         
+        # Draw star icon first if military
+        if is_military and 'STAR' in self.aircraft_icons:
+            star_icon = self.aircraft_icons['STAR']
+            img.paste(star_icon, (x_pos, y_offset), star_icon if star_icon.mode == 'RGBA' else None)
+            x_pos += 14  # Star is 16px but we can overlap a bit
+        
         # Draw aircraft icon if available
+        # For military helo, use MIL_HELO icon; for regular military, use MIL icon
         icon = self.aircraft_icons.get(aircraft_type)
         if icon:
             # Paste icon (need to handle RGBA)
@@ -763,12 +803,15 @@ class FlightLiveManager:
         draw.text((x_pos, y_offset), callsign, fill=self.COLORS['orange'], font=font_large)
         
         # Draw type code on right side
-        type_badge = f"[{aircraft_type}]"
+        # Simplify display label for military types
+        type_label = 'MIL' if aircraft_type == 'MIL_HELO' else aircraft_type
+        type_badge = f"[{type_label}]"
         type_bbox = draw.textbbox((0, 0), type_badge, font=font_small)
         type_width = type_bbox[2] - type_bbox[0]
         type_color = {
             'JET': self.COLORS['cyan'],
             'MIL': self.COLORS['gold'],
+            'MIL_HELO': self.COLORS['gold'],
             'HELO': self.COLORS['skyblue'],
             'GA': self.COLORS['green'],
         }.get(aircraft_type, self.COLORS['gray'])
