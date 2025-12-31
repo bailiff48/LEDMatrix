@@ -8,24 +8,9 @@ from PIL import Image, ImageDraw, ImageFont
 import logging
 import json
 import os
+from src.aircraft_lookup import lookup_aircraft_info, infer_aircraft_type, calculate_bearing
 from pathlib import Path
 
-# Import aircraft database for make/model lookups
-try:
-    from src.aircraft_db import AircraftDatabase
-    AIRCRAFT_DB_AVAILABLE = True
-except ImportError:
-    AIRCRAFT_DB_AVAILABLE = False
-    AircraftDatabase = None
-
-# Import FAA database for authoritative aircraft type lookup
-# This provides definitive classification (no more guessing based on altitude/speed!)
-try:
-    from src.faa_database import get_faa_database
-    FAA_DB_AVAILABLE = True
-except ImportError:
-    FAA_DB_AVAILABLE = False
-    get_faa_database = None
 
 # Import the API counter function from web interface
 try:
@@ -132,20 +117,6 @@ class FlightLiveManager:
         self.aircraft_icons = {}
         self._load_aircraft_icons()
         
-        # Initialize aircraft database for make/model lookups
-        self.aircraft_db = None
-        
-        # Initialize fallback cache for hexdb.io lookups
-        self._fallback_cache = {}
-        self._fallback_cache_path = "/home/ledpi/LEDMatrix/data/aircraft_fallback_cache.json"
-        self._last_fallback_request = 0
-        self._fallback_rate_limit = 1.0  # Minimum seconds between API calls
-        
-        self._init_aircraft_database()
-
-        # Initialize FAA database for definitive aircraft type classification
-        self.faa_db = None
-        self._init_faa_database()
 
         self.display_width = self.display_manager.matrix.width if hasattr(self.display_manager, 'matrix') else 128
         self.display_height = self.display_manager.matrix.height if hasattr(self.display_manager, 'matrix') else 32
@@ -380,310 +351,6 @@ class FlightLiveManager:
         
         self.logger.info(f"Loaded {len(self.aircraft_icons)} aircraft icons")
 
-    def _init_aircraft_database(self) -> None:
-        """Initialize the aircraft database for make/model lookups."""
-        if not AIRCRAFT_DB_AVAILABLE:
-            self.logger.warning("aircraft_db module not found - make/model lookups disabled")
-            return
-        
-        db_paths = [
-            "/home/ledpi/LEDMatrix/data/aircraft.db",
-            os.path.expanduser("~/LEDMatrix/data/aircraft.db"),
-        ]
-        
-        for db_path in db_paths:
-            if os.path.exists(db_path):
-                try:
-                    self.aircraft_db = AircraftDatabase(db_path)
-                    if self.aircraft_db.is_ready():
-                        stats = self.aircraft_db.get_stats()
-                        self.logger.info(f"Aircraft database loaded: {stats.get('total_aircraft', 0):,} aircraft")
-                        return
-                except Exception as e:
-                    self.logger.warning(f"Failed to load aircraft DB: {e}")
-        
-        self.logger.warning("Aircraft database not found - run 'python3 aircraft_db.py --setup'")
-        
-        # Initialize fallback cache for hexdb.io lookups
-        self._fallback_cache = {}
-        self._fallback_cache_path = "/home/ledpi/LEDMatrix/data/aircraft_fallback_cache.json"
-        self._load_fallback_cache()
-        self._last_fallback_request = 0
-        self._fallback_rate_limit = 1.0  # Minimum seconds between API calls
-
-    def _init_faa_database(self) -> None:
-        """
-        Initialize FAA database for authoritative aircraft type lookups.
-        
-        The FAA database provides definitive aircraft classification (rotorcraft vs
-        fixed-wing) eliminating false positives from heuristic-based classification.
-        """
-        if not FAA_DB_AVAILABLE:
-            self.logger.warning("faa_database module not found - using heuristic classification")
-            return
-        
-        try:
-            self.faa_db = get_faa_database()
-            if self.faa_db and self.faa_db.is_ready():
-                stats = self.faa_db.get_stats()
-                self.logger.info(f"FAA database ready: {stats.get('aircraft_count', 0):,} aircraft for type classification")
-            else:
-                self.logger.warning("FAA database not ready - run: python3 -m src.faa_database --update")
-        except Exception as e:
-            self.logger.warning(f"Failed to initialize FAA database: {e}")
-            self.faa_db = None
-
-    def _lookup_aircraft_info(self, icao24: str) -> dict:
-        """Look up aircraft make/model from database, with hexdb.io fallback."""
-        info = None
-        
-        # Try local database first
-        if self.aircraft_db:
-            info = self.aircraft_db.lookup(icao24)
-        
-        # If not found, try fallback API
-        if not info:
-            fallback_result = self._fallback_lookup(icao24)
-            if fallback_result:
-                return fallback_result
-            return {}
-        
-        result = {}
-        manufacturer = info.get('manufacturer', '')
-        model = info.get('model', '')
-        typecode = info.get('typecode', '')
-        
-        # Build display string
-        if manufacturer and model:
-            # Shorten common manufacturer names
-            short_mfr = manufacturer.upper()
-            if 'BOEING' in short_mfr:
-                manufacturer = 'Boeing'
-            elif 'AIRBUS' in short_mfr:
-                manufacturer = 'Airbus'
-            elif 'CESSNA' in short_mfr:
-                manufacturer = 'Cessna'
-            elif 'PIPER' in short_mfr:
-                manufacturer = 'Piper'
-            elif 'EMBRAER' in short_mfr:
-                manufacturer = 'Embraer'
-            elif 'BOMBARDIER' in short_mfr:
-                manufacturer = 'Bombardier'
-            elif 'GULFSTREAM' in short_mfr:
-                manufacturer = 'Gulfstream'
-            else:
-                manufacturer = manufacturer.title()[:10]
-            
-            result['display_type'] = f"{manufacturer} {model}"
-        elif model:
-            result['display_type'] = model
-        elif typecode:
-            result['display_type'] = typecode
-        
-        result['typecode'] = typecode
-        result['registration'] = info.get('registration')
-        result['operator'] = info.get('operator')
-        
-        return result
-
-    def _load_fallback_cache(self) -> None:
-        """Load the hexdb.io fallback cache from disk."""
-        try:
-            if os.path.exists(self._fallback_cache_path):
-                with open(self._fallback_cache_path, 'r') as f:
-                    self._fallback_cache = json.load(f)
-                self.logger.info(f"Loaded {len(self._fallback_cache)} entries from fallback cache")
-        except Exception as e:
-            self.logger.warning(f"Failed to load fallback cache: {e}")
-            self._fallback_cache = {}
-
-    def _save_fallback_cache(self) -> None:
-        """Save the hexdb.io fallback cache to disk."""
-        try:
-            os.makedirs(os.path.dirname(self._fallback_cache_path), exist_ok=True)
-            with open(self._fallback_cache_path, 'w') as f:
-                json.dump(self._fallback_cache, f)
-        except Exception as e:
-            self.logger.warning(f"Failed to save fallback cache: {e}")
-
-    def _fallback_lookup(self, icao24: str) -> dict:
-        """
-        Fallback lookup using hexdb.io API when local DB misses.
-        Results are cached persistently since icao24 = same physical aircraft.
-        """
-        # Check cache first
-        if icao24 in self._fallback_cache:
-            cached = self._fallback_cache[icao24]
-            if cached:  # Could be None if previously not found
-                return cached
-            return {}
-        
-        # Rate limit - be nice to free API
-        current_time = time.time()
-        if current_time - self._last_fallback_request < self._fallback_rate_limit:
-            return {}
-        
-        try:
-            self._last_fallback_request = current_time
-            url = f"https://hexdb.io/api/v1/aircraft/{icao24}"
-            response = requests.get(url, timeout=5)
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Check for "not found" response
-                if data.get('status') == '404' or data.get('error'):
-                    self._fallback_cache[icao24] = None
-                    self._save_fallback_cache()
-                    return {}
-                
-                # Build result matching our format
-                result = {}
-                manufacturer = data.get('Manufacturer', '')
-                model = data.get('Type', '')
-                typecode = data.get('ICAOTypeCode', '')
-                
-                if manufacturer and model:
-                    # Shorten manufacturer names
-                    short_mfr = manufacturer.upper()
-                    if 'BOEING' in short_mfr:
-                        manufacturer = 'Boeing'
-                    elif 'AIRBUS' in short_mfr:
-                        manufacturer = 'Airbus'
-                    elif 'CESSNA' in short_mfr:
-                        manufacturer = 'Cessna'
-                    elif 'PIPER' in short_mfr:
-                        manufacturer = 'Piper'
-                    elif 'EMBRAER' in short_mfr:
-                        manufacturer = 'Embraer'
-                    elif 'BOMBARDIER' in short_mfr:
-                        manufacturer = 'Bombardier'
-                    elif 'GULFSTREAM' in short_mfr:
-                        manufacturer = 'Gulfstream'
-                    else:
-                        manufacturer = manufacturer.title()[:12]
-                    
-                    result['display_type'] = f"{manufacturer} {model}"
-                elif model:
-                    result['display_type'] = model
-                elif typecode:
-                    result['display_type'] = typecode
-                
-                result['typecode'] = typecode
-                result['registration'] = data.get('Registration')
-                result['operator'] = data.get('RegisteredOwners')
-                result['source'] = 'hexdb.io'
-                
-                # Cache the result
-                self._fallback_cache[icao24] = result
-                self._save_fallback_cache()
-                
-                self.logger.info(f"Fallback lookup success: {icao24} -> {result.get('display_type', 'unknown')}")
-                return result
-                
-            elif response.status_code == 404:
-                # Not found - cache the miss
-                self._fallback_cache[icao24] = None
-                self._save_fallback_cache()
-                return {}
-            else:
-                self.logger.debug(f"Fallback API returned {response.status_code}")
-                return {}
-                
-        except Exception as e:
-            self.logger.debug(f"Fallback lookup error for {icao24}: {e}")
-            return {}
-
-    def _infer_aircraft_type(self, callsign: str, altitude_ft: int, speed_knots: int, icao24: str = None) -> str:
-        """
-        Determine aircraft type using FAA database (primary) with heuristic fallback.
-        
-        Returns type_code: MIL, MIL_HELO, JET, HELO, GA, or UNK
-        
-        Priority:
-        1. Military callsign patterns (FAA DB doesn't track military)
-        2. FAA database lookup by ICAO24 or N-number (definitive for US civil aircraft)
-        3. Heuristic classification (for non-US aircraft or missing data)
-        
-        NOTE: The old "low & slow = helicopter" heuristic has been REMOVED because
-        it caused false positives (e.g., Cessna in landing pattern = not a helicopter!)
-        """
-        callsign = (callsign or '').upper().strip()
-        
-        # === STEP 1: Check military patterns first (FAA DB doesn't track military) ===
-        military_patterns = ['REACH', 'TETON', 'EVAC', 'RESCUE', 'ARMY', 'NAVY', 
-                           'GUARD', 'DUKE', 'HAWK', 'VIPER', 'RCH', 'CNV', 'PAT',
-                           'IRON', 'STEEL', 'BLADE', 'SABER', 'TOPCAT', 'BOXER',
-                           'KARMA', 'RAID', 'SKULL', 'BONE', 'DEATH', 'DUSTOFF']
-        
-        heli_patterns = ['LIFE', 'MEDEVAC', 'HELI', 'COPTER', 'AIR1', 'MERCY', 'DUSTOFF']
-        
-        is_military = any(callsign.startswith(p) for p in military_patterns)
-        is_helo_callsign = any(p in callsign for p in heli_patterns)
-        
-        if is_military:
-            if is_helo_callsign:
-                return 'MIL_HELO'
-            # Low and slow military = likely helicopter (keep this heuristic for military)
-            if altitude_ft and speed_knots and altitude_ft < 5000 and speed_knots < 180:
-                return 'MIL_HELO'
-            return 'MIL'
-        
-        # === STEP 2: Try FAA database lookup (definitive for US civil aircraft) ===
-        if self.faa_db and self.faa_db.is_ready():
-            faa_type = self.faa_db.get_aircraft_type(icao24=icao24, callsign=callsign)
-            if faa_type:
-                # FAA database is authoritative - trust it completely!
-                # Return the type directly - includes HELO, JET, GA, TWIN, GLIDER, BALLOON, CHUTE
-                self.logger.debug(f"FAA DB: {callsign}/{icao24} -> {faa_type}")
-                return faa_type
-        
-        # === STEP 3: Fallback heuristics for non-US aircraft ===
-        
-        # Civilian helicopter callsign patterns
-        if is_helo_callsign:
-            return 'HELO'
-        
-        # Specific cargo carriers (check BEFORE passenger airlines!)
-        # Return carrier-specific type for branded icons
-        if callsign.startswith('UPS'):
-            return 'UPS'
-        if callsign.startswith(('FDX', 'FXE')):  # FedEx and FedEx Feeder
-            return 'FDX'
-        if callsign.startswith(('GTI', 'ATN', 'ABX')):  # Atlas/Amazon partners
-            return 'AMAZON'
-        if callsign.startswith(('DHL', 'BCS', 'DAE')):  # DHL and partners
-            return 'DHL'
-        
-        # Other cargo carriers -> generic cargo icon
-        other_cargo = ['KFS', 'CLX', 'MPH', 'PAC', 'SQC', 'BOX', 'GEC',
-                       'ICL', 'NCR', 'AHK', 'CAL', 'CKS', 'NCA', 'POL']
-        if any(callsign.startswith(code) for code in other_cargo):
-            return 'CARGO'
-        
-        # Commercial passenger airlines (known ICAO prefixes)
-        airlines = ['AAL', 'UAL', 'DAL', 'SWA', 'JBU', 'ASA', 'FFT', 'NKS', 
-                   'SKW', 'ENY', 'RPA', 'EDV', 'EJA', 'LXJ', 'XOJ', 'TVS', 
-                   'XAJ', 'LEA', 'WWI', 'VIR', 'BAW', 'AFR', 'DLH', 'KLM']
-        if any(callsign.startswith(code) for code in airlines):
-            return 'JET'
-        
-        # High altitude = jet
-        if altitude_ft and altitude_ft > 25000:
-            return 'JET'
-        
-        # N-numbers without FAA data = still probably GA
-        if callsign.startswith('N') and len(callsign) <= 6:
-            return 'GA'
-        
-        # === REMOVED: Low/slow = helicopter heuristic ===
-        # This was causing false positives for slow Cessnas in landing patterns!
-        # Without FAA data, we can't reliably distinguish fixed-wing from rotorcraft
-        # based on speed/altitude alone. Better to show 'UNK' than guess wrong.
-        
-        return 'UNK'
-
-
     
     def _fetch_flights_internal(self) -> None:
         """
@@ -786,7 +453,7 @@ class FlightLiveManager:
                         speed_knots = int(velocity * 1.94384) if velocity else None
                         
                         # Look up aircraft info from database
-                        aircraft_info = self._lookup_aircraft_info(icao24)
+                        aircraft_info = lookup_aircraft_info(icao24)
                         
                         new_live_flights.append({
                             'icao24': icao24,
@@ -794,8 +461,8 @@ class FlightLiveManager:
                             'altitude_ft': altitude_ft,
                             'altitude_m': altitude_m,
                             'distance_km': distance_km,
-                            'direction': self._calculate_bearing(lat, lon),
-                            'aircraft_type': self._infer_aircraft_type(callsign, altitude_ft, speed_knots, icao24),
+                            'direction': calculate_bearing(self.home_lat, self.home_lon, lat, lon),
+                            'aircraft_type': infer_aircraft_type(callsign, altitude_ft, speed_knots, icao24),
                             'display_type': aircraft_info.get('display_type'),  # e.g., "Boeing 737-824"
                             'typecode': aircraft_info.get('typecode'),          # e.g., "B738"
                             'registration': aircraft_info.get('registration'),
