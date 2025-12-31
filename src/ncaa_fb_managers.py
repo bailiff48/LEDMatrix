@@ -12,6 +12,13 @@ from src.base_classes.sports import SportsRecent, SportsUpcoming
 from src.base_classes.football import Football, FootballLive
 from pathlib import Path
 
+# Rankings service for AP Top 25 / CFP support
+try:
+    from rankings_service import RankingsService
+    RANKINGS_AVAILABLE = True
+except ImportError:
+    RANKINGS_AVAILABLE = False
+
 # Import the API counter function from web interface
 try:
     from web_interface_v2 import increment_api_counter
@@ -79,6 +86,16 @@ class BaseNCAAFBManager(Football):
     def __init__(self, config: Dict[str, Any], display_manager: DisplayManager, cache_manager: CacheManager):
         self.logger = logging.getLogger('NCAAFB')
         super().__init__(config=config, display_manager=display_manager, cache_manager=cache_manager, logger=self.logger, sport_key="ncaa_fb")
+
+        # Expand ranking tokens (AP_TOP_25, CFP_TOP_12, etc.) in favorite_teams
+        if RANKINGS_AVAILABLE and self.favorite_teams:
+            original_count = len(self.favorite_teams)
+            self.favorite_teams = RankingsService.expand_favorite_teams(
+                self.favorite_teams,
+                'ncaa_fb'
+            )
+            if len(self.favorite_teams) != original_count:
+                self.logger.info(f"Expanded favorites from {original_count} to {len(self.favorite_teams)} teams (AP/CFP rankings)")
         
         # Check display modes to determine what data to fetch
         display_modes = self.mode_config.get("display_modes", {})

@@ -13,6 +13,14 @@ from src.base_classes.sports import SportsRecent, SportsUpcoming
 from src.cache_manager import CacheManager
 from src.display_manager import DisplayManager
 
+# Rankings service for AP Top 25 support
+try:
+    from src.rankings_service import RankingsService
+    RANKINGS_AVAILABLE = True
+except ImportError:
+    RANKINGS_AVAILABLE = False
+
+
 # Import the API counter function from web interface
 try:
     from web_interface_v2 import increment_api_counter
@@ -96,6 +104,17 @@ class BaseNCAAWBasketballManager(Basketball):
             logger=self.logger,
             sport_key="ncaaw_basketball",
         )
+
+        # Expand ranking tokens (AP_TOP_25, AP_TOP_10) if rankings service available
+        if RANKINGS_AVAILABLE and hasattr(self, 'favorite_teams') and self.favorite_teams:
+            original_count = len(self.favorite_teams)
+            self.favorite_teams = RankingsService.expand_favorite_teams(
+                self.favorite_teams, 
+                'ncaaw_basketball'
+            )
+            if len(self.favorite_teams) != original_count:
+                self.logger.info(f"Expanded favorites from {original_count} to {len(self.favorite_teams)} teams")
+
 
         # Check display modes to determine what data to fetch
         display_modes = self.mode_config.get("display_modes", {})
