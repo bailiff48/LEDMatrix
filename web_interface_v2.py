@@ -39,6 +39,7 @@ from src.ncaam_hockey_managers import NCAAMHockeyLiveManager, NCAAMHockeyRecentM
 from src.flight_config_api import register_flight_config_routes
 from src.golf_config_api import register_golf_config_routes
 from src.tennis_config_api import register_tennis_config_routes
+from src.flight_check_api import register_flight_check_routes
 from src.stock_selector_api import register_stock_selector_routes
 from PIL import Image
 import io
@@ -73,6 +74,7 @@ threading.Thread(target=check_wifi_on_startup, daemon=True).start()
 register_flight_config_routes(app)
 register_golf_config_routes(app)
 register_tennis_config_routes(app)
+register_flight_check_routes(app)
 
 
 # Custom Jinja2 filter for safe nested dictionary access

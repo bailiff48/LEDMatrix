@@ -1617,9 +1617,11 @@
                     <div class="config-section">
                         <div style="display:flex; justify-content: space-between; align-items:center;">
                             <h3>Flight Tracker Configuration</h3>
-                            <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-primary" onclick="testFlightConnection()"><i class="fas fa-wifi"></i> Test Connection</button>
-                                <button type="button" class="btn btn-primary" onclick="loadFlightStatus()"><i class="fas fa-sync"></i> Refresh Status</button>
+                            <div style="display:flex; gap:8px; flex-wrap: wrap;">
+                                <button type="button" class="btn btn-primary" onclick="checkOverhead()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                                    <i class="fas fa-plane"></i> What's Overhead?
+                                </button>
+                                <button type="button" class="btn btn-info" onclick="testFlightConnection()">
                             </div>
                         </div>
                         
@@ -5295,7 +5297,70 @@
                 showNotification('Error saving tennis settings', 'error');
             }
         });
+        // ========================================
+        // What's Overhead? Feature
+        // ========================================
+        function checkOverhead() {
+            const modal = document.getElementById('overheadModal');
+            modal.style.display = 'flex';
+            document.getElementById('overheadContent').innerHTML = '<div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-spin fa-2x" style="color:#667eea;"></i><p style="margin-top:15px; color:#666;">Checking for aircraft...</p></div>';
+            document.getElementById('overheadMeta').style.display = 'none';
+    
+            fetch('/api/flights/current')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        document.getElementById('overheadContent').innerHTML = '<div style="text-align:center; padding:30px; color:#e74c3c;"><i class="fas fa-exclamation-circle fa-2x"></i><p style="margin-top:15px;">' + (data.error || 'Failed to check flights') + '</p></div>';
+                                return;
+                    }
+                    if (data.count === 0) {
+                        document.getElementById('overheadContent').innerHTML = '<div style="text-align:center; padding:30px;"><i class="fas fa-cloud fa-3x" style="color:#bdc3c7;"></i><p style="margin-top:15px; font-size:1.1rem; color:#666;">Clear skies!</p><p style="color:#999;">No aircraft currently within ' + data.radius_miles + ' miles</p></div>';
+                    } else {
+                        let html = '<div style="margin-bottom:15px; padding:10px; background:#e8f5e9; border-radius:8px; color:#2e7d32;"><i class="fas fa-plane"></i> <strong>' + data.count + '</strong> aircraft within ' + data.radius_miles + ' miles</div><div style="display:flex; flex-direction:column; gap:12px;">';
+                        data.flights.forEach(function(flight) {
+                            html += '<div style="background:#f8f9fa; border-radius:8px; padding:15px; border-left:4px solid #667eea;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><span style="font-size:1.3rem; font-weight:bold; color:#2c3e50; font-family:monospace;">' + (flight.callsign || 'Unknown') + '</span><span style="background:#667eea; color:white; padding:3px 10px; border-radius:12px; font-size:0.8rem;">' + flight.direction + '</span></div><div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; font-size:0.9rem; color:#666;"><div><i class="fas fa-ruler" style="color:#667eea;"></i> ' + flight.distance_miles + ' mi</div><div><i class="fas fa-mountain" style="color:#667eea;"></i> ' + flight.altitude_ft.toLocaleString() + ' ft</div><div><i class="fas fa-tachometer-alt" style="color:#667eea;"></i> ' + flight.speed_knots + ' kts</div></div></div>';
+                        });
+                        html += '</div>';
+                        document.getElementById('overheadContent').innerHTML = html;
+                    }
+                    document.getElementById('overheadRadius').textContent = 'Radius: ' + data.radius_miles + ' miles';
+                    document.getElementById('overheadTime').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+                    document.getElementById('overheadMeta').style.display = 'block';
+                })
+                .catch(function(error) {
+                    document.getElementById('overheadContent').innerHTML = '<div style="text-align:center; padding:30px; color:#e74c3c;"><i class="fas fa-exclamation-triangle fa-2x"></i><p style="margin-top:15px;">Error: ' + error.message + '</p></div>';
+                });
+        }
+
+        function closeOverheadModal() {
+            document.getElementById('overheadModal').style.display = 'none';
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target === document.getElementById('overheadModal')) closeOverheadModal();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeOverheadModal();
+        });
     </script>
+<!-- What's Overhead Modal -->
+<div id="overheadModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; justify-content:center; align-items:center;">
+    <div style="background:white; border-radius:12px; padding:25px; max-width:600px; width:90%; max-height:80vh; overflow-y:auto; position:relative;">
+        <button onclick="closeOverheadModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:24px; cursor:pointer; color:#666;">&times;</button>
+        <h2 style="margin-bottom:20px; color:#2c3e50; display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-plane" style="color:#667eea;"></i> Aircraft Overhead
+        </h2>
+        <div id="overheadContent">
+            <div style="text-align:center; padding:40px;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color:#667eea;"></i>
+                <p style="margin-top:15px; color:#666;">Checking for aircraft...</p>
+            </div>
+        </div>
+        <div id="overheadMeta" style="margin-top:20px; padding-top:15px; border-top:1px solid #eee; font-size:0.85rem; color:#888; display:none;">
+            <span id="overheadRadius"></span> • <span id="overheadTime"></span>
+        </div>
+    </div>
+</div>
 </body>
 <script>
 // Smart Duration Toggle Logic
