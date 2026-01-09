@@ -276,7 +276,7 @@
             border-radius: var(--border-radius);
             padding: 20px;
             box-shadow: var(--shadow);
-            max-width: 1200px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
@@ -286,7 +286,7 @@
             padding: 20px;
             box-shadow: var(--shadow);
             margin-bottom: 20px;
-            max-width: 1200px;
+            max-width: 1600px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -889,6 +889,7 @@
                 <button class="btn btn-primary" onclick="systemAction('migrate_config')"><i class="fas fa-sync-alt"></i> Migrate Config</button>
                 <button class="btn btn-danger" onclick="systemAction('reboot_system')"><i class="fas fa-power-off"></i> Reboot</button>
                 <button class="btn btn-secondary" onclick="stopOnDemand()"><i class="fas fa-ban"></i> Stop On-Demand</button>
+                <button class="btn btn-primary" onclick="checkOverhead()"><i class="fas fa-plane"></i> What's Overhead?</button>
                 <span id="ondemand-status" style="margin-left:auto; font-size:12px; color:#333; background:#f3f3f3; padding:6px 10px; border-radius:8px;">On-Demand: None</span>
             </div>
             <div style="margin-top:12px; color:#666; font-size:12px;">Service actions may require sudo privileges on the Pi. Migrate Config adds new options with defaults while preserving your settings.</div>
@@ -905,7 +906,7 @@
         <!-- Main Grid -->
         <div class="main-grid">
             <!-- Display Panel -->
-            <div class="display-panel" style="max-width: 1200px; margin: 0 auto;">
+            <div class="display-panel" style="max-width: 1600px; margin: 0 auto;">
                 <h2><i class="fas fa-desktop"></i> Live Display Preview</h2>
                 <div class="display-preview" id="displayPreview">
                     <div id="previewStage" class="preview-stage" style="display:none;">

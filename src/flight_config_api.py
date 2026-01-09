@@ -29,13 +29,13 @@ _oauth_state = {
     'token_expiry': 0
 }
 
-# Cache for on-demand flight lookups (30 second TTL)
+# Cache for on-demand flight lookups
 _flight_cache = {
     'data': None,
     'timestamp': 0,
-    'ttl': 30
+    'ttl': 30,
+    'last_request': 0  # Track when button was last pressed
 }
-
 
 def _refresh_oauth_token(client_id: str, client_secret: str) -> bool:
     """Refresh OAuth2 access token using client credentials flow."""
@@ -342,13 +342,18 @@ def register_flight_config_routes(app):
             client_secret = flight_config.get('opensky_client_secret', '')
             min_altitude_m = flight_config.get('min_altitude_m', 500)
             
-            # Check cache
+            # Check cache - but force refresh if button hasn't been pressed in 30+ sec
             current_time = time.time()
+            time_since_last_request = current_time - _flight_cache['last_request']
+            _flight_cache['last_request'] = current_time  # Update last request time
+
+            # Use cache only if: data exists, cache is fresh, AND button was pressed recently
             if (_flight_cache['data'] is not None and 
-                current_time - _flight_cache['timestamp'] < _flight_cache['ttl']):
-                logger.debug("Returning cached flight data")
-                return jsonify(_flight_cache['data'])
-            
+                current_time - _flight_cache['timestamp'] < _flight_cache['ttl'] and
+                time_since_last_request < 30):
+                logger.debug("Returning cached flight data (rapid request)")
+                return jsonify(_flight_cache['data'])            
+
             # Refresh OAuth token
             if not _refresh_oauth_token(client_id, client_secret):
                 return jsonify({
