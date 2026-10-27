@@ -105,3 +105,38 @@ def test_filter_ignored_falls_back_to_unfiltered():
     s = _Session(_Resp(200, empty), _Resp(200, FIX["weeks"]["7"]))
     assert _provider(s).fetch_matchup(7)["me"]["points"] == 109.0
     assert "X-Fantasy-Filter" not in s.calls[1][1]["headers"]
+
+
+def test_settings_carry_team_names_for_lean_matchups():
+    s = parse_settings(FIX["settings"])
+    lean = json.loads(json.dumps(FIX["weeks"]["7"]))
+    names = {t["id"]: t for t in lean.pop("teams")}
+    teams = {tid: {"name": t["name"], "abbrev": t["abbrev"], "record": "5-2"} for tid, t in names.items()}
+    m = parse_matchup(lean, 14, 7, teams=teams)
+    assert m["me"]["abbrev"] == "BMF" and m["me"]["record"] == "5-2"
+    assert isinstance(s["teams"], dict)
+
+
+def test_lean_views_without_rosters_fall_back_to_full_once():
+    no_rosters = json.loads(json.dumps(FIX["weeks"]["7"]))
+    for side in ("home", "away"):
+        no_rosters["schedule"][0][side].pop("rosterForCurrentScoringPeriod")
+    s = _Session(_Resp(200, no_rosters), _Resp(200, FIX["weeks"]["7"]), _Resp(200, FIX["weeks"]["7"]))
+    p = _provider(s)
+    assert p.fetch_matchup(7)["me"]["points"] == 109.0
+    views = [[v for k, v in c[1]["params"] if k == "view"] for c in s.calls]
+    assert views[0] == ["mMatchupScore", "mScoreboard"]
+    assert "mBoxscore" in views[1]
+    p.fetch_matchup(7)
+    assert "mBoxscore" in [v for k, v in s.calls[2][1]["params"] if k == "view"]
+
+
+def test_same_last_name_gets_first_name_prefix():
+    from providers.base import disambiguate
+    ps = [{"id": 1, "name": "Mike Washington Jr.", "short": "WASHINGTON"},
+          {"id": 2, "name": "Malik Washington", "short": "WASHINGTON"},
+          {"id": 3, "name": "Joe Burrow", "short": "BURROW"},
+          {"id": 4, "name": "Jaylen Smith", "short": "SMITH"},
+          {"id": 5, "name": "Tyler Smith", "short": "SMITH"}]
+    disambiguate(ps)
+    assert [p["short"] for p in ps] == ["MI.WASHINGTON", "MA.WASHINGTON", "BURROW", "J.SMITH", "T.SMITH"]

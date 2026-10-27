@@ -5,15 +5,23 @@ score under this league's settings, and the starters add up to the team
 total ESPN shows (verified on league 265444, week 7: 109.0 = 109.0).
 
 Private leagues need the ``espn_s2`` and ``SWID`` cookies from a signed-in
-browser. One request per refresh: the matchup views, filtered to this week's
-matchup period so the response is small (the unfiltered views are ~12 MB).
+browser.
+
+Request sizes (league 265444, Oct 27 2026): ESPN ignores X-Fantasy-Filter,
+and ``mMatchup`` + ``mBoxscore`` + ``mScoreboard`` together came back at
+~6 MB per call. So the live poll asks for the lean pair
+``mMatchupScore`` + ``mScoreboard`` (what the python espn-api box scores use)
+and team names/records come from the daily settings call (``mTeam``). If the
+lean views ever come back without rosters, the provider falls back to the
+full set once and remembers it. ``tools/espn_size_probe.py`` measures every
+variant on a Pi.
 """
 
 import json
 import logging
 from typing import Any, Dict, List, Optional
 
-from .base import AuthError, LeagueProvider, ProviderError, short_name
+from .base import AuthError, LeagueProvider, ProviderError, disambiguate, short_name
 
 logger = logging.getLogger(__name__)
 
@@ -35,9 +43,18 @@ NFL_TEAMS = {0: "FA", 1: "ATL", 2: "BUF", 3: "CHI", 4: "CIN", 5: "CLE", 6: "DAL"
              29: "CAR", 30: "JAX", 33: "BAL", 34: "HOU"}
 ACTUAL, PROJECTED = 0, 1  # statSourceId
 
+LEAN_VIEWS = ["mMatchupScore", "mScoreboard"]
+FULL_VIEWS = ["mMatchup", "mMatchupScore", "mBoxscore", "mScoreboard"]
+SETTINGS_VIEWS = ["mSettings", "mStatus", "mTeam"]
+
 
 class EspnProvider(LeagueProvider):
     name = "espn"
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.views = list(LEAN_VIEWS)
+        self.last_response_bytes = 0
 
     def _get(self, views: List[str], week: Optional[int] = None,
              matchup_period: Optional[int] = None) -> Dict[str, Any]:
@@ -61,40 +78,91 @@ class EspnProvider(LeagueProvider):
         if resp.status_code == 404:
             raise ProviderError(f"ESPN league {self.league_id} not found for {self.season}")
         resp.raise_for_status()
+        self.last_response_bytes = len(getattr(resp, "content", b"") or b"")
         return resp.json()
 
     # ------------------------------------------------------------------
 
     def fetch_settings(self) -> Dict[str, Any]:
-        """League name, current week and lineup. Changes rarely; cache daily."""
-        data = self._get(["mSettings", "mStatus"])
+        """League name, current week, lineup and team names. Cache daily."""
+        data = self._get(SETTINGS_VIEWS)
         return parse_settings(data)
 
     def current_week(self) -> int:
         return self.fetch_settings()["week"]
 
-    def fetch_matchup(self, week: int, league_name: str = "") -> Dict[str, Any]:
-        views = ["mMatchup", "mMatchupScore", "mBoxscore", "mScoreboard"]
-        data = self._get(views, week=week, matchup_period=week)
+    def fetch_matchup(self, week: int, league_name: str = "",
+                      teams: Optional[Dict[Any, Dict[str, Any]]] = None,
+                      scoring_period: Optional[int] = None) -> Dict[str, Any]:
+        """My matchup for matchup period ``week``.
+
+        ``teams`` (from fetch_settings) fills in names and records the lean
+        views leave out. ``scoring_period`` is the NFL week whose player
+        points to show; it differs from ``week`` only in two-week playoff
+        rounds.
+        """
+        period = int(scoring_period or week)
+        data = self._get(self.views, week=period, matchup_period=week)
         if not any(g.get("matchupPeriodId") == week for g in data.get("schedule") or []):
-            # Filter ignored or a playoff period numbered differently: retry unfiltered.
-            data = self._get(views, week=week)
+            # A playoff period numbered differently: retry without the filter.
+            data = self._get(self.views, week=period)
+        if self.views != FULL_VIEWS and not _has_rosters(data, self.team_id, week):
+            logger.warning("ESPN league %s: lean views had no rosters; using full views",
+                           self.league_id)
+            self.views = list(FULL_VIEWS)
+            data = self._get(self.views, week=period, matchup_period=week)
         return parse_matchup(data, self.team_id, week, league_id=self.league_id,
-                             season=self.season, league_name=league_name)
+                             season=self.season, league_name=league_name, teams=teams,
+                             scoring_period=period)
 
 
 # ----------------------------------------------------------------------
 # parsing (pure functions, tested against a recorded response)
 # ----------------------------------------------------------------------
 
+def _my_game(data: Dict[str, Any], team_id: int, week: int) -> Optional[Dict[str, Any]]:
+    for g in data.get("schedule") or []:
+        if g.get("matchupPeriodId") != week:
+            continue
+        ids = ((g.get("home") or {}).get("teamId"), (g.get("away") or {}).get("teamId"))
+        if team_id in ids:
+            return g
+    return None
+
+
+def _has_rosters(data: Dict[str, Any], team_id: Any, week: int) -> bool:
+    game = _my_game(data, int(team_id), week)
+    if game is None:
+        return True  # nothing to compare; let parse_matchup report it
+    side = game.get("home") or {}
+    return bool((side.get("rosterForCurrentScoringPeriod") or {}).get("entries"))
+
+
+def parse_teams(data: Dict[str, Any]) -> Dict[int, Dict[str, Any]]:
+    out = {}
+    for t in data.get("teams") or []:
+        if t.get("id") is None:
+            continue
+        overall = ((t.get("record") or {}).get("overall") or {})
+        rec = f"{int(overall.get('wins') or 0)}-{int(overall.get('losses') or 0)}"
+        if overall.get("ties"):
+            rec += f"-{int(overall['ties'])}"
+        name = t.get("name") or " ".join(x for x in (t.get("location"), t.get("nickname")) if x)
+        out[int(t["id"])] = {"name": str(name or ""), "abbrev": str(t.get("abbrev") or ""),
+                             "record": rec if overall else ""}
+    return out
+
 def parse_settings(data: Dict[str, Any]) -> Dict[str, Any]:
     settings = data.get("settings") or {}
     status = data.get("status") or {}
     week = int(status.get("currentMatchupPeriod") or data.get("scoringPeriodId") or 1)
     slots = (settings.get("rosterSettings") or {}).get("lineupSlotCounts") or {}
+    periods = ((settings.get("scheduleSettings") or {}).get("matchupPeriods") or {})
     return {
         "name": str(settings.get("name") or ""),
         "week": week,
+        "teams": parse_teams(data),
+        "matchup_periods": {int(k): [int(x) for x in v] for k, v in periods.items()},
         "latest_scoring_period": int(status.get("latestScoringPeriod") or week),
         "final_week": int(status.get("finalScoringPeriod") or 17),
         "lineup": {SLOTS.get(int(k), k): int(v) for k, v in slots.items()
@@ -103,21 +171,21 @@ def parse_settings(data: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def parse_matchup(data: Dict[str, Any], team_id: Any, week: int, league_id: str = "",
-                  season: int = 0, league_name: str = "") -> Dict[str, Any]:
+                  season: int = 0, league_name: str = "",
+                  teams: Optional[Dict[Any, Dict[str, Any]]] = None,
+                  scoring_period: Optional[int] = None) -> Dict[str, Any]:
     team_id = int(team_id)
-    teams = {t.get("id"): t for t in data.get("teams") or []}
-    game = None
-    for g in data.get("schedule") or []:
-        if g.get("matchupPeriodId") != week:
-            continue
-        ids = ((g.get("home") or {}).get("teamId"), (g.get("away") or {}).get("teamId"))
-        if team_id in ids:
-            game = g
-            break
+    known = {int(k): v for k, v in (teams or {}).items()}
+    for tid, fresh in parse_teams(data).items():  # this response's own values win
+        known[tid] = {**known.get(tid, {}), **{k: v for k, v in fresh.items() if v}}
+    game = _my_game(data, team_id, week)
     if game is None:
         raise ProviderError(f"No week {week} matchup for team {team_id} (bye or wrong team id?)")
     home, away = game.get("home") or {}, game.get("away") or {}
     mine, theirs = (home, away) if home.get("teamId") == team_id else (away, home)
+    period = int(scoring_period or week)
+    me, opp = _side(mine, known, period), _side(theirs, known, period)
+    disambiguate(me["starters"] + me["bench"] + opp["starters"] + opp["bench"])
     return {
         "provider": "espn",
         "league_id": str(league_id),
@@ -125,18 +193,14 @@ def parse_matchup(data: Dict[str, Any], team_id: Any, week: int, league_id: str 
         "season": season,
         "week": week,
         "final": str(game.get("winner") or "UNDECIDED") != "UNDECIDED",
-        "me": _side(mine, teams, week),
-        "opp": _side(theirs, teams, week),
+        "me": me,
+        "opp": opp,
     }
 
 
 def _side(side: Dict[str, Any], teams: Dict[Any, Dict[str, Any]], week: int) -> Dict[str, Any]:
     tid = side.get("teamId")
     team = teams.get(tid) or {}
-    overall = ((team.get("record") or {}).get("overall") or {})
-    record = f"{int(overall.get('wins') or 0)}-{int(overall.get('losses') or 0)}"
-    if overall.get("ties"):
-        record += f"-{int(overall['ties'])}"
     starters, bench = [], []
     entries = (side.get("rosterForCurrentScoringPeriod") or {}).get("entries") or []
     for e in entries:
@@ -155,7 +219,7 @@ def _side(side: Dict[str, Any], teams: Dict[Any, Dict[str, Any]], week: int) -> 
         "team_id": tid,
         "name": str(team.get("name") or f"TEAM {tid}"),
         "abbrev": str(team.get("abbrev") or ""),
-        "record": record,
+        "record": team.get("record") or "",
         "points": round(float(points or 0.0), 2),
         "projected": round(float(projected), 2) if projected is not None else None,
         "starters": starters,

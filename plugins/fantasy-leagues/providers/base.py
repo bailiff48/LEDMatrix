@@ -60,3 +60,34 @@ def short_name(full: str) -> str:
         return full[:-4].strip().upper()
     parts = [p for p in full.split() if p.rstrip(".").upper() not in ("JR", "SR", "II", "III", "IV", "V")]
     return (parts[-1] if parts else full).upper()
+
+
+_SUFFIXES = ("JR", "SR", "II", "III", "IV", "V")
+
+
+def _given(full: str) -> str:
+    parts = [p for p in (full or "").split() if p.rstrip(".").upper() not in _SUFFIXES]
+    return "".join(ch for ch in (parts[0] if len(parts) > 1 else "") if ch.isalpha()).upper()
+
+
+def disambiguate(players) -> None:
+    """Give players who share a short name a first-name prefix, in place.
+
+    'Mike Washington Jr.' + 'Malik Washington' -> 'MI.WASHINGTON' /
+    'MA.WASHINGTON'; one letter is used when it is enough ('J.SMITH').
+    D/ST and anyone without a first name are left alone.
+    """
+    groups = {}
+    for p in players:
+        groups.setdefault(p.get("short"), []).append(p)
+    for short, same in groups.items():
+        if len(same) < 2 or len({p.get("id") for p in same}) < 2:
+            continue
+        givens = [_given(p.get("name", "")) for p in same]
+        for n in range(1, 4):
+            prefixes = [g[:n] for g in givens]
+            if all(prefixes) and len(set(prefixes)) == len(prefixes):
+                break
+        for p, pre in zip(same, prefixes):
+            if pre:
+                p["short"] = f"{pre}.{short}"
