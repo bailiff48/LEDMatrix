@@ -56,3 +56,7 @@ data/faa/
 config/wifi_status.json
 logs/*.log
 *.bak*
+config/wifi_setup_request
+config/wifi_setup_state.json
+config/wifi_status.tmp
+config/.web_requirements.sha256

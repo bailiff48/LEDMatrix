@@ -1,4 +1,6 @@
 import src.espn_date_range_fix  # ESPN date-range workaround (Oct 2026)
+import threading
+from src import wifi_status_display  # Wi-Fi setup messages (Oct 2026)
 import time
 import gc
 import logging
@@ -1670,6 +1672,18 @@ class DisplayController:
             self.display_manager.cleanup()
             return
              
+        # Wi-Fi setup messages: until the main loop starts, a helper thread draws
+        # them (the first data fetch can take minutes with no network).
+        self._wifi_loop_started = False
+        def _wifi_status_until_loop():
+            while not self._wifi_loop_started:
+                try:
+                    wifi_status_display.show(self.display_manager)
+                except Exception:
+                    pass
+                time.sleep(1)
+        threading.Thread(target=_wifi_status_until_loop, daemon=True).start()
+
         try:
             logger.info("Clearing cache and refetching data to prevent stale data issues...")
             self.cache_manager.clear_cache()
@@ -1677,8 +1691,18 @@ class DisplayController:
             logger.info("Cache cleared, waiting 30 seconds for fresh data fetch...")
             time.sleep(30)
             self.current_display_mode = self.available_modes[self.current_mode_index] if self.available_modes else 'none'
+            self._wifi_loop_started = True
             while True:
                 current_time = time.time()
+
+                # Wi-Fi setup in progress: show its instructions instead of the rotation
+                if wifi_status_display.show(self.display_manager):
+                    self._showing_wifi_status = True
+                    time.sleep(1)
+                    continue
+                if getattr(self, "_showing_wifi_status", False):
+                    self._showing_wifi_status = False
+                    self.force_clear = True
 
                 # Check the schedule (no config reload needed)
                 self._check_schedule()

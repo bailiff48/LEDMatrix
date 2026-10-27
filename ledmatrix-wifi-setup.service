@@ -1,0 +1,16 @@
+[Unit]
+Description=LED Matrix Wi-Fi setup (TickerSetup hotspot when there is no network)
+After=NetworkManager.service
+Wants=NetworkManager.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/ledpi/LEDMatrix
+ExecStart=/usr/bin/python3 /home/ledpi/LEDMatrix/src/wifi_setup_service.py
+Restart=always
+RestartSec=10
+SyslogIdentifier=ledmatrix-wifi-setup
+
+[Install]
+WantedBy=multi-user.target

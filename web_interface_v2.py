@@ -53,23 +53,7 @@ register_stock_selector_routes(app)
 wifi_manager = WiFiManager()
 register_wifi_routes(app, wifi_manager)
 
-# Auto-check WiFi on startup - start AP if no connection
-def check_wifi_on_startup():
-    """Check WiFi connection after boot, start AP mode if not connected."""
-    import logging
-    logger = logging.getLogger(__name__)
-    time.sleep(15)  # Give NetworkManager time to auto-connect
-    try:
-        conn = wifi_manager.get_current_connection()
-        if not conn.get('connected'):
-            logger.warning("No WiFi connection detected, starting AP mode for setup")
-            wifi_manager.start_ap_mode()
-        else:
-            logger.info(f"WiFi connected to {conn.get('ssid')} - {conn.get('ip_address')}")
-    except Exception as e:
-        logger.error(f"WiFi auto-config check failed: {e}")
-
-threading.Thread(target=check_wifi_on_startup, daemon=True).start()
+# Wi-Fi setup mode (hotspot) is run by ledmatrix-wifi-setup.service, not the web UI.
 register_flight_config_routes(app)
 register_golf_config_routes(app)
 register_tennis_config_routes(app)

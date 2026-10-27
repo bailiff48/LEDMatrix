@@ -20,13 +20,16 @@ class WiFiManager:
     # Constants
     AP_SSID = "TickerSetup"
     AP_PASSWORD = "ledticker"  # Required by Broadcom WiFi chip - simple and memorable
-    AP_IP = "192.168.4.1"
-    CONFIG_FILE = Path.home() / "LEDMatrix" / "config" / "wifi_config.json"
+    AP_IP = "192.168.4.1"  # set by ledmatrix-wifi-setup
+    # Project paths (services run as root, so Path.home() would be /root)
+    PROJECT_DIR = Path(__file__).resolve().parent.parent
+    CONFIG_FILE = PROJECT_DIR / "config" / "wifi_config.json"
+    SETUP_REQUEST_FILE = PROJECT_DIR / "config" / "wifi_setup_request"
     CONNECTION_TIMEOUT = 60  # seconds to wait for connection
     WIFI_INTERFACE = "wlan0"
     
     # LED message queue (will be read by display_controller)
-    LED_MESSAGE_FILE = Path.home() / "LEDMatrix" / "config" / "wifi_status.json"
+    LED_MESSAGE_FILE = PROJECT_DIR / "config" / "wifi_status.json"
     
     def __init__(self, led_display=None):
         """
@@ -52,9 +55,9 @@ class WiFiManager:
         """
         try:
             status = {
-                'message': message,
+                'pages': [['WIFI', message]],
                 'timestamp': time.time(),
-                'duration': duration
+                'ttl': duration
             }
             self.LED_MESSAGE_FILE.parent.mkdir(parents=True, exist_ok=True)
             with open(self.LED_MESSAGE_FILE, 'w') as f:
@@ -311,78 +314,19 @@ class WiFiManager:
     
     def start_ap_mode(self) -> bool:
         """
-        Start WiFi Access Point mode for configuration.
-        Creates an open network that users can connect to for setup.
-        
-        Returns:
-            True if AP mode started successfully
+        Ask ledmatrix-wifi-setup.service to start setup mode (TickerSetup hotspot).
+        That service owns the hotspot, the setup page on port 80 and the panel
+        messages; doing it here as well made the two fight.
         """
         try:
-            logger.info(f"Starting AP mode: {self.AP_SSID}")
-            self.show_led_message(f"WiFi Setup", duration=3)
-            time.sleep(3)
-            self.show_led_message(f"Connect to: {self.AP_SSID}", duration=5)
-            time.sleep(5)
-            self.show_led_message(f"Password: {self.AP_PASSWORD}", duration=10)
-            
-            # Stop any existing connection
-            self.disconnect()
-            time.sleep(1)
-            
-            # Delete any existing hotspot connections
-            subprocess.run(
-                ['nmcli', 'connection', 'delete', 'Hotspot'],
-                capture_output=True,
-                timeout=10
-            )
-            subprocess.run(
-                ['nmcli', 'connection', 'delete', 'TickerSetup-AP'],
-                capture_output=True,
-                timeout=10
-            )
-            
-            # Use the simple hotspot command (works best with Broadcom chips)
-            logger.info("Creating hotspot with nmcli...")
-            cmd = [
-                'nmcli', 'device', 'wifi', 'hotspot',
-                'ifname', self.WIFI_INTERFACE,
-                'con-name', 'Hotspot',
-                'ssid', self.AP_SSID,
-                'band', 'bg'  # 2.4GHz for maximum compatibility
-            ]
-            
-            if self.AP_PASSWORD:
-                cmd.extend(['password', self.AP_PASSWORD])
-            
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
-            
-            if result.returncode == 0:
-                logger.info(f"AP mode started: {self.AP_SSID}")
-                time.sleep(2)
-                
-                # Verify hotspot is running
-                status = self.get_ap_status()
-                if status.get('active'):
-                    logger.info(f"AP mode confirmed active at {self.AP_IP}")
-                    return True
-                else:
-                    logger.error("AP mode started but not verified")
-                    return False
-            else:
-                logger.error(f"Failed to start AP mode: {result.stderr}")
-                self.show_led_message("AP mode failed", duration=5)
-                return False
-                
+            self.SETUP_REQUEST_FILE.parent.mkdir(parents=True, exist_ok=True)
+            self.SETUP_REQUEST_FILE.write_text(str(time.time()))
+            logger.info("Requested Wi-Fi setup mode from ledmatrix-wifi-setup")
+            return True
         except Exception as e:
-            logger.error(f"Error starting AP mode: {e}")
-            self.show_led_message("Setup mode error", duration=5)
+            logger.error(f"Could not request setup mode: {e}")
             return False
-    
+
     def stop_ap_mode(self):
         """Stop Access Point mode."""
         try:
@@ -438,7 +382,7 @@ class WiFiManager:
             
             for line in result.stdout.strip().split('\n'):
                 parts = line.split(':')
-                if len(parts) >= 2 and 'hotspot' in parts[1].lower():
+                if parts and parts[0] in ('TickerSetup-AP', 'Hotspot'):
                     return {
                         'active': True,
                         'ssid': self.AP_SSID,

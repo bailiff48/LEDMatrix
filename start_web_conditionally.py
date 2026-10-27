@@ -8,13 +8,42 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(PROJECT_DIR, 'config', 'config.json')
 WEB_INTERFACE_SCRIPT = os.path.join(PROJECT_DIR, 'web_interface_v2.py')
 
+STAMP_FILE = os.path.join(PROJECT_DIR, 'config', '.web_requirements.sha256')
+
+
+def _requirements_hash():
+    import hashlib
+    try:
+        with open(os.path.join(PROJECT_DIR, 'requirements_web_v2.txt'), 'rb') as f:
+            return hashlib.sha256(f.read()).hexdigest()
+    except OSError:
+        return None
+
+
+def requirements_changed():
+    try:
+        with open(STAMP_FILE) as f:
+            return f.read().strip() != _requirements_hash()
+    except OSError:
+        return True
+
+
+def mark_requirements_installed():
+    try:
+        with open(STAMP_FILE, 'w') as f:
+            f.write(_requirements_hash() or '')
+    except OSError as e:
+        print(f"Could not write {STAMP_FILE}: {e}")
+
+
 def install_dependencies():
     """Install required dependencies using system Python."""
     print("Installing dependencies...")
     try:
         requirements_file = os.path.join(PROJECT_DIR, 'requirements_web_v2.txt')
         subprocess.check_call([
-            sys.executable, '-m', 'pip', 'install', '--break-system-packages', '-r', requirements_file
+            sys.executable, '-m', 'pip', 'install', '--break-system-packages',
+            '--retries', '1', '--timeout', '15', '-r', requirements_file
         ])
         print("Dependencies installed successfully")
         
@@ -48,10 +77,15 @@ def main():
     if autostart_enabled is True: # Explicitly check for True
         print("Configuration 'web_display_autostart' is true. Starting web interface...")
         
-        # Install dependencies
-        if not install_dependencies():
-            print("Failed to install dependencies. Exiting.")
-            sys.exit(1)
+        # Install dependencies only when requirements changed, and never let a
+        # failure (e.g. no internet during Wi-Fi setup) stop the web UI starting.
+        if requirements_changed():
+            if install_dependencies():
+                mark_requirements_installed()
+            else:
+                print("Dependency install failed; starting the web interface anyway.")
+        else:
+            print("Dependencies unchanged since last install; skipping pip.")
         
         try:
             # Replace the current process with web_interface.py using system Python
