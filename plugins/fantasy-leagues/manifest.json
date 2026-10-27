@@ -1,7 +1,7 @@
 {
   "id": "fantasy-leagues",
   "name": "Fantasy Leagues",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "bailiff48",
   "description": "Your own fantasy football leagues: a my-leagues summary, each matchup with live league points and projections, your starters page by page, and a big-play alert when one of your starters (or your opponent's) scores. ESPN (private leagues with cookies) now, Yahoo next.",
   "entry_point": "manager.py",

@@ -7,14 +7,16 @@ total ESPN shows (verified on league 265444, week 7: 109.0 = 109.0).
 Private leagues need the ``espn_s2`` and ``SWID`` cookies from a signed-in
 browser.
 
-Request sizes (league 265444, Oct 27 2026): ESPN ignores X-Fantasy-Filter,
-and ``mMatchup`` + ``mBoxscore`` + ``mScoreboard`` together came back at
-~6 MB per call. So the live poll asks for the lean pair
-``mMatchupScore`` + ``mScoreboard`` (what the python espn-api box scores use)
-and team names/records come from the daily settings call (``mTeam``). If the
-lean views ever come back without rosters, the provider falls back to the
-full set once and remembers it. ``tools/espn_size_probe.py`` measures every
-variant on a Pi.
+Request sizes (league 265444, Oct 27 2026, KB per live poll): the old
+``mMatchup`` + ``mMatchupScore`` + ``mBoxscore`` + ``mScoreboard`` set was
+5045; the lean pair ``mMatchupScore`` + ``mScoreboard`` (what the python
+espn-api box scores use) 397; the lean pair with an X-Fantasy-Filter on
+``filterMatchupPeriodIds`` + ``filterTeamIds`` 67, with both rosters of my one
+game. So the live poll asks for that, and team names/records come from the
+daily settings call (``mTeam``). If the filtered reply is missing my game the
+provider asks again unfiltered; if the lean views ever come back without
+rosters it falls back to the full set once and remembers it.
+``tools/espn_size_probe.py`` measures every variant on a Pi.
 """
 
 import json
@@ -57,14 +59,17 @@ class EspnProvider(LeagueProvider):
         self.last_response_bytes = 0
 
     def _get(self, views: List[str], week: Optional[int] = None,
-             matchup_period: Optional[int] = None) -> Dict[str, Any]:
+             matchup_period: Optional[int] = None,
+             team_id: Optional[int] = None) -> Dict[str, Any]:
         params = [("view", v) for v in views]
         if week:
             params.append(("scoringPeriodId", int(week)))
         headers = {"User-Agent": "ledmatrix-fantasy-leagues"}
         if matchup_period:
-            headers["X-Fantasy-Filter"] = json.dumps(
-                {"schedule": {"filterMatchupPeriodIds": {"value": [int(matchup_period)]}}})
+            schedule: Dict[str, Any] = {"filterMatchupPeriodIds": {"value": [int(matchup_period)]}}
+            if team_id is not None:
+                schedule["filterTeamIds"] = {"value": [int(team_id)]}
+            headers["X-Fantasy-Filter"] = json.dumps({"schedule": schedule})
         cookies = None
         s2, swid = self.credentials.get("espn_s2"), self.credentials.get("swid")
         if s2 and swid:
@@ -88,6 +93,11 @@ class EspnProvider(LeagueProvider):
         data = self._get(SETTINGS_VIEWS)
         return parse_settings(data)
 
+    def fetch_league_info(self) -> Dict[str, Any]:
+        """For the web page's Test button: league name, week and every team,
+        with the signed-in user's own team marked when the SWID owns one."""
+        return league_info(self._get(SETTINGS_VIEWS), self.credentials.get("swid", ""))
+
     def current_week(self) -> int:
         return self.fetch_settings()["week"]
 
@@ -102,15 +112,17 @@ class EspnProvider(LeagueProvider):
         rounds.
         """
         period = int(scoring_period or week)
-        data = self._get(self.views, week=period, matchup_period=week)
-        if not any(g.get("matchupPeriodId") == week for g in data.get("schedule") or []):
-            # A playoff period numbered differently: retry without the filter.
+        team = int(self.team_id)
+        data = self._get(self.views, week=period, matchup_period=week, team_id=team)
+        if _my_game(data, team, week) is None:
+            # A playoff period numbered differently, or a filter ESPN did not
+            # honour: retry without the filter.
             data = self._get(self.views, week=period)
         if self.views != FULL_VIEWS and not _has_rosters(data, self.team_id, week):
             logger.warning("ESPN league %s: lean views had no rosters; using full views",
                            self.league_id)
             self.views = list(FULL_VIEWS)
-            data = self._get(self.views, week=period, matchup_period=week)
+            data = self._get(self.views, week=period, matchup_period=week, team_id=team)
         return parse_matchup(data, self.team_id, week, league_id=self.league_id,
                              season=self.season, league_name=league_name, teams=teams,
                              scoring_period=period)
@@ -151,6 +163,31 @@ def parse_teams(data: Dict[str, Any]) -> Dict[int, Dict[str, Any]]:
         out[int(t["id"])] = {"name": str(name or ""), "abbrev": str(t.get("abbrev") or ""),
                              "record": rec if overall else ""}
     return out
+
+def _swid_key(value: Any) -> str:
+    return str(value or "").strip().strip("{}").upper()
+
+
+def league_info(data: Dict[str, Any], swid: str = "") -> Dict[str, Any]:
+    """League name, season, week and teams (id, name, abbrev, mine) from a
+    settings reply. ``mine`` is set when ``swid`` is one of the team's owners."""
+    settings = parse_settings(data)
+    me = _swid_key(swid)
+    teams = []
+    for t in data.get("teams") or []:
+        if t.get("id") is None:
+            continue
+        owners = [_swid_key(o) for o in (t.get("owners") or [])]
+        if t.get("primaryOwner"):
+            owners.append(_swid_key(t["primaryOwner"]))
+        info = settings["teams"].get(int(t["id"]), {})
+        teams.append({"id": int(t["id"]), "name": info.get("name", ""),
+                      "abbrev": info.get("abbrev", ""), "record": info.get("record", ""),
+                      "mine": bool(me) and me in owners})
+    teams.sort(key=lambda x: x["id"])
+    return {"name": settings["name"], "season": int(data.get("seasonId") or 0) or None,
+            "week": settings["week"], "teams": teams}
+
 
 def parse_settings(data: Dict[str, Any]) -> Dict[str, Any]:
     settings = data.get("settings") or {}

@@ -83,14 +83,14 @@ def _provider(session):
     return EspnProvider("265444", 2026, 14, {"espn_s2": "s2", "swid": "{X}"}, session=session)
 
 
-def test_request_is_filtered_to_one_matchup_period_with_cookies():
+def test_request_is_filtered_to_my_game_with_cookies():
     s = _Session(_Resp(200, FIX["weeks"]["7"]))
     m = _provider(s).fetch_matchup(7, league_name="Urbandale Jaycees")
     url, kw = s.calls[0]
     assert url.endswith("/seasons/2026/segments/0/leagues/265444")
     assert ("scoringPeriodId", 7) in kw["params"]
     assert json.loads(kw["headers"]["X-Fantasy-Filter"]) == {
-        "schedule": {"filterMatchupPeriodIds": {"value": [7]}}}
+        "schedule": {"filterMatchupPeriodIds": {"value": [7]}, "filterTeamIds": {"value": [14]}}}
     assert kw["cookies"] == {"espn_s2": "s2", "SWID": "{X}"}
     assert m["league_name"] == "Urbandale Jaycees" and len(s.calls) == 1
 
@@ -140,3 +140,38 @@ def test_same_last_name_gets_first_name_prefix():
           {"id": 5, "name": "Tyler Smith", "short": "SMITH"}]
     disambiguate(ps)
     assert [p["short"] for p in ps] == ["MI.WASHINGTON", "MA.WASHINGTON", "BURROW", "J.SMITH", "T.SMITH"]
+
+
+def test_filtered_reply_without_my_game_retries_unfiltered():
+    other = json.loads(json.dumps(FIX["weeks"]["7"]))
+    for g in other["schedule"]:
+        for side in ("home", "away"):
+            if (g.get(side) or {}).get("teamId") == 14:
+                g[side]["teamId"] = 99
+    s = _Session(_Resp(200, other), _Resp(200, FIX["weeks"]["7"]))
+    assert _provider(s).fetch_matchup(7)["me"]["points"] == 109.0
+    assert "X-Fantasy-Filter" not in s.calls[1][1]["headers"]
+
+
+def test_string_team_id_is_sent_as_a_number():
+    s = _Session(_Resp(200, FIX["weeks"]["7"]))
+    EspnProvider("265444", 2026, "14", {}, session=s).fetch_matchup(7)
+    flt = json.loads(s.calls[0][1]["headers"]["X-Fantasy-Filter"])
+    assert flt["schedule"]["filterTeamIds"] == {"value": [14]}
+    assert s.calls[0][1]["cookies"] is None
+
+
+def test_league_info_marks_the_signed_in_users_team():
+    from providers.espn import league_info
+    data = json.loads(json.dumps(FIX["settings"]))
+    data["seasonId"] = 2026
+    data["teams"] = [
+        {"id": 3, "name": "Other Guys", "abbrev": "OG", "owners": ["{AAAA-1}"]},
+        {"id": 14, "location": "Big", "nickname": "Money", "abbrev": "BMF",
+         "owners": ["{bbbb-2}"], "record": {"overall": {"wins": 5, "losses": 2}}},
+    ]
+    info = league_info(data, "{BBBB-2}")
+    assert info["season"] == 2026 and info["name"] == parse_settings(FIX["settings"])["name"]
+    assert [t["id"] for t in info["teams"] if t["mine"]] == [14]
+    assert info["teams"][1]["name"] == "Big Money" and info["teams"][1]["record"] == "5-2"
+    assert not any(t["mine"] for t in league_info(data, "")["teams"])

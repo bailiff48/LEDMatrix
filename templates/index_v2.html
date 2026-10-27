@@ -841,6 +841,94 @@
 .duration-toggle-switch input:checked + .duration-slider:before { transform: translateX(26px); }
 .duration-input:disabled { background-color: #e2e8f0 !important; cursor: not-allowed !important; opacity: 0.6; }
 .duration-input:disabled + label { opacity: 0.6; }
+
+        /* ---------- Fantasy tab ---------- */
+        .fx-section h3 { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .fx-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .fx-note { color: #555; margin: 0 0 14px; line-height: 1.45; }
+        .fx-hint { color: #777; font-size: 0.85rem; margin-top: 6px; }
+        .fx-muted { color: #777; }
+        .fx-label { display: block; font-weight: 600; margin: 4px 0 6px; }
+        .fx-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85rem; }
+        .fx-dirty { background: #fff4e0; color: #9a5b00; border: 1px solid #f3c77a; padding: 3px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+        .fx-presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 18px; }
+        .fx-preset { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left;
+            padding: 10px 12px; border: 2px solid var(--border-color); border-radius: var(--border-radius);
+            background: #fff; font: inherit; font-weight: 600; color: var(--text-color); cursor: pointer; transition: border-color .2s, background .2s; }
+        .fx-preset small { font-weight: 400; color: #777; font-size: 0.78rem; }
+        .fx-preset:hover { border-color: var(--secondary-color); }
+        .fx-preset.active { border-color: var(--secondary-color); background: #eaf4fc; }
+        .fx-preset:focus-visible { outline: 3px solid #9ccbf0; outline-offset: 1px; }
+        .fx-preset-custom { cursor: default; opacity: .45; }
+        .fx-preset-custom.active { opacity: 1; border-style: dashed; }
+        .fx-group { margin-bottom: 16px; }
+        .fx-group-title { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .06em; color: #777; font-weight: 700; margin: 0 0 6px; }
+        .fx-screen { display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px; background: #fff;
+            border: 1px solid #e3e6e8; border-radius: var(--border-radius); margin-bottom: 6px; cursor: pointer; }
+        .fx-screen input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--secondary-color); flex: none; cursor: pointer; }
+        .fx-screen-text { display: flex; flex-direction: column; gap: 2px; }
+        .fx-screen-name { font-weight: 600; }
+        .fx-screen-help { color: #666; font-size: 0.85rem; line-height: 1.35; }
+        .fx-tag { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: #fdecea; color: #b03a2e; font-size: 0.72rem; font-weight: 600; vertical-align: 1px; }
+        .fx-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+        .fx-btn-plain { background: #fff; color: var(--text-color); border: 1px solid var(--border-color); }
+        .fx-btn-plain:hover { border-color: var(--secondary-color); }
+        .fx-btn-sm { padding: 6px 12px; font-size: 0.82rem; }
+        .fx-btn-danger-plain { background: #fff; color: var(--accent-color); border: 1px solid #f1b8b1; }
+        .fx-btn-danger-plain:hover { background: #fdecea; }
+        .fx-chip { display: inline-block; padding: 2px 7px; border-radius: 4px; color: #fff; font-size: 0.72rem; font-weight: 800; letter-spacing: .04em; }
+        .fx-chip-espn { background: #d00; }
+        .fx-chip-yahoo { background: #6001d2; }
+        .fx-leagues { margin-bottom: 18px; }
+        .fx-league { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 12px; background: #fff;
+            border: 1px solid #e3e6e8; border-radius: var(--border-radius); margin-bottom: 8px; }
+        .fx-league-name { font-weight: 700; }
+        .fx-league-sub { color: #666; font-size: 0.85rem; }
+        .fx-league-btns { display: flex; gap: 6px; }
+        .fx-status { font-size: 0.85rem; margin-top: 4px; }
+        .fx-ok { color: var(--success-color); }
+        .fx-bad { color: var(--accent-color); }
+        .fx-warn { color: #9a5b00; }
+        .fx-empty { padding: 16px; text-align: center; color: #666; background: #fff; border: 1px dashed var(--border-color); border-radius: var(--border-radius); }
+        .fx-add { border-top: 1px solid #e3e6e8; padding-top: 14px; }
+        .fx-add h4 { margin-bottom: 10px; }
+        .fx-site-pick { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+        .fx-site { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        .fx-site-off { opacity: .55; cursor: not-allowed; }
+        .fx-site em { color: #777; font-size: 0.8rem; }
+        .fx-inline { display: flex; gap: 8px; }
+        .fx-inline .form-control { flex: 1; min-width: 0; }
+        .fx-found, .fx-result { margin-top: 12px; padding: 12px; border-radius: var(--border-radius); background: #fff; border: 1px solid #e3e6e8; }
+        .fx-found select { margin: 6px 0 10px; }
+        .fx-espn-status { margin-bottom: 10px; }
+        .fx-connect summary { cursor: pointer; font-weight: 600; color: var(--secondary-color); padding: 6px 0; }
+        .fx-connect[open] summary { margin-bottom: 10px; }
+        .fx-steps { margin: 0 0 14px 20px; line-height: 1.6; }
+        .fx-steps kbd { border: 1px solid #bbb; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-size: 0.8rem; background: #fff; }
+        .fx-steps code { background: #eef1f3; padding: 1px 5px; border-radius: 3px; }
+        .fx-figure { margin: 0 0 16px; }
+        .fx-figure figcaption { color: #666; font-size: 0.82rem; margin-top: 6px; }
+        .fx-devtools { width: 100%; max-width: 640px; height: auto; display: block; }
+        .fxd-bg { fill: #ffffff; stroke: #cfd4d8; }
+        .fxd-bar { fill: #f1f3f4; }
+        .fxd-side { fill: #f8f9fa; }
+        .fxd-tab { font: 12px system-ui, sans-serif; fill: #5f6368; }
+        .fxd-tab-on { fill: #1a73e8; font-weight: 600; }
+        .fxd-tree { font: 12px system-ui, sans-serif; fill: #3c4043; }
+        .fxd-col { font: bold 12px system-ui, sans-serif; fill: #3c4043; }
+        .fxd-mono { font: 12px ui-monospace, Menlo, Consolas, monospace; fill: #3c4043; }
+        .fxd-strong { font-weight: 700; fill: #b03a2e; }
+        .fxd-cap { font: italic 12px system-ui, sans-serif; fill: #777; }
+        .fxd-line { stroke: #dadce0; }
+        .fxd-input { fill: #fff; stroke: #1a73e8; stroke-width: 1.5; }
+        .fxd-hl-box { fill: #e8f0fe; stroke: #1a73e8; stroke-width: 1.5; }
+        .fxd-hl-row { fill: #fff4e0; stroke: #f39c12; stroke-width: 1.5; }
+        .fxd-num { fill: #f39c12; }
+        .fxd-numtxt { font: bold 12px system-ui, sans-serif; fill: #fff; text-anchor: middle; }
+        @media (max-width: 600px) {
+            .fx-league { grid-template-columns: 1fr; }
+            .fx-inline { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
@@ -992,6 +1080,9 @@
                     </button>
                     <button class="tab-btn" onclick="showTab('tennis')">
                         <i class="fas fa-table-tennis"></i> Tennis
+                    </button>
+                    <button class="tab-btn" onclick="showTab('fantasy')">
+                        <i class="fas fa-football-ball"></i> Fantasy
                     </button>
                     <button class="tab-btn" onclick="showTab('wifi')">
                         <i class="fas fa-wifi"></i> WiFi
@@ -1944,6 +2035,126 @@
                         <div id="tennis-status-display">
                             <p style="color: var(--warning-color);"><i class="fas fa-spinner fa-spin"></i> Loading status...</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Fantasy Tab -->
+                <div id="fantasy" class="tab-content">
+                    <div class="config-section fx-section">
+                        <div class="fx-head">
+                            <h3><i class="fas fa-tv"></i> What shows on the panel</h3>
+                            <span id="fx-dirty" class="fx-dirty" hidden>Unsaved changes</span>
+                        </div>
+                        <p class="fx-note">Pick a starting point, then turn single screens on or off. This covers every fantasy screen on this display.</p>
+                        <div class="fx-presets" id="fx-presets" role="radiogroup" aria-label="Screen presets">
+                            <button type="button" class="fx-preset" data-preset="off" role="radio">Off<small>No fantasy screens</small></button>
+                            <button type="button" class="fx-preset" data-preset="essentials" role="radio">Essentials<small>My leagues + the basics</small></button>
+                            <button type="button" class="fx-preset" data-preset="standard" role="radio">Standard<small>Adds the fun NFL-wide screens</small></button>
+                            <button type="button" class="fx-preset" data-preset="everything" role="radio">Everything<small>Every screen available here</small></button>
+                            <span class="fx-preset fx-preset-custom" data-preset="custom">Custom<small>Your own mix</small></span>
+                        </div>
+                        <div id="fx-screens" class="fx-screens">
+                            <p class="fx-muted"><i class="fas fa-spinner fa-spin"></i> Loading…</p>
+                        </div>
+                        <div class="fx-actions">
+                            <button type="button" class="btn btn-success" id="fx-save-screens" onclick="fxSaveScreens()">
+                                <i class="fas fa-save"></i> Save and restart display
+                            </button>
+                            <button type="button" class="btn fx-btn-plain" onclick="loadFantasy()">
+                                <i class="fas fa-undo"></i> Undo changes
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="config-section fx-section">
+                        <div class="fx-head">
+                            <h3><i class="fas fa-trophy"></i> My leagues</h3>
+                            <button type="button" class="btn fx-btn-plain fx-btn-sm" onclick="fxTestAll()"><i class="fas fa-sync"></i> Test all</button>
+                        </div>
+                        <div id="fx-leagues" class="fx-leagues">
+                            <p class="fx-muted"><i class="fas fa-spinner fa-spin"></i> Loading…</p>
+                        </div>
+
+                        <div class="fx-add">
+                            <h4>Add a league</h4>
+                            <div class="fx-site-pick">
+                                <label class="fx-site"><input type="radio" name="fx-site" value="espn" checked> <span class="fx-chip fx-chip-espn">ESPN</span></label>
+                                <label class="fx-site fx-site-off" title="Coming soon"><input type="radio" name="fx-site" value="yahoo" disabled> <span class="fx-chip fx-chip-yahoo">YAHOO</span> <em>coming soon</em></label>
+                            </div>
+                            <label for="fx-url" class="fx-label">Paste your league's link from ESPN</label>
+                            <div class="fx-inline">
+                                <input type="text" id="fx-url" class="form-control" placeholder="https://fantasy.espn.com/football/team?leagueId=…&amp;teamId=…" autocomplete="off">
+                                <button type="button" class="btn btn-primary" id="fx-find" onclick="fxFindLeague()"><i class="fas fa-search"></i> Find league</button>
+                            </div>
+                            <p class="fx-hint">Open your team on fantasy.espn.com and copy the address bar. A bare league number works too.</p>
+                            <div id="fx-found" class="fx-found" hidden></div>
+                        </div>
+                    </div>
+
+                    <div class="config-section fx-section" id="fx-espn-section">
+                        <div class="fx-head">
+                            <h3><span class="fx-chip fx-chip-espn">ESPN</span> ESPN sign-in</h3>
+                        </div>
+                        <div id="fx-espn-status" class="fx-espn-status"></div>
+                        <details id="fx-connect" class="fx-connect">
+                            <summary><i class="fas fa-link"></i> <span id="fx-connect-title">Connect ESPN</span></summary>
+                            <p class="fx-note">Private ESPN leagues need two cookies from a computer that is signed in to ESPN Fantasy. They stay on this Pi and are only sent to ESPN. A phone won't work for this step.</p>
+                            <ol class="fx-steps">
+                                <li>On a computer, open <strong>fantasy.espn.com</strong> in Chrome or Edge and sign in.</li>
+                                <li>Press <kbd>F12</kbd> (Mac: <kbd>Cmd</kbd>+<kbd>Option</kbd>+<kbd>I</kbd>) to open Developer Tools.</li>
+                                <li>Click the <strong>Application</strong> tab (it may be behind <strong>»</strong>). In the left list open <strong>Cookies</strong> and click <strong>https://fantasy.espn.com</strong>.</li>
+                                <li>Type <code>espn_s2</code> in the filter box. Double-click its <strong>Value</strong>, copy it all, and paste it below. Do the same for <code>SWID</code>.</li>
+                            </ol>
+                            <figure class="fx-figure">
+                                <svg viewBox="0 0 640 250" role="img" aria-labelledby="fx-fig-title" class="fx-devtools">
+                                    <title id="fx-fig-title">Developer Tools: Application tab, Cookies, fantasy.espn.com, with the espn_s2 and SWID rows highlighted</title>
+                                    <rect x="0" y="0" width="640" height="250" rx="8" class="fxd-bg"/>
+                                    <rect x="0" y="0" width="640" height="30" rx="8" class="fxd-bar"/>
+                                    <text x="16" y="20" class="fxd-tab">Elements</text>
+                                    <text x="92" y="20" class="fxd-tab">Console</text>
+                                    <text x="162" y="20" class="fxd-tab">Network</text>
+                                    <rect x="228" y="4" width="92" height="26" rx="4" class="fxd-hl-box"/>
+                                    <text x="238" y="21" class="fxd-tab fxd-tab-on">Application</text>
+                                    <circle cx="334" cy="17" r="10" class="fxd-num"/><text x="334" y="21" class="fxd-numtxt">3</text>
+                                    <rect x="0" y="30" width="190" height="220" class="fxd-side"/>
+                                    <text x="14" y="62" class="fxd-tree">▸ Storage</text>
+                                    <text x="14" y="86" class="fxd-tree">▾ Cookies</text>
+                                    <rect x="20" y="96" width="166" height="22" rx="3" class="fxd-hl-box"/>
+                                    <text x="30" y="111" class="fxd-tree fxd-tab-on">https://fantasy.espn.com</text>
+                                    <text x="30" y="136" class="fxd-tree">https://www.espn.com</text>
+                                    <rect x="200" y="40" width="200" height="22" rx="3" class="fxd-input"/>
+                                    <text x="210" y="55" class="fxd-mono">Filter: espn_s2</text>
+                                    <circle cx="414" cy="51" r="10" class="fxd-num"/><text x="414" y="55" class="fxd-numtxt">4</text>
+                                    <text x="208" y="86" class="fxd-col">Name</text>
+                                    <text x="300" y="86" class="fxd-col">Value</text>
+                                    <line x1="200" y1="92" x2="630" y2="92" class="fxd-line"/>
+                                    <text x="208" y="112" class="fxd-mono">country</text>
+                                    <text x="300" y="112" class="fxd-mono">us</text>
+                                    <rect x="200" y="120" width="430" height="24" rx="3" class="fxd-hl-row"/>
+                                    <text x="208" y="137" class="fxd-mono fxd-strong">espn_s2</text>
+                                    <text x="300" y="137" class="fxd-mono">AEBx7k%2FqZ…(long, copy it all)…%3D</text>
+                                    <rect x="200" y="150" width="430" height="24" rx="3" class="fxd-hl-row"/>
+                                    <text x="208" y="167" class="fxd-mono fxd-strong">SWID</text>
+                                    <text x="300" y="167" class="fxd-mono">{1A2B3C4D-1A2B-1A2B-1A2B-1A2B3C4D5E6F}</text>
+                                    <text x="208" y="196" class="fxd-mono">s_ecid</text>
+                                    <text x="300" y="196" class="fxd-mono">MCMID%7C0921…</text>
+                                    <text x="208" y="232" class="fxd-cap">Double-click a Value to select it, then copy.</text>
+                                </svg>
+                                <figcaption>Firefox: the same cookies are under <strong>Storage</strong> instead of Application. Safari: turn on Develop in Settings › Advanced first.</figcaption>
+                            </figure>
+                            <div class="form-group">
+                                <label for="fx-s2" class="fx-label">espn_s2</label>
+                                <textarea id="fx-s2" class="form-control fx-mono" rows="3" spellcheck="false" autocomplete="off" placeholder="AEB… (a long string)"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="fx-swid" class="fx-label">SWID</label>
+                                <input type="text" id="fx-swid" class="form-control fx-mono" spellcheck="false" autocomplete="off" placeholder="{1A2B3C4D-1A2B-1A2B-1A2B-1A2B3C4D5E6F}">
+                            </div>
+                            <div class="fx-actions">
+                                <button type="button" class="btn btn-success" id="fx-connect-btn" onclick="fxConnectEspn()"><i class="fas fa-check"></i> Check and save</button>
+                            </div>
+                            <div id="fx-connect-result" class="fx-result" hidden></div>
+                        </details>
                     </div>
                 </div>
 
@@ -5503,6 +5714,276 @@
     }
     
     loadSmartDurationSetting();
+})();
+</script>
+<script>
+// ---------------------------------------------------------------- Fantasy tab
+(function () {
+    const fx = { data: null, on: {}, dirty: false, status: {}, found: null };
+    const TIER_TITLES = { essentials: 'Essentials', standard: 'Standard adds', everything: 'Everything adds' };
+
+    function esc(v) {
+        return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    async function call(url, body) {
+        const opts = body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+        const res = await fetch(url, opts);
+        let data = {};
+        try { data = await res.json(); } catch (e) { data = { ok: false, error: 'The Pi sent back something unexpected (HTTP ' + res.status + ').' }; }
+        if (!res.ok && data.ok === undefined) data.ok = false;
+        return data;
+    }
+    function notify(msg, ok) { if (typeof showNotification === 'function') showNotification(msg, ok ? 'success' : 'error'); }
+    function busy(btn, on, label) {
+        if (!btn) return;
+        if (on) { btn.dataset.label = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + label; }
+        else { btn.disabled = false; if (btn.dataset.label) btn.innerHTML = btn.dataset.label; }
+    }
+
+    // ---- screens --------------------------------------------------------
+    function availableIds() { return fx.data.screens.filter(s => s.available).map(s => s.id); }
+    function currentPreset() {
+        const on = availableIds().filter(id => fx.on[id]).sort().join(',');
+        for (const p of ['off', 'essentials', 'standard', 'everything']) {
+            if ((fx.data.presets[p] || []).slice().sort().join(',') === on) return p;
+        }
+        return 'custom';
+    }
+    function markPreset() {
+        const p = currentPreset();
+        document.querySelectorAll('#fx-presets .fx-preset').forEach(el => {
+            const active = el.dataset.preset === p;
+            el.classList.toggle('active', active);
+            el.setAttribute('aria-checked', active ? 'true' : 'false');
+        });
+        document.getElementById('fx-dirty').hidden = !fx.dirty;
+    }
+    function renderScreens() {
+        const box = document.getElementById('fx-screens');
+        let html = '';
+        for (const tier of ['essentials', 'standard', 'everything']) {
+            const rows = fx.data.screens.filter(s => s.tier === tier && s.available);
+            if (!rows.length) continue;
+            html += '<div class="fx-group"><p class="fx-group-title">' + TIER_TITLES[tier] + '</p>';
+            for (const s of rows) {
+                html += '<label class="fx-screen"><input type="checkbox" data-screen="' + esc(s.id) + '"' + (fx.on[s.id] ? ' checked' : '') + '>' +
+                    '<span class="fx-screen-text"><span class="fx-screen-name">' + esc(s.label) +
+                    (s.live_only ? '<span class="fx-tag">pops up during games</span>' : '') + '</span>' +
+                    '<span class="fx-screen-help">' + esc(s.help) + '</span></span></label>';
+            }
+            html += '</div>';
+        }
+        box.innerHTML = html;
+        box.querySelectorAll('input[data-screen]').forEach(cb => cb.addEventListener('change', () => {
+            fx.on[cb.dataset.screen] = cb.checked; fx.dirty = true; markPreset();
+        }));
+        markPreset();
+    }
+    function pickPreset(p) {
+        if (!fx.data || p === 'custom') return;
+        const ids = new Set(fx.data.presets[p] || []);
+        availableIds().forEach(id => { fx.on[id] = ids.has(id); });
+        fx.dirty = true;
+        renderScreens();
+    }
+    window.fxSaveScreens = async function () {
+        if (!fx.data) return;
+        const btn = document.getElementById('fx-save-screens');
+        busy(btn, true, 'Saving…');
+        const screens = {};
+        availableIds().forEach(id => { screens[id] = !!fx.on[id]; });
+        const r = await call('/api/fantasy/screens', { screens });
+        busy(btn, false);
+        if (r.ok) { fx.dirty = false; markPreset(); notify(r.message || 'Saved.', r.restarted !== false); }
+        else notify(r.error || 'Could not save the screens.', false);
+    };
+
+    // ---- leagues --------------------------------------------------------
+    function statusHtml(st) {
+        if (!st) return '<span class="fx-muted">Not tested yet</span>';
+        if (st.loading) return '<span class="fx-muted"><i class="fas fa-spinner fa-spin"></i> Asking ESPN…</span>';
+        if (st.ok) {
+            const team = st.team ? esc(st.team.name) + (st.team.record ? ' (' + esc(st.team.record) + ')' : '') : 'team not found';
+            return '<span class="fx-ok"><i class="fas fa-check-circle"></i> Working: week ' + esc(st.week) + ', ' + team + '</span>';
+        }
+        return '<span class="fx-bad"><i class="fas fa-exclamation-circle"></i> ' + esc(st.error) + '</span>' +
+            (st.needs_login ? ' <a href="#fx-espn-section" onclick="fxOpenConnect();return false;">Connect ESPN</a>' : '');
+    }
+    function renderLeagues() {
+        const box = document.getElementById('fx-leagues');
+        const rows = fx.data.leagues;
+        if (!rows.length) {
+            box.innerHTML = '<div class="fx-empty"><i class="fas fa-football-ball"></i> No leagues yet. Add one below.</div>';
+            return;
+        }
+        box.innerHTML = rows.map(l => {
+            const chip = '<span class="fx-chip fx-chip-' + esc(l.provider) + '">' + esc(l.provider.toUpperCase()) + '</span>';
+            const name = l.name ? esc(l.name) : 'League ' + esc(l.league_id);
+            const sub = (l.team_name ? esc(l.team_name) + ' · ' : '') + 'league ' + esc(l.league_id) + ', team ' + esc(l.team_id) +
+                (l.enabled ? '' : ' · <span class="fx-warn">turned off</span>');
+            const k = esc(l.key);
+            return '<div class="fx-league">' + chip +
+                '<div><div class="fx-league-name">' + name + '</div><div class="fx-league-sub">' + sub + '</div>' +
+                '<div class="fx-status" id="fx-st-' + k + '">' + statusHtml(fx.status[l.key]) + '</div></div>' +
+                '<div class="fx-league-btns"><button type="button" class="btn fx-btn-plain fx-btn-sm" onclick="fxTestLeague(\'' + k + '\')"><i class="fas fa-vial"></i> Test</button>' +
+                '<button type="button" class="btn fx-btn-danger-plain fx-btn-sm" onclick="fxRemoveLeague(\'' + k + '\')"><i class="fas fa-trash"></i> Remove</button></div></div>';
+        }).join('');
+    }
+    function setStatus(key, st) {
+        fx.status[key] = st;
+        const el = document.getElementById('fx-st-' + key);
+        if (el) el.innerHTML = statusHtml(st);
+    }
+    window.fxTestLeague = async function (key) {
+        setStatus(key, { loading: true });
+        setStatus(key, await call('/api/fantasy/leagues/test', { key }));
+    };
+    window.fxTestAll = async function () {
+        if (!fx.data) return;
+        await Promise.all(fx.data.leagues.map(l => window.fxTestLeague(l.key)));
+    };
+    window.fxRemoveLeague = async function (key) {
+        const l = fx.data.leagues.find(x => x.key === key);
+        if (!confirm('Remove ' + (l && l.name ? l.name : 'this league') + ' from the display?')) return;
+        const r = await call('/api/fantasy/leagues/remove', { key });
+        if (r.ok) { notify(r.message || 'Removed.', r.restarted !== false); await loadFantasy(false); }
+        else notify(r.error || 'Could not remove the league.', false);
+    };
+
+    // ---- add a league ---------------------------------------------------
+    function renderFound() {
+        const box = document.getElementById('fx-found');
+        const f = fx.found;
+        if (!f) { box.hidden = true; return; }
+        box.hidden = false;
+        const t = f.test;
+        if (!t.ok && !(t.teams && t.teams.length)) {
+            box.innerHTML = '<p class="fx-bad"><i class="fas fa-exclamation-circle"></i> ' + esc(t.error) + '</p>' +
+                (t.needs_login ? '<button type="button" class="btn btn-primary fx-btn-sm" onclick="fxOpenConnect()"><i class="fas fa-link"></i> Connect ESPN</button>' : '');
+            return;
+        }
+        const preselect = (t.team && t.team.id) || f.team_id;
+        const opts = ['<option value="">Pick your team…</option>'].concat((t.teams || []).map(tm =>
+            '<option value="' + tm.id + '"' + (tm.id === preselect ? ' selected' : '') + '>' + esc(tm.name || ('Team ' + tm.id)) +
+            (tm.abbrev ? ' (' + esc(tm.abbrev) + ')' : '') + (tm.mine ? ' ★ yours' : '') + '</option>')).join('');
+        box.innerHTML = '<p><span class="fx-chip fx-chip-espn">ESPN</span> <strong>' + esc(t.league_name || ('League ' + f.league_id)) + '</strong>' +
+            (t.week ? ' <span class="fx-muted">· ' + esc(t.season) + ' season, week ' + esc(t.week) + '</span>' : '') + '</p>' +
+            (t.ok ? '' : '<p class="fx-warn"><i class="fas fa-info-circle"></i> ' + esc(t.error) + '</p>') +
+            '<label for="fx-team" class="fx-label">Your team</label>' +
+            '<select id="fx-team" class="form-control">' + opts + '</select>' +
+            '<div class="fx-actions"><button type="button" class="btn btn-success" id="fx-add-btn" onclick="fxAddLeague()"><i class="fas fa-plus"></i> Add league and restart display</button></div>';
+    }
+    window.fxFindLeague = async function () {
+        const url = document.getElementById('fx-url').value;
+        const btn = document.getElementById('fx-find');
+        if (!url.trim()) { notify('Paste a league link first.', false); return; }
+        busy(btn, true, 'Looking…');
+        const p = await call('/api/fantasy/leagues/parse-url', { url });
+        if (!p.ok) { busy(btn, false); fx.found = { league_id: '', test: { ok: false, error: p.error } }; renderFound(); return; }
+        const t = await call('/api/fantasy/leagues/test', { provider: 'espn', league_id: p.league_id, team_id: p.team_id, season: p.season });
+        busy(btn, false);
+        fx.found = { league_id: p.league_id, team_id: p.team_id, season: p.season, test: t };
+        renderFound();
+    };
+    window.fxAddLeague = async function () {
+        const f = fx.found;
+        const sel = document.getElementById('fx-team');
+        const teamId = sel && sel.value ? parseInt(sel.value, 10) : null;
+        if (!teamId) { notify('Pick your team first.', false); return; }
+        const team = (f.test.teams || []).find(t => t.id === teamId) || {};
+        const btn = document.getElementById('fx-add-btn');
+        busy(btn, true, 'Adding…');
+        const r = await call('/api/fantasy/leagues/add', {
+            provider: 'espn', league_id: f.league_id, team_id: teamId,
+            name: f.test.league_name || '', team_name: team.name || ''
+        });
+        busy(btn, false);
+        if (!r.ok) { notify(r.error || 'Could not add the league.', false); return; }
+        notify(r.message || 'League added.', r.restarted !== false);
+        fx.found = null; renderFound();
+        document.getElementById('fx-url').value = '';
+        await loadFantasy(false);
+        if (r.league) window.fxTestLeague(r.league.key);
+    };
+
+    // ---- ESPN sign-in ---------------------------------------------------
+    function renderEspn() {
+        const e = fx.data.espn;
+        const box = document.getElementById('fx-espn-status');
+        const title = document.getElementById('fx-connect-title');
+        if (!e.connected) {
+            box.innerHTML = '<p class="fx-muted"><i class="fas fa-unlink"></i> Not connected. Public leagues work without it; private leagues need it.</p>';
+            title.textContent = 'Connect ESPN';
+            return;
+        }
+        let html = '<p class="fx-ok"><i class="fas fa-check-circle"></i> Connected (SWID ' + esc(e.swid) + ')' +
+            (e.saved_at ? ', saved ' + esc(e.saved_at) : '') + '.</p>';
+        if (e.expires_soon) {
+            html += '<p class="fx-warn"><i class="fas fa-exclamation-triangle"></i> ESPN sign-ins last about a year and this one is ' +
+                esc(e.age_days) + ' days old. Connect again with fresh cookies soon so the display doesn\'t go blank.</p>';
+        }
+        html += '<button type="button" class="btn fx-btn-danger-plain fx-btn-sm" onclick="fxDisconnectEspn()"><i class="fas fa-unlink"></i> Disconnect</button>';
+        box.innerHTML = html;
+        title.textContent = 'Replace the ESPN sign-in';
+    }
+    window.fxOpenConnect = function () {
+        const d = document.getElementById('fx-connect');
+        d.open = true;
+        document.getElementById('fx-espn-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    window.fxConnectEspn = async function () {
+        const btn = document.getElementById('fx-connect-btn');
+        const out = document.getElementById('fx-connect-result');
+        busy(btn, true, 'Checking with ESPN…');
+        const r = await call('/api/fantasy/espn/connect', {
+            espn_s2: document.getElementById('fx-s2').value, swid: document.getElementById('fx-swid').value
+        });
+        busy(btn, false);
+        out.hidden = false;
+        if (!r.ok) { out.innerHTML = '<p class="fx-bad"><i class="fas fa-exclamation-circle"></i> ' + esc(r.error) + '</p>'; return; }
+        const c = r.checked;
+        out.innerHTML = '<p class="fx-ok"><i class="fas fa-check-circle"></i> ' +
+            (c && c.ok ? 'ESPN accepted the sign-in (' + esc(c.league_name) + ').' : 'Sign-in saved. It will be checked when you add a league.') + '</p>';
+        document.getElementById('fx-s2').value = '';
+        document.getElementById('fx-swid').value = '';
+        notify(r.message || 'ESPN connected.', r.restarted !== false);
+        await loadFantasy(false);
+        window.fxTestAll();
+        if (fx.found && fx.found.league_id) window.fxFindLeague();
+    };
+    window.fxDisconnectEspn = async function () {
+        if (!confirm('Forget the ESPN sign-in? Private leagues will stop updating.')) return;
+        const r = await call('/api/fantasy/espn/disconnect', {});
+        if (r.ok) { notify(r.message || 'Disconnected.', r.restarted !== false); await loadFantasy(false); }
+        else notify(r.error || 'Could not disconnect.', false);
+    };
+
+    // ---- load -----------------------------------------------------------
+    window.loadFantasy = async function (testLeagues) {
+        const r = await call('/api/fantasy/config');
+        if (!r.ok) {
+            document.getElementById('fx-screens').innerHTML = '<p class="fx-bad">Could not load the fantasy settings: ' + esc(r.error) + '</p>';
+            return;
+        }
+        fx.data = r;
+        fx.on = {};
+        r.screens.forEach(s => { fx.on[s.id] = s.on; });
+        fx.dirty = false;
+        renderScreens();
+        renderLeagues();
+        renderEspn();
+        if (testLeagues !== false) window.fxTestAll();
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('#fx-presets button.fx-preset').forEach(b => b.addEventListener('click', () => pickPreset(b.dataset.preset)));
+        document.getElementById('fx-url').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); window.fxFindLeague(); } });
+        const prevShowTab = window.showTab;
+        window.showTab = function (tabName) {
+            prevShowTab(tabName);
+            if (tabName === 'fantasy') window.loadFantasy();
+        };
+    });
 })();
 </script>
 </html>
