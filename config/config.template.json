@@ -715,5 +715,10 @@
         "scoring_format": "ppr",
         "watchlist": [],
         "live_priority": true
+    },
+    "fantasy-leagues": {
+        "enabled": false,
+        "live_priority": true,
+        "leagues": []
     }
 }

@@ -52,3 +52,12 @@ pixel for pixel through this host.
 Not supported by the host (plugins fall back on their own): Vegas ticker
 mode, web-UI forms from `config_schema.json`, the plugin store, and
 `web_ui_actions`.
+
+## fantasy-leagues (ours, GPL-3.0)
+Your own leagues, next to fantasy-blitz: `fantasy_leagues_summary`, `fantasy_leagues_matchup`,
+`fantasy_leagues_roster`, and the big-play alert `fantasy_leagues_live` (live priority). ESPN now
+(private leagues via `espn_s2`/`swid` in `config_secrets.json` at `fantasy-leagues.accounts.espn`),
+Yahoo next. Config: `fantasy-leagues.leagues` = list of `{provider, league_id, team_id, season,
+label, host_color, team_color, screens, alerts}`; see `plugins/fantasy-leagues/config_schema.json`.
+Polls every 60s in NFL game windows or while points are moving, 15 min otherwise.
+`tools/espn_size_probe.py` measures ESPN response sizes on a Pi.

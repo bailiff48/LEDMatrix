@@ -1,0 +1,229 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Fantasy Leagues Configuration",
+  "description": "Your own fantasy football leagues on the panel. Credentials go in config_secrets.json under fantasy-leagues.accounts.",
+  "type": "object",
+  "required": [
+    "enabled"
+  ],
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable Fantasy Leagues"
+    },
+    "display_duration": {
+      "type": "number",
+      "default": 10,
+      "minimum": 3,
+      "maximum": 120,
+      "description": "Seconds per page on the summary and matchup screens"
+    },
+    "roster_page_seconds": {
+      "type": "number",
+      "default": 5,
+      "minimum": 2,
+      "maximum": 60,
+      "description": "Seconds per page of starters"
+    },
+    "update_interval": {
+      "type": "number",
+      "default": 900,
+      "minimum": 120,
+      "maximum": 3600,
+      "description": "Seconds between refreshes outside game windows"
+    },
+    "live_update_interval": {
+      "type": "number",
+      "default": 60,
+      "minimum": 30,
+      "maximum": 600,
+      "description": "Seconds between refreshes while games are on"
+    },
+    "live_priority": {
+      "type": "boolean",
+      "default": true,
+      "description": "Big-play alerts interrupt whatever is on the panel"
+    },
+    "alert_min_points": {
+      "type": "number",
+      "default": 6,
+      "minimum": 1,
+      "maximum": 50,
+      "description": "League points a starter must gain between refreshes to trigger an alert"
+    },
+    "alert_seconds": {
+      "type": "number",
+      "default": 8,
+      "minimum": 3,
+      "maximum": 60,
+      "description": "Seconds each alert stays up"
+    },
+    "recap_days": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri",
+          "sat",
+          "sun"
+        ]
+      },
+      "default": [
+        "tue",
+        "wed"
+      ],
+      "description": "Days that show last week's final instead of the coming matchup"
+    },
+    "screens": {
+      "type": "object",
+      "title": "Screens",
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "type": "boolean",
+          "default": true,
+          "description": "My-leagues summary"
+        },
+        "matchup": {
+          "type": "boolean",
+          "default": true,
+          "description": "Matchup per league"
+        },
+        "roster": {
+          "type": "boolean",
+          "default": true,
+          "description": "My starters, paged"
+        },
+        "alerts": {
+          "type": "boolean",
+          "default": true,
+          "description": "Big-play alerts"
+        }
+      }
+    },
+    "leagues": {
+      "type": "array",
+      "default": [],
+      "description": "One entry per league",
+      "items": {
+        "type": "object",
+        "required": [
+          "provider",
+          "league_id",
+          "team_id"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "espn",
+              "yahoo"
+            ],
+            "default": "espn"
+          },
+          "league_id": {
+            "type": "string",
+            "description": "League id from the league's URL"
+          },
+          "team_id": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Your team id in that league"
+          },
+          "season": {
+            "type": "integer",
+            "description": "Season year (default: the current NFL season)"
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 6,
+            "description": "Chip text; defaults to the host (ESPN, YHOO)"
+          },
+          "host_color": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "default": null,
+            "description": "Chip colour, '#rrggbb' or [r,g,b]; defaults to the host's (ESPN red, Yahoo purple)"
+          },
+          "team_color": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "default": "#28c850",
+            "description": "Your team's colour"
+          },
+          "screens": {
+            "type": "object",
+            "properties": {
+              "summary": {
+                "type": "boolean",
+                "default": true
+              },
+              "matchup": {
+                "type": "boolean",
+                "default": true
+              },
+              "roster": {
+                "type": "boolean",
+                "default": true
+              },
+              "roster_opponent": {
+                "type": "boolean",
+                "default": false,
+                "description": "Also page through my opponent's starters"
+              }
+            }
+          },
+          "alerts": {
+            "type": "object",
+            "properties": {
+              "mine": {
+                "type": "boolean",
+                "default": true,
+                "description": "Alerts for my starters"
+              },
+              "opponent": {
+                "type": "boolean",
+                "default": true,
+                "description": "Alerts for my opponent's starters"
+              }
+            }
+          }
+        }
+      }
+    },
+    "accounts": {
+      "type": "object",
+      "description": "Set in config_secrets.json, not config.json",
+      "properties": {
+        "espn": {
+          "type": "object",
+          "properties": {
+            "espn_s2": {
+              "type": "string",
+              "description": "espn_s2 cookie (private leagues)"
+            },
+            "swid": {
+              "type": "string",
+              "description": "SWID cookie, with braces"
+            }
+          }
+        }
+      }
+    }
+  }
+}

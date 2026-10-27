@@ -1,0 +1,22 @@
+{
+  "id": "fantasy-leagues",
+  "name": "Fantasy Leagues",
+  "version": "0.2.0",
+  "author": "bailiff48",
+  "description": "Your own fantasy football leagues: a my-leagues summary, each matchup with live league points and projections, your starters page by page, and a big-play alert when one of your starters (or your opponent's) scores. ESPN (private leagues with cookies) now, Yahoo next.",
+  "entry_point": "manager.py",
+  "class_name": "FantasyLeaguesPlugin",
+  "category": "sports",
+  "tags": ["nfl", "fantasy-football", "espn", "yahoo", "league", "live"],
+  "display_modes": [
+    "fantasy_leagues_summary",
+    "fantasy_leagues_matchup",
+    "fantasy_leagues_roster",
+    "fantasy_leagues_live"
+  ],
+  "update_interval": 900,
+  "default_duration": 10,
+  "config_schema": "config_schema.json",
+  "requires": {"python": ">=3.9", "display_size": {"min_width": 128, "min_height": 32}},
+  "license": "GPL-3.0"
+}
