@@ -46,11 +46,15 @@ logger = logging.getLogger(__name__)
 _RANGE_RE = re.compile(r"^(\d{8})-(\d{8})$")
 _MONTH_LIMIT = 1000      # per-month request size; hitting it triggers per-day fallback
 _DAY_LIMIT = 500
+# ESPN caps some leagues (college football, Oct 2026) at 25 events per response
+# whatever `limit` says. A response of exactly this size is treated as cut off.
+_ESPN_PAGE_CAP = 25
 _CACHE_TTL = 30          # seconds; dedupes near-simultaneous recent/upcoming fetches
 _MAX_CACHE = 300
 
 _cache = {}
 _cache_lock = threading.Lock()
+_warned_caps = set()
 _orig_request = requests.Session.request
 
 
@@ -99,6 +103,11 @@ def _fetch(session, base_url, params, kwargs):
     return resp
 
 
+def _truncated(n, limit):
+    """True if a response of n events was probably cut off by ESPN."""
+    return n >= limit or n == _ESPN_PAGE_CAP
+
+
 def _ranged_fetch(session, original_url, base_url, query, start_s, end_s, kwargs):
     start = datetime.strptime(start_s, "%Y%m%d").date()
     end = datetime.strptime(end_s, "%Y%m%d").date()
@@ -129,10 +138,11 @@ def _ranged_fetch(session, original_url, base_url, query, start_s, end_s, kwargs
         requests_made += 1
         last_resp = resp
         if resp.status_code == 200:
-            if len(resp.json().get("events") or []) < _MONTH_LIMIT:
+            if not _truncated(len(resp.json().get("events") or []), _MONTH_LIMIT):
                 add(resp)
                 continue
-        # Month refused or truncated: fetch this month's slice of the range by day
+        # Month refused or truncated (ESPN's 25-event cap on college football):
+        # fetch this month's slice of the range one day at a time
         d = max(start, date(y, mo, 1))
         last = min(end, _month_last_day(y, mo))
         while d <= last:
@@ -142,6 +152,15 @@ def _ranged_fetch(session, original_url, base_url, query, start_s, end_s, kwargs
             last_resp = r
             if r.status_code == 200:
                 add(r)
+                n = len(r.json().get("events") or [])
+                if _truncated(n, _DAY_LIMIT):
+                    key = (base_url, base_params.get("groups"))
+                    if key not in _warned_caps:
+                        _warned_caps.add(key)
+                        logger.warning(
+                            "ESPN returned %d events for one day on %s (groups=%s); the list "
+                            "may be cut off. Narrow it with a conference (groups) filter.",
+                            n, base_url, base_params.get("groups", "-"))
             d += timedelta(days=1)
 
     if template is None:
