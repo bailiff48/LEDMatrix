@@ -51,3 +51,8 @@ _archive_*
 data/aircraft.db
 data/aircraft_fallback_cache.json
 data/faa/
+
+# Runtime files (written by the running system)
+config/wifi_status.json
+logs/*.log
+*.bak*
