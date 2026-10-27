@@ -1,3 +1,4 @@
+import src.espn_date_range_fix  # ESPN date-range workaround (Oct 2026)
 import time
 import gc
 import logging
@@ -574,6 +575,7 @@ class DisplayController:
         self.ncaaw_hockey_live_priority = self.config.get('ncaaw_hockey_scoreboard', {}).get('live_priority', True)
         self.music_live_priority = self.config.get('music', {}).get('live_priority', True)
         self.flight_live_priority = self.config.get('flights', {}).get('live_priority', True)
+        self.tennis_live_priority = self.config.get('tennis', {}).get('live_priority_favorites', False) or self.config.get('tennis', {}).get('live_priority_all', False)
 
         # Live priority logging throttling
         self._last_music_live_priority_log = 0
@@ -1173,6 +1175,10 @@ class DisplayController:
             
             # Update flight manager to detect overhead planes (live interrupt capability)
             if self.flight_live: self.flight_live.update()
+            
+            # Update golf and tennis managers
+            if self.golf_manager: self.golf_manager.update()
+            if self.tennis_manager: self.tennis_manager.update()
         
         # News manager fetches data when displayed, not during updates
         # if self.news_manager: self.news_manager.fetch_news_data()
@@ -1719,8 +1725,8 @@ class DisplayController:
                     ('ncaam_hockey', 'ncaam_hockey_live', self.ncaam_hockey_live_priority),
                     ('ncaaw_hockey', 'ncaaw_hockey_live', self.ncaaw_hockey_live_priority),
                     ('flight', 'flight_live', self.flight_live_priority),
-                    ('golf', 'golf', False),
-                    ('tennis', 'tennis', False)
+                    ('golf', 'golf_manager', False),
+                    ('tennis', 'tennis_manager', False)
                 ]:
                     manager = getattr(self, attr, None)
 
@@ -1746,6 +1752,17 @@ class DisplayController:
                     if current_time - self._last_music_live_priority_log >= self._music_live_priority_log_interval:
                         logger.info("Live priority music found: music is playing - added to live priority rotation")
                         self._last_music_live_priority_log = current_time
+
+                # Special handling for tennis - check if tennis has live favorite matches
+                if (self.tennis_manager is not None and
+                    self.tennis_live_priority and
+                    self.tennis_manager.should_interrupt_for_live()):
+                    live_priority_sports.append('tennis')
+                    # Throttle logging - only log every 30 seconds
+                    current_time = time.time()
+                    if current_time - getattr(self, '_last_tennis_live_priority_log', 0) >= 30:
+                        logger.info("Live priority tennis found: live match with favorite player")
+                        self._last_tennis_live_priority_log = current_time
 
                 # Determine if we have any live priority sports
                 live_priority_takeover = len(live_priority_sports) > 0

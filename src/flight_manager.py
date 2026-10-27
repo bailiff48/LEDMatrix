@@ -438,6 +438,10 @@ class FlightLiveManager:
                         # Skip if missing critical data
                         if not callsign or lon is None or lat is None:
                             continue
+                        # Skip stale position data (older than 60 seconds)
+                        time_position = state[3]
+                        if time_position and (time.time() - time_position) > 60:
+                            continue
                         
                         # Skip ground traffic
                         if on_ground or (altitude_m and altitude_m < self.min_altitude_m):
