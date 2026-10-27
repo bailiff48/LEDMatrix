@@ -1,0 +1,122 @@
+{
+  "id": "fantasy-blitz",
+  "name": "Fantasy Blitz",
+  "version": "1.2.0",
+  "author": "ChuckBuilds",
+  "description": "An arcade-style NFL fantasy football show with no league login needed: the week's top scorers as collectible player cards with photos, a live leaderboard, big-play celebrations as they happen, dud alerts for the biggest busts, the free agents everyone is adding, injury news, the top scorer at each position, Tuesday awards and the season race. Optionally follows a watchlist and your own Sleeper or ESPN league. Points in PPR, Half-PPR or Standard from Sleeper's public feed, with ESPN for game states and headshots. No API key.",
+  "entry_point": "manager.py",
+  "class_name": "FantasyBlitzPlugin",
+  "category": "sports",
+  "tags": [
+    "nfl",
+    "football",
+    "fantasy",
+    "fantasy-football",
+    "sleeper",
+    "espn",
+    "leaderboard",
+    "live"
+  ],
+  "icon": "fas fa-football",
+  "display_modes": [
+    "fantasy_player_card",
+    "fantasy_leaderboard",
+    "fantasy_live",
+    "fantasy_dud_alert",
+    "fantasy_hot_pickups",
+    "fantasy_position_kings",
+    "fantasy_injury_report",
+    "fantasy_watchlist",
+    "fantasy_weekly_awards",
+    "fantasy_league_matchup",
+    "fantasy_season_race"
+  ],
+  "update_interval": 900,
+  "default_duration": 20,
+  "config_schema": "config_schema.json",
+  "requirements_file": "requirements.txt",
+  "compatible_versions": [
+    ">=3.8.8"
+  ],
+  "versions": [
+    {
+      "version": "1.2.0",
+      "released": "2026-10-15",
+      "ledmatrix_min_version": "3.8.8",
+      "notes": "Vegas static: one pause now walks the whole show, one screen at a time on its timer, and lasts as long as that takes; the next pause carries on where it stopped. Core 3.8.8 redraws a paused plugin for the whole pause; before it each pause showed one screen, minutes apart in a long rotation."
+    },
+    {
+      "version": "1.1.2",
+      "released": "2026-10-15",
+      "ledmatrix_min_version": "3.0.0",
+      "notes": "Vegas scroll: the ticker shows top_n scorers. It showed at least five whatever top_n said."
+    },
+    {
+      "version": "1.1.1",
+      "released": "2026-10-02",
+      "ledmatrix_min_version": "3.0.0",
+      "notes": "Vegas fixes. static: the scroll pauses for one display() call and the plugin never got another, so it showed the top scorers' first card every time; each pause now shows the next screen (then the next item of each) so the whole show comes round. fixed: now scrolls each screen as a panel-sized block, as the setting always said, instead of the same ticker as scroll."
+    },
+    {
+      "version": "1.1.0",
+      "released": "2026-09-30",
+      "ledmatrix_min_version": "3.0.0",
+      "notes": "The Vegas ticker now shows the full player card: photo (or crest), name, tier, position, club, injury tag, points, stat line and projection bar, instead of a jersey chip and a score. The ticker's players are prefetched with the cards' photos."
+    },
+    {
+      "version": "1.0.2",
+      "released": "2026-09-28",
+      "ledmatrix_min_version": "3.0.0",
+      "notes": "Screens > Big Play > Duration sets how long each alert stays up. The alert ended after 8 seconds whatever it said, while the mode ran for the setting."
+    },
+    {
+      "version": "1.0.1",
+      "released": "2026-09-28",
+      "ledmatrix_min_version": "3.0.0",
+      "notes": "Raising spoiler_delay_seconds now takes effect without a restart. The snapshot buffer was sized from the delay in __init__ only, so after a raise it could not hold a snapshot that old and showed scores early."
+    },
+    {
+      "version": "1.0.0",
+      "released": "2026-09-24",
+      "ledmatrix_min_version": "3.0.0",
+      "notes": "Initial release. Eleven screens: player cards with ESPN headshots and rarity-tier frames, a live leaderboard, big-play alerts with live priority and a spoiler delay, dud alerts, hot pickups and drops, position kings, an injury report, a watchlist, weekly awards, league matchups (Sleeper, or ESPN with cookies) and the season race. Sleeper's public feed for points and projections, ESPN for game states, scoring plays, headshots and a fallback feed. Adapts to every harness size, with animation at a configurable frame rate."
+    }
+  ],
+  "requires": {
+    "python": ">=3.9",
+    "display_size": {
+      "min_width": 64,
+      "min_height": 32
+    }
+  },
+  "display": {
+    "design_size": {
+      "width": 128,
+      "height": 64
+    }
+  },
+  "api_requirements": [
+    {
+      "name": "Sleeper API",
+      "required": true,
+      "description": "Sleeper's public NFL feed for weekly stats, fantasy points, projections and trending players. No API key or account.",
+      "url": "https://api.sleeper.app/v1/state/nfl"
+    },
+    {
+      "name": "ESPN API",
+      "required": false,
+      "description": "ESPN's public NFL scoreboard, game summaries, player search and headshots, and its fantasy feed as a fallback. No API key.",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
+    }
+  ],
+  "assets": {
+    "uses_core_assets": true,
+    "nfl_logos": "assets/sports/nfl_logos/"
+  },
+  "stars": 0,
+  "downloads": 0,
+  "verified": true,
+  "screenshot": "",
+  "license": "GPL-3.0",
+  "last_updated": "2026-09-28"
+}

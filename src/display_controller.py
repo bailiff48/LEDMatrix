@@ -48,6 +48,7 @@ from src.flight_manager import FlightLiveManager
 from src.golf_manager import GolfManager
 from src.tennis_manager import TennisManager
 from src.dynamic_duration_manager import DynamicDurationManager
+from src.plugin_host import PluginHost
 
 # Get logger without configuring
 logger = logging.getLogger(__name__)
@@ -298,6 +299,21 @@ class DisplayController:
         else:
             self.tennis_manager = None
             logger.info("Tennis manager disabled")
+
+        # Plugins (ChuckBuilds plugin format) from plugins/<id>/, enabled per config section
+        self.plugin_host = None
+        try:
+            self.plugin_host = PluginHost(self.config, self.display_manager, self.cache_manager, controller=self)
+            for attr, adapter in self.plugin_host.live_attributes().items():
+                if getattr(self, attr, None) is None:
+                    setattr(self, attr, adapter)  # live takeover looks managers up as <sport>_live
+                else:
+                    logger.warning(f"Plugin live mode {attr} clashes with a built-in manager; not registered")
+            if not self.plugin_host.plugins:
+                self.plugin_host = None
+        except Exception as e:
+            logger.error(f"Plugin host failed to start: {e}", exc_info=True)
+            self.plugin_host = None
     
         # Initialize NHL managers if enabled
         nhl_time = time.time()
@@ -650,6 +666,7 @@ class DisplayController:
         # Add golf and tennis to rotation if enabled
         if self.golf_manager: self.available_modes.append('golf')
         if self.tennis_manager: self.available_modes.append('tennis')
+        if self.plugin_host: self.available_modes.extend(self.plugin_host.rotation_modes())
         # Add live modes to rotation if live_priority is False and there are live games
         self._update_live_modes_in_rotation()
         
@@ -893,6 +910,9 @@ class DisplayController:
         """Get the duration for the current display mode."""
         mode_key = self.current_display_mode
 
+        if self.plugin_host and self.plugin_host.owns(mode_key):
+            return self.plugin_host.duration(mode_key)
+
         # Handle dynamic duration for news manager
         if mode_key == 'news_manager' and self.news_manager:
             try:
@@ -1061,6 +1081,8 @@ class DisplayController:
             Returns:
                 Manager object or None
             """
+            if self.plugin_host and self.plugin_host.owns(mode_key):
+                return self.plugin_host.adapter(mode_key)
             # Direct attribute mapping
             manager_map = {
                 'clock': self.clock,
@@ -1695,6 +1717,8 @@ class DisplayController:
 
                 # Update flight manager to detect overhead planes (must be in main loop)
                 if self.flight_live: self.flight_live.update()
+                # Start any plugin update() that is due (runs in the background)
+                if self.plugin_host: self.plugin_host.tick()
                 # Check for live games and live_priority
                 has_live_games, live_sport_type = self._check_live_games()
                 is_currently_live = self.current_display_mode.endswith('_live')
@@ -1763,6 +1787,12 @@ class DisplayController:
                     if current_time - getattr(self, '_last_tennis_live_priority_log', 0) >= 30:
                         logger.info("Live priority tennis found: live match with favorite player")
                         self._last_tennis_live_priority_log = current_time
+
+                # Plugins with live priority and something live (e.g. fantasy big play)
+                if self.plugin_host:
+                    for sport in self.plugin_host.live_takeover_sports():
+                        if sport not in live_priority_sports:
+                            live_priority_sports.append(sport)
 
                 # Determine if we have any live priority sports
                 live_priority_takeover = len(live_priority_sports) > 0
@@ -1925,7 +1955,9 @@ class DisplayController:
                             self.force_clear = False
                         # Only set manager_to_display if it hasn't been set by live priority logic
                         if manager_to_display is None:
-                            if self.current_display_mode == 'clock' and self.clock:
+                            if self.plugin_host and self.plugin_host.owns(self.current_display_mode):
+                                manager_to_display = self.plugin_host.adapter(self.current_display_mode)
+                            elif self.current_display_mode == 'clock' and self.clock:
                                 manager_to_display = self.clock
                             elif self.current_display_mode == 'weather_current' and self.weather:
                                 manager_to_display = self.weather
@@ -2204,6 +2236,8 @@ class DisplayController:
             if self.music_manager: # Check if music_manager object exists
                 logger.info("Stopping music polling...")
                 self.music_manager.stop_polling()
+            if self.plugin_host:
+                self.plugin_host.cleanup()
             if self.flight_live:  # Stop flight background polling
                 logger.info("Stopping flight polling...")
                 self.flight_live.stop_background_polling()

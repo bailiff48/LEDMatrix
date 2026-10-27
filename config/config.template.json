@@ -709,5 +709,11 @@
             0,
             0
         ]
+    },
+    "fantasy-blitz": {
+        "enabled": false,
+        "scoring_format": "ppr",
+        "watchlist": [],
+        "live_priority": true
     }
 }
