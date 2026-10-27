@@ -6,9 +6,9 @@ This module provides functionality to resolve dynamic team names like "AP_TOP_25
 into actual team abbreviations that update automatically with rankings.
 
 Supported dynamic teams:
-- AP_TOP_25: Resolves to current AP Top 25 teams for NCAA Football
-- AP_TOP_10: Resolves to current AP Top 10 teams for NCAA Football  
-- AP_TOP_5: Resolves to current AP Top 5 teams for NCAA Football
+- AP_TOP_25 / AP_TOP_10 / AP_TOP_5: current AP poll for the calling sport
+  (NCAA football, men's basketball or women's basketball)
+- CFP_TOP_12 / CFP_TOP_25: College Football Playoff rankings (football only)
 
 Usage:
     resolver = DynamicTeamResolver()
@@ -24,6 +24,17 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
+try:
+    from src.rankings_service import RankingsService
+except ImportError:  # running from inside src/
+    try:
+        from rankings_service import RankingsService
+    except ImportError:
+        RankingsService = None
+
+# Sports that have an ESPN poll. Tokens in any other sport's favorites are ignored.
+RANKED_SPORTS = {'ncaa_fb', 'ncaam_basketball', 'ncaaw_basketball'}
+
 class DynamicTeamResolver:
     """
     Resolves dynamic team names to actual team abbreviations.
@@ -38,10 +49,15 @@ class DynamicTeamResolver:
     _cache_duration: int = 3600  # 1 hour cache
     
     # Supported dynamic team patterns
+    # 'poll' is matched against ESPN's ranking names by RankingsService.
+    # The sport comes from the manager calling resolve_teams(). Previously
+    # every sport (including basketball) got the FOOTBALL poll.
     DYNAMIC_PATTERNS = {
-        'AP_TOP_25': {'sport': 'ncaa_fb', 'limit': 25},
-        'AP_TOP_10': {'sport': 'ncaa_fb', 'limit': 10}, 
-        'AP_TOP_5': {'sport': 'ncaa_fb', 'limit': 5},
+        'AP_TOP_25': {'poll': 'ap', 'limit': 25},
+        'AP_TOP_10': {'poll': 'ap', 'limit': 10},
+        'AP_TOP_5': {'poll': 'ap', 'limit': 5},
+        'CFP_TOP_12': {'poll': 'cfp', 'limit': 12},
+        'CFP_TOP_25': {'poll': 'cfp', 'limit': 25},
     }
     
     def __init__(self, request_timeout: int = 30):
@@ -104,24 +120,26 @@ class DynamicTeamResolver:
             return []
             
         pattern_config = self.DYNAMIC_PATTERNS[dynamic_team]
-        target_sport = pattern_config['sport']
+        poll = pattern_config['poll']
         limit = pattern_config['limit']
-        
-        # Only support NCAA Football rankings for now
-        if target_sport != 'ncaa_fb':
+
+        if sport not in RANKED_SPORTS:
             self.logger.warning(f"Dynamic team {dynamic_team} not supported for sport {sport}")
             return []
-            
-        # Fetch current rankings
-        rankings = self._fetch_ncaa_fb_rankings()
-        if not rankings:
-            self.logger.warning(f"Could not fetch rankings for {dynamic_team}")
+
+        if RankingsService is not None:
+            top_teams = RankingsService.get_ranked_teams(sport, poll=poll, top_n=limit)
+        elif sport == 'ncaa_fb':
+            # Legacy fallback (football only)
+            top_teams = list(self._fetch_ncaa_fb_rankings().keys())[:limit]
+        else:
+            top_teams = []
+
+        if not top_teams:
+            self.logger.warning(f"Could not fetch rankings for {dynamic_team} ({sport})")
             return []
-            
-        # Get top N teams
-        top_teams = list(rankings.keys())[:limit]
-        self.logger.info(f"Resolved {dynamic_team} to top {len(top_teams)} teams: {top_teams}")
-        
+
+        self.logger.info(f"Resolved {dynamic_team} for {sport} to top {len(top_teams)} teams: {top_teams}")
         return top_teams
     
     def _fetch_ncaa_fb_rankings(self) -> Dict[str, int]:

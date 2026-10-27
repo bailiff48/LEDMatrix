@@ -387,6 +387,7 @@
         ],
         "logo_dir": "assets/sports/ncaa_logos",
         "show_records": true,
+        "show_ranking": true,
         "display_modes": {
             "ncaam_basketball_live": true,
             "ncaam_basketball_recent": true,
@@ -411,6 +412,7 @@
         ],
         "logo_dir": "assets/sports/ncaa_logos",
         "show_records": true,
+        "show_ranking": true,
         "display_modes": {
             "ncaaw_basketball_live": true,
             "ncaaw_basketball_recent": true,
@@ -440,7 +442,7 @@
         "show_ranking": true,
         "display_modes": {
             "ncaam_hockey_live": true,
-            "ncaam_hockey_recent": true ,
+            "ncaam_hockey_recent": true,
             "ncaam_hockey_upcoming": true
         }
     },
@@ -467,7 +469,7 @@
         "show_ranking": false,
         "display_modes": {
             "ncaaw_hockey_live": true,
-            "ncaaw_hockey_recent": true ,
+            "ncaaw_hockey_recent": true,
             "ncaaw_hockey_upcoming": true
         }
     },

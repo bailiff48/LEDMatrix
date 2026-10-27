@@ -146,6 +146,20 @@ class RankingsService:
     
     _cache = RankingsCache()
     _rankings_data: Dict[str, Dict] = {}  # In-memory cache for current session
+    _rankings_times: Dict[str, float] = {}  # When each in-memory entry was stored
+    MEMORY_MAX_AGE = DEFAULT_CACHE_DURATION  # In-memory entries expire too (polls change weekly)
+
+    @classmethod
+    def _mem_get(cls, key: str):
+        """Return an in-memory entry only if it is younger than MEMORY_MAX_AGE."""
+        if key in cls._rankings_data and time.time() - cls._rankings_times.get(key, 0) < cls.MEMORY_MAX_AGE:
+            return cls._rankings_data[key]
+        return None
+
+    @classmethod
+    def _mem_set(cls, key: str, value):
+        cls._rankings_data[key] = value
+        cls._rankings_times[key] = time.time()
     
     @classmethod
     def fetch_rankings(cls, sport: str, force_refresh: bool = False) -> Optional[Dict]:
@@ -165,14 +179,16 @@ class RankingsService:
         
         # Check in-memory cache first (fastest)
         cache_key = f"{sport}_raw"
-        if not force_refresh and cache_key in cls._rankings_data:
-            return cls._rankings_data[cache_key]
+        if not force_refresh:
+            mem = cls._mem_get(cache_key)
+            if mem is not None:
+                return mem
         
         # Check file cache
         if not force_refresh:
             cached = cls._cache.get(sport, 'raw')
             if cached:
-                cls._rankings_data[cache_key] = cached
+                cls._mem_set(cache_key, cached)
                 return cached
         
         # Fetch from ESPN
@@ -184,13 +200,17 @@ class RankingsService:
             data = response.json()
             
             # Cache it
-            cls._rankings_data[cache_key] = data
+            cls._mem_set(cache_key, data)
             cls._cache.set(sport, 'raw', data)
             
             return data
         except requests.RequestException as e:
             logger.error(f"Error fetching rankings for {sport}: {e}")
-            return None
+            # Network blip: fall back to the last good copy rather than dropping every ranked team
+            stale = cls._cache.get(sport, 'raw', max_age=7 * 24 * 3600)
+            if stale:
+                logger.warning(f"Using stale rankings cache for {sport}")
+            return stale
     
     @classmethod
     def get_ranked_teams(
@@ -214,8 +234,10 @@ class RankingsService:
         """
         # Check processed cache first
         cache_key = f"{sport}_{poll}_{top_n}"
-        if not force_refresh and cache_key in cls._rankings_data:
-            return cls._rankings_data[cache_key]
+        if not force_refresh:
+            mem = cls._mem_get(cache_key)
+            if mem is not None:
+                return mem
         
         # Fetch raw data
         raw_data = cls.fetch_rankings(sport, force_refresh)
@@ -259,7 +281,7 @@ class RankingsService:
                 teams.append(abbrev)
         
         # Cache processed result
-        cls._rankings_data[cache_key] = teams
+        cls._mem_set(cache_key, teams)
         logger.info(f"Got {len(teams)} ranked teams for {sport}/{poll}: {teams[:5]}...")
         
         return teams
@@ -356,6 +378,7 @@ class RankingsService:
     def clear_cache(cls):
         """Clear all cached rankings data."""
         cls._rankings_data.clear()
+        cls._rankings_times.clear()
         logger.info("Rankings cache cleared")
 
 

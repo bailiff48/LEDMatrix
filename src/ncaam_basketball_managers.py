@@ -105,6 +105,10 @@ class BaseNCAAMBasketballManager(Basketball):
             sport_key="ncaam_basketball",
         )
 
+        # College hoops: show AP rank numbers unless the config turns them off.
+        # (Base class defaults show_ranking to False, and no basketball config set it.)
+        self.show_ranking = self.mode_config.get('show_ranking', True)
+
         # Expand ranking tokens (AP_TOP_25, AP_TOP_10) if rankings service available
         if RANKINGS_AVAILABLE and hasattr(self, 'favorite_teams') and self.favorite_teams:
             original_count = len(self.favorite_teams)

@@ -96,6 +96,12 @@ class SportsCore(ABC):
         # Initialize dynamic team resolver and resolve favorite teams
         self.dynamic_resolver = DynamicTeamResolver()
         raw_favorite_teams = self.mode_config.get("favorite_teams", [])
+        self._raw_favorite_teams = list(raw_favorite_teams)
+        self._has_dynamic_favorites = any(
+            self.dynamic_resolver.is_dynamic_team(t) for t in self._raw_favorite_teams
+        )
+        self._dynamic_favorites_refreshed = time.time()
+        self._dynamic_favorites_interval = 3600  # re-check the poll hourly
         self.favorite_teams = self.dynamic_resolver.resolve_teams(raw_favorite_teams, sport_key)
         
         # Load anti-spoiler teams from top-level config
@@ -645,6 +651,28 @@ class SportsCore(ABC):
             return True
         return False
 
+    def _refresh_dynamic_favorites(self) -> None:
+        """Re-expand AP_TOP_25 style tokens so weekly poll changes take effect
+        without a restart (teams that drop out of the poll are removed)."""
+        if not getattr(self, '_has_dynamic_favorites', False):
+            return
+        now = time.time()
+        if now - self._dynamic_favorites_refreshed < self._dynamic_favorites_interval:
+            return
+        self._dynamic_favorites_refreshed = now
+        try:
+            fresh = self.dynamic_resolver.resolve_teams(self._raw_favorite_teams, self.sport_key)
+        except Exception as e:
+            self.logger.warning(f"Could not refresh ranked favorites: {e}")
+            return
+        if not fresh:
+            return  # keep the old list rather than blanking on a failed fetch
+        if fresh != self.favorite_teams:
+            dropped = [t for t in self.favorite_teams if t not in fresh]
+            added = [t for t in fresh if t not in self.favorite_teams]
+            self.logger.info(f"Ranked favorites updated. Added: {added} Dropped: {dropped}")
+            self.favorite_teams = fresh
+
     def _fetch_team_rankings(self) -> Dict[str, int]:
         """Fetch team rankings using the new architecture components."""
         current_time = time.time()
@@ -661,8 +689,12 @@ class SportsCore(ABC):
             rankings_data = data.get('rankings', [])
             
             if rankings_data:
-                # Use the first ranking (usually AP Top 25)
-                first_ranking = rankings_data[0]
+                # Prefer the AP poll; fall back to the first ranking ESPN lists
+                first_ranking = next(
+                    (r for r in rankings_data
+                     if 'ap' in str(r.get('shortName', '')).lower().split()
+                     or 'ap top 25' in str(r.get('name', '')).lower()),
+                    rankings_data[0])
                 teams = first_ranking.get('ranks', [])
                 
                 for team_data in teams:
@@ -865,6 +897,11 @@ class SportsUpcoming(SportsCore):
             return
 
         self.last_update = current_time
+        
+        # Re-expand AP_TOP_25 style favorites if the poll changed
+        
+        self._refresh_dynamic_favorites()
+
         
         # Fetch rankings if enabled
         if self.show_ranking:
@@ -1088,7 +1125,7 @@ class SportsUpcoming(SportsCore):
                             away_text = ''
                     elif self.show_ranking:
                         # Show ranking only if available
-                        away_rank = rankself._team_rankings_cacheings.get(away_abbr, 0)
+                        away_rank = self._team_rankings_cache.get(away_abbr, 0)
                         if away_rank > 0:
                             away_text = f"#{away_rank}"
                         else:
@@ -1213,6 +1250,11 @@ class SportsRecent(SportsCore):
             return
 
         self.last_update = current_time # Update time even if fetch fails
+        
+        # Re-expand AP_TOP_25 style favorites if the poll changed
+        
+        self._refresh_dynamic_favorites()
+
         
         # Fetch rankings if enabled
         if self.show_ranking:
@@ -1638,6 +1680,11 @@ class SportsLive(SportsCore):
         # Original line from traceback (line 455), now with variables defined:
         if current_time - self.last_update >= interval:
             self.last_update = current_time
+
+            # Re-expand AP_TOP_25 style favorites if the poll changed
+
+            self._refresh_dynamic_favorites()
+
 
             # Fetch rankings if enabled
             if self.show_ranking:
