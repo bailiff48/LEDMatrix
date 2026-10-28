@@ -50,6 +50,7 @@ STATE_FILE = CONFIG_DIR / "wifi_setup_state.json"    # last result, for the page
 DNSMASQ_CONF = Path("/etc/NetworkManager/dnsmasq-shared.d/ledmatrix-captive.conf")
 
 AP_PROFILE = "TickerSetup-AP"
+JOIN_PROFILE = "LEDMatrix-Join"   # temporary name while a join is tried
 AP_IP = "192.168.4.1"
 WEB_UI_PORT = 5001
 
@@ -90,7 +91,7 @@ def friendly_error(stderr):
     s = (stderr or "").lower()
     if "secrets were required" in s or ("psk" in s and "invalid" in s):
         return "The password was not accepted."
-    if "no network with ssid" in s or "not found" in s:
+    if "no network with ssid" in s or "not found" in s or "could not be found" in s:
         return "That network wasn't found. Is it in range, and is the name exact?"
     if "timeout" in s or "timed out" in s:
         return "The network didn't answer in time."
@@ -152,7 +153,11 @@ class WifiSetupService:
 
     def run(self, args, timeout=30):
         rc, out, err = self._run_cmd(args, timeout=timeout)
-        logger.debug("%s -> %s %s", " ".join(args), rc, (err or "").strip()[:200])
+        shown = list(args)
+        for i, a in enumerate(shown[:-1]):
+            if a in ("wifi-sec.psk", "password"):
+                shown[i + 1] = "***"
+        logger.debug("%s -> %s %s", " ".join(shown), rc, (err or "").strip()[:200])
         return rc, out, err
 
     # -- state for the page
@@ -254,7 +259,8 @@ class WifiSetupService:
                 continue
             sig = int(f[1]) if f[1].isdigit() else 0
             if f[0] not in best or sig > best[f[0]]["signal"]:
-                best[f[0]] = {"ssid": f[0], "signal": sig, "secure": f[2] not in ("", "--")}
+                best[f[0]] = {"ssid": f[0], "signal": sig, "secure": f[2] not in ("", "--"),
+                             "security": f[2]}
         nets = sorted(best.values(), key=lambda n: -n["signal"])
         if nets or not self.networks:
             self.networks = nets
@@ -346,20 +352,40 @@ class WifiSetupService:
                 return True
         return self.is_online()
 
+    def key_mgmt_for(self, ssid):
+        """wpa-psk for WPA/WPA2 (and WPA2/WPA3 mixed); sae only for WPA3-only networks."""
+        sec = next((n.get("security", "") for n in self.networks if n["ssid"] == ssid), "")
+        if "WPA3" in sec and "WPA2" not in sec and "WPA1" not in sec:
+            return "sae"
+        return "wpa-psk"
+
     def handle_connect(self, ssid, password, hidden=False):
+        """Join `ssid` with a profile built explicitly.
+
+        `nmcli device wifi connect` needs the network in a fresh scan to learn its
+        security type, and right after the hotspot goes down there often isn't one
+        ("802-11-wireless-security.key-mgmt: property is missing"). So the profile is
+        created with the security set from the scan taken before the hotspot came up,
+        under a temporary name, and only kept (renamed to the SSID) if it works.
+        """
         logger.info("Joining %s (hidden=%s)", ssid, hidden)
         self.show([["CONNECTING", f"to {ssid[:20]}", "", "Please wait..."]], ttl=120)
-        existed = ssid in self.saved_wifi_profiles()
         self.stop_ap(delete=False)
         self.sleep(2)
         self.run(["nmcli", "device", "wifi", "rescan", "ifname", self.iface], timeout=20)
         self.sleep(3)
-        cmd = ["nmcli", "device", "wifi", "connect", ssid, "ifname", self.iface]
-        if password:
-            cmd += ["password", password]
+        self.run(["nmcli", "connection", "delete", JOIN_PROFILE])
+        add = ["nmcli", "connection", "add", "type", "wifi", "ifname", self.iface,
+               "con-name", JOIN_PROFILE, "autoconnect", "yes", "ssid", ssid,
+               "connection.autoconnect-priority", "10"]
         if hidden:
-            cmd += ["hidden", "yes"]
-        rc, _, err = self.run(cmd, timeout=60)
+            add += ["802-11-wireless.hidden", "yes"]
+        if password:
+            add += ["wifi-sec.key-mgmt", self.key_mgmt_for(ssid), "wifi-sec.psk", password]
+        rc, _, err = self.run(add)
+        if rc == 0:
+            rc, _, err = self.run(["nmcli", "--wait", "50", "connection", "up", JOIN_PROFILE],
+                                  timeout=60)
         ip = None
         if rc == 0:
             for _ in range(10):
@@ -368,6 +394,10 @@ class WifiSetupService:
                     break
                 self.sleep(2)
         if rc == 0 and ip:
+            # Keep it under the network's own name, replacing an older profile of that name.
+            if ssid != JOIN_PROFILE and ssid in self.saved_wifi_profiles():
+                self.run(["nmcli", "connection", "delete", ssid])
+            self.run(["nmcli", "connection", "modify", JOIN_PROFILE, "connection.id", ssid])
             self._save_result({"ok": True, "ssid": ssid, "ip": ip, "at": self.clock()})
             self.leave_setup()
             self.show([["CONNECTED!", f"Wi-Fi: {ssid[:13]}", "Browse to:",
@@ -377,8 +407,8 @@ class WifiSetupService:
         reason = friendly_error(err) if rc != 0 else "Joined, but got no address from the router."
         logger.warning("Could not join %s: %s", ssid, (err or "").strip())
         self._save_result({"ok": False, "ssid": ssid, "error": reason, "at": self.clock()})
-        if not existed:
-            self.run(["nmcli", "connection", "delete", ssid])
+        self.run(["nmcli", "connection", "down", JOIN_PROFILE], timeout=20)
+        self.run(["nmcli", "connection", "delete", JOIN_PROFILE])
         self.start_ap()
         self.show(self.setup_pages(), ttl=60)
         return False
@@ -447,6 +477,7 @@ class WifiSetupService:
             return
         self.remove_dnsmasq_conf()           # never leave DNS hijack behind
         self.run(["nmcli", "connection", "delete", AP_PROFILE])
+        self.run(["nmcli", "connection", "delete", JOIN_PROFILE])   # half-finished join
         if self.wait_for_network():
             logger.info("Network is up; no setup needed")
             self.mode = "client"

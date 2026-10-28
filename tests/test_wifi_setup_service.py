@@ -81,8 +81,22 @@ class FakeNM:
         if rest[:2] == ["connection", "add"]:
             kv = dict(zip(rest[2::2], rest[3::2]))
             self.ap_args = kv
-            self.profiles[kv["con-name"]] = {"ssid": kv["ssid"], "ap": kv.get("802-11-wireless.mode") == "ap"}
+            self.profiles[kv["con-name"]] = {"ssid": kv["ssid"], "ap": kv.get("802-11-wireless.mode") == "ap",
+                                             "psk": kv.get("wifi-sec.psk"),
+                                             "key_mgmt": kv.get("wifi-sec.key-mgmt"),
+                                             "hidden": kv.get("802-11-wireless.hidden") == "yes"}
             return 0, "", ""
+        if rest[:2] == ["connection", "modify"]:
+            name, kv = rest[2], dict(zip(rest[3::2], rest[4::2]))
+            if name not in self.profiles:
+                return 10, "", "unknown connection"
+            if "connection.id" in kv:
+                self.profiles[kv["connection.id"]] = self.profiles.pop(name)
+                if self.active == name:
+                    self.active = kv["connection.id"]
+            return 0, "", ""
+        if rest[:2] == ["--wait", rest[1]] and rest[2:4] == ["connection", "up"]:
+            rest = rest[2:]
         if rest[:2] == ["connection", "up"]:
             name = rest[2]
             p = self.profiles.get(name)
@@ -92,9 +106,14 @@ class FakeNM:
                 self.active = name
                 return 0, "", ""
             vis = self.visible.get(p["ssid"])
+            if p.get("psk") and not p.get("key_mgmt") and name != "preconfigured":
+                return 4, "", "Error: 802-11-wireless-security.key-mgmt: property is missing."
             if vis and vis[1] == p.get("psk"):
                 self.active = name
                 return 0, "", ""
+            if vis:
+                return 4, "", ("Error: Connection activation failed: Secrets were required, "
+                               "but not provided.")
             return 4, "", "Error: Connection activation failed: The Wi-Fi network could not be found"
         if rest[:2] == ["connection", "down"]:
             if self.active == rest[2]:
@@ -105,6 +124,8 @@ class FakeNM:
             ssid = rest[3]
             kv = dict(zip(rest[4::2], rest[5::2]))
             pw = kv.get("password")
+            if pw:   # what ledpi-dev did right after the hotspot went down
+                return 4, "", "Error: 802-11-wireless-security.key-mgmt: property is missing."
             self.profiles[ssid] = {"ssid": ssid, "psk": pw}
             vis = self.visible.get(ssid)
             if not vis:
@@ -248,9 +269,8 @@ def test_open_network_and_hidden_flag(env):
     nm.visible["Hidden1"] = (60, "secret-pass")
     http(svc, "/api/connect", {"ssid": "Hidden1", "password": "secret-pass", "hidden": True}, host="192.168.4.1")
     svc.tick()
-    connect = [c for c in nm.calls if c[1:4] == ["device", "wifi", "connect"]][-1]
-    assert connect[-2:] == ["hidden", "yes"]
-    assert nm.active == "Hidden1"
+    assert nm.active == "Hidden1" and nm.profiles["Hidden1"]["hidden"]
+    assert nm.profiles["Hidden1"]["key_mgmt"] == "wpa-psk"
 
 
 def test_router_back_after_power_cut_leaves_setup(env):
@@ -320,3 +340,26 @@ def test_panel_hook_draws_only_fresh_status(tmp_path):
     assert dm.image.getbbox() is not None                  # something was drawn
     f.write_text(json.dumps({"pages": [["X"]], "timestamp": _t.time() - 100, "ttl": 30}))
     assert d.show(dm, f) is False                          # stale -> normal rotation resumes
+
+
+def test_join_sets_security_explicitly_and_keeps_old_profile_on_failure(env):
+    svc, nm, clock, tmp = env
+    boot_offline(svc, nm)
+    nm.profiles["HomeNet"] = {"ssid": "HomeNet", "psk": "old-password", "key_mgmt": "wpa-psk"}
+    http(svc, "/api/connect", {"ssid": "HomeNet", "password": "wrong-pass"}, host="192.168.4.1")
+    svc.tick()
+    assert "HomeNet" in nm.profiles and ws.JOIN_PROFILE not in nm.profiles   # old one untouched
+    http(svc, "/api/connect", {"ssid": "HomeNet", "password": "correct-horse"}, host="192.168.4.1")
+    svc.tick()
+    assert nm.active == "HomeNet" and nm.profiles["HomeNet"]["psk"] == "correct-horse"
+    assert nm.profiles["HomeNet"]["key_mgmt"] == "wpa-psk"
+    assert ws.JOIN_PROFILE not in nm.profiles
+
+
+def test_wpa3_only_uses_sae(env):
+    svc, nm, clock, tmp = env
+    boot_offline(svc, nm)
+    svc.networks.append({"ssid": "New6E", "signal": 50, "secure": True, "security": "WPA3"})
+    assert svc.key_mgmt_for("New6E") == "sae"
+    svc.networks.append({"ssid": "Mixed", "signal": 50, "secure": True, "security": "WPA2 WPA3"})
+    assert svc.key_mgmt_for("Mixed") == "wpa-psk"
